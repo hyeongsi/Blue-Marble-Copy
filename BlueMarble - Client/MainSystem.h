@@ -3,6 +3,8 @@ class MainSystem
 {
 private:
 	static MainSystem* instance;
+	
+	
 
 	MainSystem();
 	~MainSystem();
