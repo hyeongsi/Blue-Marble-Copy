@@ -20,7 +20,15 @@ void MainSystem::ReleaseInstance()
 	instance = nullptr;
 }
 
+void MainSystem::RegistUpdateCallbackFunction(CALLBACK_FUNC cbf)
+{
+	updateCBF = cbf;
+}
+
 void MainSystem::Update()
 {
+	if (nullptr == updateCBF)
+		return;
 
+	updateCBF();
 }

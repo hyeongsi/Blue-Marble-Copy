@@ -2,6 +2,7 @@
 #include "Resource.h"
 #include "MainSystem.h"
 #include "HttpTransfer.h"
+#include "BitmapManager.h"
 
 MainMenu* MainMenu::instance = nullptr;
 
@@ -12,16 +13,25 @@ void MainMenu::InitMainMenu(HWND hWnd)
 {
     instance->hWnd = hWnd;
     instance->hInst = (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE);
+
+    CreateButton();
+    ShowButton();
+
+    BitmapManager::GetInstance()->LoadMainMenuBitmap(instance->hInst);  // main menu bitmap loading
+    MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist
+}
+
+void MainMenu::CreateButton()
+{
     instance->hStartButton = CreateWindow("button", "START", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        instance->StartButtonPoint.x, instance->StartButtonPoint.y, 
+        instance->StartButtonPoint.x, instance->StartButtonPoint.y,
         instance->StartButtonSize.cx, instance->StartButtonSize.cy,
-        hWnd, (HMENU)IDC_START, instance->hInst, NULL);    // 메인화면의 시작 버튼 생성
+        instance->hWnd, (HMENU)IDC_START, instance->hInst, NULL);    // 메인화면의 시작 버튼 생성
 
     instance->hStartButton = CreateWindow("button", "RANKING", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
         instance->RankingButtonPoint.x, instance->RankingButtonPoint.y,
         instance->RankingButtonSize.cx, instance->RankingButtonSize.cy,
-        hWnd, (HMENU)IDC_RANKING, instance->hInst, NULL);    // 메인화면의 시작 버튼 생성
-    ShowButton();
+        instance->hWnd, (HMENU)IDC_RANKING, instance->hInst, NULL);    // 메인화면의 시작 버튼 생성
 }
 
 void MainMenu::ShowButton()
@@ -41,6 +51,7 @@ void MainMenu::StartGameMethod()
 
 void MainMenu::StartGame()
 {
+
 }
 
 void MainMenu::GetRankingDataMethod()
@@ -97,6 +108,9 @@ LRESULT MainMenu::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
+
+        /*SelectObject(hdc, BitmapManager::GetInstance()->GetBitmap(State::MAIN_MENU, BACKGROUND));
+        BitBlt(hdc, 0, 0, 100, 100, null, 0, 0, SRCCOPY);*/
         EndPaint(hWnd, &ps);
     }
         break;
@@ -108,4 +122,9 @@ LRESULT MainMenu::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
+}
+
+void MainMenu::MainMenuUpdate()
+{
+
 }

@@ -19,6 +19,7 @@ private:
 	~MainMenu();
 
 	void InitMainMenu(HWND hWnd);
+	void CreateButton();
 	void ShowButton();	// 버튼 출력
 	void HideButton();	// 버튼 숨기기
 	static void StartGameMethod();	// 시작 버튼 작동
@@ -30,5 +31,6 @@ public:
 	static void ReleaseInstance();
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static void MainMenuUpdate();	// MainMenu Update
 };
 
