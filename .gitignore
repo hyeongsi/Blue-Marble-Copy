@@ -1,0 +1,7 @@
+BlueMarble_Client/*.vcxproj
+BlueMarble_Client/*.filters
+BlueMarble_Client/*.user
+
+#Debug, Release 폴더 안에 모든거 무시
+BlueMarble_Client/Debug
+BlueMarble_Client/Release
