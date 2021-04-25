@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <Windows.h>
 
 class RenderManager
@@ -23,7 +23,8 @@ public:
 	void RenderInitSetting();
 
 	void DrawMainMenu();
-	void DrawBitmap(HBITMAP bitmap, POINT printPoint);
+	void DrawHwnd(const HWND dHwnd, const POINT printPoint, const SIZE hwndSize);
+	void DrawBitmap(const HBITMAP bitmap, const POINT printPoint);
 	void Render();
 };
 

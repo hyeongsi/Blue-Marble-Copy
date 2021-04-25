@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Windows.h>
 
 typedef void(*CALLBACK_FUNC)(void);
@@ -18,9 +18,9 @@ private:
 	static MainSystem* instance;
 	CALLBACK_FUNC updateCBF = nullptr;
 
-	float dwElapsedTicks = 0; //·çÇÁ ¼øÈ¸°£ °æ°úµÈ ½Ã°£
-	ULONGLONG dwLastTicks = 0;	//ÀÌÀü ·çÇÁ ¼øÈ¸°¡ ³¡³­ ½Ã°£
-	ULONGLONG dwInterval = 1000 / FPS; //·çÇÁ ¼øÈ¸´ç ¼Ò¿ä µÇ¾î¾ß ÇÏ´Â ½Ã°£
+	float dwElapsedTicks = 0; //ë£¨í”„ ìˆœíšŒê°„ ê²½ê³¼ëœ ì‹œê°„
+	ULONGLONG dwLastTicks = 0;	//ì´ì „ ë£¨í”„ ìˆœíšŒê°€ ëë‚œ ì‹œê°„
+	ULONGLONG dwInterval = 1000 / FPS; //ë£¨í”„ ìˆœíšŒë‹¹ ì†Œìš” ë˜ì–´ì•¼ í•˜ëŠ” ì‹œê°„
 
 	MainSystem();
 	~MainSystem();

@@ -1,4 +1,4 @@
-#pragma warning(disable: 26812)	// ¿­°ÅÇü Ã£À» ¼ö ¾ø½À´Ï´Ù. - CURLcode ¿¡¼­ °è¼Ó ¶ä - ¿ÜºÎ¶óÀÌºê·¯¸®¶ó ¹Ù²Ù±â ²¨¸²Á÷ÇÔ
+ï»¿#pragma warning(disable: 26812)	// ì—´ê±°í˜• ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. - CURLcode ì—ì„œ ê³„ì† ëœ¸ - ì™¸ë¶€ë¼ì´ë¸ŒëŸ¬ë¦¬ë¼ ë°”ê¾¸ê¸° êº¼ë¦¼ì§í•¨
 #include "HttpTransfer.h"
 
 HttpTransfer* HttpTransfer::instance = nullptr;
@@ -38,9 +38,9 @@ string HttpTransfer::GetRanking()
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-	curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:3000/ranking");	// ip, port ¼³Á¤
+	curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:3000/ranking");	// ip, port ì„¤ì •
 
-	rc = curl_easy_perform(curl);	// µ¥ÀÌÅÍ ƒJ¾î¿À´Â ¿ªÇÒ
+	rc = curl_easy_perform(curl);	// ë°ì´í„° ê¸‡ì–´ì˜¤ëŠ” ì—­í• 
 	if (CURLE_OK != rc)
 	{
 		readBuffer = "";

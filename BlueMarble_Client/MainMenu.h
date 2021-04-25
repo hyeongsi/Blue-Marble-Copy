@@ -1,34 +1,31 @@
-#pragma once
+ï»¿#pragma once
 #include <Windows.h>
-#include "RenderManager.h"
+#include <vector>
 
+class RenderManager;
+class BitmapManager;
 class MainMenu
 {
 private:
 	static MainMenu* instance;
 	HWND hWnd = nullptr;
 	HINSTANCE hInst = nullptr;
-	HWND hStartButton = nullptr;
+	std::vector<HWND> hwndWindow;
 
 	RenderManager* renderManager = nullptr;
-
-	const POINT StartButtonPoint = { 100,100 };
-	const SIZE StartButtonSize = { 100,50 };
-
-	const POINT RankingButtonPoint = { 300,100 };
-	const SIZE RankingButtonSize = { 100,50 };
+	BitmapManager* bitmapManager = nullptr;
 
 	MainMenu();
 	~MainMenu();
 
 	void InitMainMenu(HWND hWnd);
-	void ResizeWindow(const LONG width, const LONG height, const POINT printPoint);	// ÇØ»óµµ º¯°æ
+	void ResizeWindow(const LONG width, const LONG height, const POINT printPoint);	// í•´ìƒë„ ë³€ê²½
 	void CreateButton();
-	void ShowButton();	// ¹öÆ° Ãâ·Â
-	void HideButton();	// ¹öÆ° ¼û±â±â
-	static void StartGameMethod();	// ½ÃÀÛ ¹öÆ° ÀÛµ¿
+	void ShowButton();	// ë²„íŠ¼ ì¶œë ¥
+	void HideButton();	// ë²„íŠ¼ ìˆ¨ê¸°ê¸°
+	static void StartGameMethod();	// ì‹œì‘ ë²„íŠ¼ ì‘ë™
 	void StartGame();
-	static void GetRankingDataMethod();	// ·©Å· Á¤º¸ ¿äÃ»
+	static void GetRankingDataMethod();	// ë­í‚¹ ì •ë³´ ìš”ì²­
 	void GetRankingData();
 public:
 	static MainMenu* GetInstance();

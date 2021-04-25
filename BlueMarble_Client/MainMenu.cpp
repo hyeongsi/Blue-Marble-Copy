@@ -1,7 +1,8 @@
-#include "MainMenu.h"
+ï»¿#include "MainMenu.h"
 #include "Resource.h"
 #include "MainSystem.h"
 #include "HttpTransfer.h"
+#include "RenderManager.h"
 #include "BitmapManager.h"
 
 MainMenu* MainMenu::instance = nullptr;
@@ -16,48 +17,60 @@ void MainMenu::InitMainMenu(HWND hWnd)
 
     instance->renderManager = RenderManager::GetInstance();
     instance->renderManager->Init(instance->hWnd);
+    instance->bitmapManager = BitmapManager::GetInstance();
 
     ResizeWindow(instance->renderManager->GetClientSize()->cx, instance->renderManager->GetClientSize()->cy, POINT(300,100));
+
+    instance->bitmapManager->LoadMainMenuHwnd();
+    instance->bitmapManager->LoadMainMenuBitmap();  // main menu bitmap loading
 
     CreateButton();
     ShowButton();
 
-    BitmapManager::GetInstance()->LoadMainMenuBitmap(instance->hInst);  // main menu bitmap loading
     MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist
 }
 
 void MainMenu::ResizeWindow(const LONG width, const LONG height, const POINT printPoint)
 {
-    RECT g_clientRect{ 0,0, width, height }; // Å¬¶óÀÌ¾ğÆ® Å©±â
+    RECT g_clientRect{ 0,0, width, height }; // í´ë¼ì´ì–¸íŠ¸ í¬ê¸°
     SIZE clientSize;
 
-    AdjustWindowRect(&g_clientRect, WS_OVERLAPPEDWINDOW, false);    // ¸Ş´ºÃ¢ Å©±â »©°í À©µµ¿ì Å©±â °è»ê
+    AdjustWindowRect(&g_clientRect, WS_OVERLAPPEDWINDOW, false);    // ë©”ë‰´ì°½ í¬ê¸° ë¹¼ê³  ìœˆë„ìš° í¬ê¸° ê³„ì‚°
     clientSize.cx = g_clientRect.right - g_clientRect.left;
     clientSize.cy = g_clientRect.bottom - g_clientRect.top;
-    MoveWindow(instance->hWnd, printPoint.x, printPoint.y, clientSize.cx, clientSize.cy, true);   // printPoint ÁöÁ¡¿¡ clientSize Å©±â·Î Ãâ·Â
+    MoveWindow(instance->hWnd, printPoint.x, printPoint.y, clientSize.cx, clientSize.cy, true);   // printPoint ì§€ì ì— clientSize í¬ê¸°ë¡œ ì¶œë ¥
 }
 
 void MainMenu::CreateButton()
 {
-    instance->hStartButton = CreateWindow("button", "START", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        instance->StartButtonPoint.x, instance->StartButtonPoint.y,
-        instance->StartButtonSize.cx, instance->StartButtonSize.cy,
-        instance->hWnd, (HMENU)IDC_START, instance->hInst, NULL);    // ¸ŞÀÎÈ­¸éÀÇ ½ÃÀÛ ¹öÆ° »ı¼º
+    vector<HwndInfo>* hwndInfo = instance->bitmapManager->GetHwnd(State::MAIN_MENU);
 
-    instance->hStartButton = CreateWindow("button", "RANKING", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        instance->RankingButtonPoint.x, instance->RankingButtonPoint.y,
-        instance->RankingButtonSize.cx, instance->RankingButtonSize.cy,
-        instance->hWnd, (HMENU)IDC_RANKING, instance->hInst, NULL);    // ¸ŞÀÎÈ­¸éÀÇ ½ÃÀÛ ¹öÆ° »ı¼º
+    if (hwndInfo == nullptr)
+        return;
+
+    for (const auto& hwndIterator : *hwndInfo)
+    {
+        instance->hwndWindow.emplace_back(CreateWindow(hwndIterator.type.c_str(), hwndIterator.text.c_str(), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+            hwndIterator.point.x, hwndIterator.point.y,
+            hwndIterator.size.cx, hwndIterator.size.cy,
+            instance->hWnd, (HMENU)hwndIterator.id, instance->hInst, NULL));
+    }
 }
 
 void MainMenu::ShowButton()
 {
-    ShowWindow(instance->hStartButton, SW_SHOW);                // ¹öÆ° Ãâ·Â
+    for (const auto& buttonHandleIterator : instance->hwndWindow)
+    {
+        ShowWindow(buttonHandleIterator, SW_SHOW);                // ë²„íŠ¼ ì¶œë ¥
+    }
 }
 
 void MainMenu::HideButton()
 {
-    ShowWindow(instance->hStartButton, SW_HIDE);                // ¹öÆ° ¼û±â±â
+    for (const auto& buttonHandleIterator : instance->hwndWindow)
+    {
+        ShowWindow(buttonHandleIterator, SW_HIDE);                // ë²„íŠ¼ ì¶œë ¥
+    }
 }
 
 void MainMenu::StartGameMethod()
@@ -77,7 +90,7 @@ void MainMenu::GetRankingDataMethod()
 
 void MainMenu::GetRankingData()
 {
-    // ·©Å·Ã¢À¸·Î ÀÌµ¿ ÈÄ ·©Å·À» º¸¿©ÁÙ ¼ö ÀÖµµ·Ï
+    // ë­í‚¹ì°½ìœ¼ë¡œ ì´ë™ í›„ ë­í‚¹ì„ ë³´ì—¬ì¤„ ìˆ˜ ìˆë„ë¡
     // HttpTransfer::GetInstance()->GetRanking();
 }
 
@@ -121,15 +134,11 @@ LRESULT MainMenu::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
-        HDC hMemDC = CreateCompatibleDC(hdc); // ¸Ş¸ğ¸® DC¸¦ ¸¸µç´Ù
-        SelectObject(hMemDC, (HBITMAP)LoadImageA(NULL, "./sprites/blueMarbleLogo.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION));
-        BitBlt(hdc, 0, 0, 500, 500, hMemDC, 0, 0, SRCCOPY);
         EndPaint(hWnd, &ps);
     }
         break;
     case WM_CLOSE:
-        if (hWnd)
-            DestroyWindow(hWnd);
+        DestroyWindow(hWnd);
         break;
     case WM_DESTROY:
         MainSystem::ReleaseInstance();
@@ -143,7 +152,15 @@ LRESULT MainMenu::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 void MainMenu::MainMenuUpdate()
 {
-   /* instance->renderManager->RenderInitSetting();
+    instance->renderManager->RenderInitSetting();
     instance->renderManager->DrawMainMenu();
-    instance->renderManager->Render();*/
+
+    for (int i = 0; i < (int)instance->hwndWindow.size(); i++)
+    {
+        instance->renderManager->DrawHwnd(instance->hwndWindow[i],
+            (*instance->bitmapManager->GetHwnd(State::MAIN_MENU))[i].point, 
+            (*instance->bitmapManager->GetHwnd(State::MAIN_MENU))[i].size );
+    }
+
+    instance->renderManager->Render();
 }

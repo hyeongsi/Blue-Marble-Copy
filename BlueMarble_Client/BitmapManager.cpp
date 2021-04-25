@@ -1,4 +1,6 @@
-#include "BitmapManager.h"
+﻿#include "BitmapManager.h"
+#include <Windows.h>
+#include <fstream>
 
 BitmapManager* BitmapManager::instance = nullptr;
 
@@ -21,21 +23,79 @@ void BitmapManager::ReleaseInstance()
 	instance = nullptr;
 }
 
-void BitmapManager::LoadMainMenuBitmap(HINSTANCE hInst)
+void BitmapManager::LoadMainMenuHwnd()
 {
-	mainMenuBitmap.emplace_back(
-		(HBITMAP)LoadImageA(NULL, "sprites/blueMarbleLogo.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION));
+	const char* filePath = "sprites/mainMenuHwnd.txt";
+	ifstream readFile;
+
+	HwndInfo hwndInfo;
+
+	readFile.open(filePath);
+	if (readFile.is_open())
+	{
+		while (!readFile.eof())
+		{
+			readFile >> hwndInfo.type;
+			readFile >> hwndInfo.text;
+			readFile >> hwndInfo.id;
+			readFile >> hwndInfo.point.x;
+			readFile >> hwndInfo.point.y;
+			readFile >> hwndInfo.size.cx;
+			readFile >> hwndInfo.size.cy;
+
+			mainMenuHwnd.emplace_back(hwndInfo);
+		}
+	}
+
+	readFile.close();
 }
 
-HBITMAP* BitmapManager::GetBitmap(State state, int index)
+vector<HwndInfo>* BitmapManager::GetHwnd(State state)
 {
 	switch (state)
 	{
 	case State::MAIN_MENU:
-		if(0 <= index && index < (int)mainMenuBitmap.size())
-			return &mainMenuBitmap[index];
-
+		return &mainMenuHwnd;
+	case State::RANK_MENU:
 		return nullptr;
+	case State::GAME:
+		return nullptr;
+	default:
+		return nullptr;
+	}
+}
+
+void BitmapManager::LoadMainMenuBitmap()
+{
+	const char* filePath = "sprites/mainMenuSprites.txt";
+	ifstream readFile;
+
+	string bitmapPath;
+	BitmapInfo bitmapInfo;
+
+	readFile.open(filePath);
+	if (readFile.is_open())
+	{
+		while (!readFile.eof())
+		{
+			readFile >> bitmapPath;
+			readFile >> bitmapInfo.point.x;
+			readFile >> bitmapInfo.point.y;
+
+			bitmapInfo.bitmap = (HBITMAP)LoadImageA(NULL, bitmapPath.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+			mainMenuBitmap.emplace_back(bitmapInfo);
+		}
+	}
+
+	readFile.close();
+}
+
+vector<BitmapInfo>* BitmapManager::GetBitmap(State state)
+{
+	switch (state)
+	{
+	case State::MAIN_MENU:
+		return &mainMenuBitmap;
 	case State::RANK_MENU:
 		return nullptr;
 	case State::GAME:

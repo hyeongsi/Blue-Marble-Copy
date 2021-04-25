@@ -1,4 +1,4 @@
-#include "RenderManager.h"
+ï»¿#include "RenderManager.h"
 #include "BitmapManager.h"
 
 RenderManager* RenderManager::instance = nullptr;
@@ -61,15 +61,30 @@ void RenderManager::RenderInitSetting()
 
     oldCreateBitmap = (HBITMAP)SelectObject(memDC, CreateCompatibleBitmap(hdc, ClientSize.cx, ClientSize.cy));
     RECT windowRect{ 0,0,ClientSize.cx, ClientSize.cy };
-    FillRect(memDC, &windowRect, (HBRUSH)GetStockObject(WHITE_BRUSH));      // ¹ÙÅÁ Èò»öÀ¸·Î ÃÊ±âÈ­
+    FillRect(memDC, &windowRect, (HBRUSH)GetStockObject(WHITE_BRUSH));      // ë°”íƒ• í°ìƒ‰ìœ¼ë¡œ ì´ˆê¸°í™”
 }
 
 void RenderManager::DrawMainMenu()
 {
-    DrawBitmap(*BitmapManager::GetInstance()->GetBitmap(State::MAIN_MENU, MAIN_MENU_BACKGROUND), POINT(0, 0));
+    vector<BitmapInfo>* mainMenuBitmap = BitmapManager::GetInstance()->GetBitmap(State::MAIN_MENU);
+    if (nullptr == mainMenuBitmap)
+        return;
+
+    for (const auto&  bitmapIterator : *mainMenuBitmap)
+    {
+        DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
+    }
 }
 
-void RenderManager::DrawBitmap(HBITMAP bitmap, POINT printPoint)
+void RenderManager::DrawHwnd(const HWND dHwnd, const POINT printPoint, const SIZE hwndSize)
+{
+    HDC hwndDc = GetDC(dHwnd);
+
+    BitBlt(memDC, printPoint.x, printPoint.y, hwndSize.cx, hwndSize.cy, hwndDc, 0, 0, SRCCOPY);
+    ReleaseDC(dHwnd, hwndDc);
+}
+
+void RenderManager::DrawBitmap(const HBITMAP bitmap, const POINT printPoint)
 {
     BITMAP bitmapSize{};
     SelectObject(backMemDC, bitmap);
