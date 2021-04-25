@@ -21,5 +21,5 @@ public:
 
 enum MainMenuBitmap
 {
-	BACKGROUND = 0,
+	MAIN_MENU_BACKGROUND = 0,
 };

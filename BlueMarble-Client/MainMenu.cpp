@@ -14,11 +14,27 @@ void MainMenu::InitMainMenu(HWND hWnd)
     instance->hWnd = hWnd;
     instance->hInst = (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE);
 
+    instance->renderManager = RenderManager::GetInstance();
+    instance->renderManager->Init(instance->hWnd);
+
+    ResizeWindow(instance->renderManager->GetClientSize()->cx, instance->renderManager->GetClientSize()->cy, POINT(300,100));
+
     CreateButton();
     ShowButton();
 
     BitmapManager::GetInstance()->LoadMainMenuBitmap(instance->hInst);  // main menu bitmap loading
     MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist
+}
+
+void MainMenu::ResizeWindow(const LONG width, const LONG height, const POINT printPoint)
+{
+    RECT g_clientRect{ 0,0, width, height }; // 클라이언트 크기
+    SIZE clientSize;
+
+    AdjustWindowRect(&g_clientRect, WS_OVERLAPPEDWINDOW, false);    // 메뉴창 크기 빼고 윈도우 크기 계산
+    clientSize.cx = g_clientRect.right - g_clientRect.left;
+    clientSize.cy = g_clientRect.bottom - g_clientRect.top;
+    MoveWindow(instance->hWnd, printPoint.x, printPoint.y, clientSize.cx, clientSize.cy, true);   // printPoint 지점에 clientSize 크기로 출력
 }
 
 void MainMenu::CreateButton()
@@ -108,11 +124,15 @@ LRESULT MainMenu::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         PAINTSTRUCT ps;
         HDC hdc = BeginPaint(hWnd, &ps);
-
-        /*SelectObject(hdc, BitmapManager::GetInstance()->GetBitmap(State::MAIN_MENU, BACKGROUND));
-        BitBlt(hdc, 0, 0, 100, 100, null, 0, 0, SRCCOPY);*/
+        HDC hMemDC = CreateCompatibleDC(hdc); // 메모리 DC를 만든다
+        SelectObject(hMemDC, (HBITMAP)LoadImageA(NULL, "./sprites/blueMarbleLogo.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION));
+        BitBlt(hdc, 0, 0, 500, 500, hMemDC, 0, 0, SRCCOPY);
         EndPaint(hWnd, &ps);
     }
+        break;
+    case WM_CLOSE:
+        if (hWnd)
+            DestroyWindow(hWnd);
         break;
     case WM_DESTROY:
         MainSystem::ReleaseInstance();
@@ -126,5 +146,7 @@ LRESULT MainMenu::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 void MainMenu::MainMenuUpdate()
 {
-
+   /* instance->renderManager->RenderInitSetting();
+    instance->renderManager->DrawMainMenu();
+    instance->renderManager->Render();*/
 }

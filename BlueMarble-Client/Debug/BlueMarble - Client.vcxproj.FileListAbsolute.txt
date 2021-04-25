@@ -1,2 +1,4 @@
 C:\Users\parks\Desktop\GitHub\Blue-Marble-Project\BlueMarble - Client\Debug\BlueMarble - Client.exe
 C:\Users\parks\Desktop\GitHub\Blue-Marble-Project\BlueMarble - Client\Debug\BlueMarble - Client.pdb
+C:\Users\parks\Desktop\GitHub\Blue-Marble-Project\BlueMarble-Client\Debug\BlueMarble - Client.exe
+C:\Users\parks\Desktop\GitHub\Blue-Marble-Project\BlueMarble-Client\Debug\BlueMarble - Client.pdb

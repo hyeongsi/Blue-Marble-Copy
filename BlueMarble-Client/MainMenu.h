@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include "RenderManager.h"
 
 class MainMenu
 {
@@ -8,6 +9,8 @@ private:
 	HWND hWnd = nullptr;
 	HINSTANCE hInst = nullptr;
 	HWND hStartButton = nullptr;
+
+	RenderManager* renderManager = nullptr;
 
 	const POINT StartButtonPoint = { 100,100 };
 	const SIZE StartButtonSize = { 100,50 };
@@ -19,6 +22,7 @@ private:
 	~MainMenu();
 
 	void InitMainMenu(HWND hWnd);
+	void ResizeWindow(const LONG width, const LONG height, const POINT printPoint);	// 해상도 변경
 	void CreateButton();
 	void ShowButton();	// 버튼 출력
 	void HideButton();	// 버튼 숨기기
