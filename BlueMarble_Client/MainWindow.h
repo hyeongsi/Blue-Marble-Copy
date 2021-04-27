@@ -4,10 +4,11 @@
 
 class RenderManager;
 class BitmapManager;
-class MainMenu
+class MainWindow
 {
 private:
-	static MainMenu* instance;
+	static MainWindow* instance;
+
 	HWND hWnd = nullptr;
 	HINSTANCE hInst = nullptr;
 	std::vector<HWND> hwndWindow;
@@ -15,8 +16,8 @@ private:
 	RenderManager* renderManager = nullptr;
 	BitmapManager* bitmapManager = nullptr;
 
-	MainMenu();
-	~MainMenu();
+	MainWindow();
+	~MainWindow();
 
 	void InitMainMenu(HWND hWnd);
 	void ResizeWindow(const LONG width, const LONG height, const POINT printPoint);	// 해상도 변경
@@ -28,7 +29,7 @@ private:
 	static void GetRankingDataMethod();	// 랭킹 정보 요청
 	void GetRankingData();
 public:
-	static MainMenu* GetInstance();
+	static MainWindow* GetInstance();
 	static void ReleaseInstance();
 
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

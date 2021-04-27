@@ -2,4 +2,4 @@
 
 #include "resource.h"
 #include "MainSystem.h"
-#include "MainMenu.h"
+#include "MainWindow.h"

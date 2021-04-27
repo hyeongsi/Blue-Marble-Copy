@@ -1,16 +1,16 @@
-﻿#include "MainMenu.h"
+﻿#include "MainWindow.h"
 #include "Resource.h"
 #include "MainSystem.h"
 #include "HttpTransfer.h"
 #include "RenderManager.h"
 #include "BitmapManager.h"
 
-MainMenu* MainMenu::instance = nullptr;
+MainWindow* MainWindow::instance = nullptr;
 
-MainMenu::MainMenu() {}
-MainMenu::~MainMenu() {}
+MainWindow::MainWindow() {}
+MainWindow::~MainWindow() {}
 
-void MainMenu::InitMainMenu(HWND hWnd)
+void MainWindow::InitMainMenu(HWND hWnd)
 {
     instance->hWnd = hWnd;
     instance->hInst = (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE);
@@ -30,7 +30,7 @@ void MainMenu::InitMainMenu(HWND hWnd)
     MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist
 }
 
-void MainMenu::ResizeWindow(const LONG width, const LONG height, const POINT printPoint)
+void MainWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint)
 {
     RECT g_clientRect{ 0,0, width, height }; // 클라이언트 크기
     SIZE clientSize;
@@ -41,7 +41,7 @@ void MainMenu::ResizeWindow(const LONG width, const LONG height, const POINT pri
     MoveWindow(instance->hWnd, printPoint.x, printPoint.y, clientSize.cx, clientSize.cy, true);   // printPoint 지점에 clientSize 크기로 출력
 }
 
-void MainMenu::CreateButton()
+void MainWindow::CreateButton()
 {
     vector<HwndInfo>* hwndInfo = instance->bitmapManager->GetHwnd(State::MAIN_MENU);
 
@@ -57,7 +57,7 @@ void MainMenu::CreateButton()
     }
 }
 
-void MainMenu::ShowButton()
+void MainWindow::ShowButton()
 {
     for (const auto& buttonHandleIterator : instance->hwndWindow)
     {
@@ -65,7 +65,7 @@ void MainMenu::ShowButton()
     }
 }
 
-void MainMenu::HideButton()
+void MainWindow::HideButton()
 {
     for (const auto& buttonHandleIterator : instance->hwndWindow)
     {
@@ -73,44 +73,44 @@ void MainMenu::HideButton()
     }
 }
 
-void MainMenu::StartGameMethod()
+void MainWindow::StartGameMethod()
 {
     instance->StartGame();
 }
 
-void MainMenu::StartGame()
+void MainWindow::StartGame()
 {
-
+    
 }
 
-void MainMenu::GetRankingDataMethod()
+void MainWindow::GetRankingDataMethod()
 {
     instance->GetRankingData();
 }
 
-void MainMenu::GetRankingData()
+void MainWindow::GetRankingData()
 {
     // 랭킹창으로 이동 후 랭킹을 보여줄 수 있도록
     // HttpTransfer::GetInstance()->GetRanking();
 }
 
-MainMenu* MainMenu::GetInstance()
+MainWindow* MainWindow::GetInstance()
 {
 	if (nullptr == instance)
 	{
-		instance = new MainMenu();
+		instance = new MainWindow();
 	}
 
 	return nullptr;
 }
 
-void MainMenu::ReleaseInstance()
+void MainWindow::ReleaseInstance()
 {
 	delete instance;
 	instance = nullptr;
 }
 
-LRESULT MainMenu::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+LRESULT MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
@@ -118,7 +118,6 @@ LRESULT MainMenu::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         GetInstance()->InitMainMenu(hWnd);
         break;
     case WM_COMMAND:
-    {
         switch (LOWORD(wParam))
         {
         case IDC_START:
@@ -128,20 +127,8 @@ LRESULT MainMenu::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             GetRankingDataMethod();
             break;
         }
-    }
-        break;
-    case WM_PAINT:
-    {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hWnd, &ps);
-        EndPaint(hWnd, &ps);
-    }
-        break;
-    case WM_CLOSE:
-        DestroyWindow(hWnd);
         break;
     case WM_DESTROY:
-        MainSystem::ReleaseInstance();
         PostQuitMessage(0);
         break;
     default:
@@ -150,7 +137,7 @@ LRESULT MainMenu::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void MainMenu::MainMenuUpdate()
+void MainWindow::MainMenuUpdate()
 {
     instance->renderManager->RenderInitSetting();
     instance->renderManager->DrawMainMenu();
