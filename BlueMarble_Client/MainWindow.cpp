@@ -16,18 +16,18 @@ void MainWindow::InitMainMenu(HWND hWnd)
     instance->hInst = (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE);
 
     instance->renderManager = RenderManager::GetInstance();
-    instance->renderManager->Init(instance->hWnd);
+    //instance->renderManager->Init(instance->hWnd);  // MainMenu <- -> Game Render
     instance->bitmapManager = BitmapManager::GetInstance();
 
     ResizeWindow(instance->renderManager->GetClientSize()->cx, instance->renderManager->GetClientSize()->cy, POINT(300,100));
 
-    instance->bitmapManager->LoadMainMenuHwnd();
-    instance->bitmapManager->LoadMainMenuBitmap();  // main menu bitmap loading
+    instance->bitmapManager->LoadHwndData(State::MAIN_MENU);
+    instance->bitmapManager->LoadBitmapData(State::MAIN_MENU);  // main menu bitmap loading 
 
     CreateButton();
     ShowButton();
 
-    MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist
+    //MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
 }
 
 void MainWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint)

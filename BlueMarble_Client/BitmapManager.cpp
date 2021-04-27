@@ -23,14 +23,28 @@ void BitmapManager::ReleaseInstance()
 	instance = nullptr;
 }
 
-void BitmapManager::LoadMainMenuHwnd()
+void BitmapManager::LoadHwndData(State state)
 {
-	const char* filePath = "sprites/mainMenuHwnd.txt";
-	ifstream readFile;
+	const char* mainMenuFilePath = "sprites/mainMenuHwnd.txt";
+	const char* gameFilePath = "sprites/gameHwnd.txt";
 
+	ifstream readFile;
 	HwndInfo hwndInfo;
 
-	readFile.open(filePath);
+	switch (state)
+	{
+	case State::MAIN_MENU:
+		readFile.open(mainMenuFilePath);
+		break;
+	case State::RANK_MENU:
+		break;
+	case State::GAME:
+		readFile.open(gameFilePath);
+		break;
+	default:
+		return;
+	}
+
 	if (readFile.is_open())
 	{
 		while (!readFile.eof())
@@ -50,30 +64,29 @@ void BitmapManager::LoadMainMenuHwnd()
 	readFile.close();
 }
 
-vector<HwndInfo>* BitmapManager::GetHwnd(State state)
+void BitmapManager::LoadBitmapData(State state)
 {
-	switch (state)
-	{
-	case State::MAIN_MENU:
-		return &mainMenuHwnd;
-	case State::RANK_MENU:
-		return nullptr;
-	case State::GAME:
-		return nullptr;
-	default:
-		return nullptr;
-	}
-}
+	const char* mainMenuFilePath = "sprites/mainMenuSprites.txt";
+	const char* gameFilePath = "sprites/gameSprites.txt";
 
-void BitmapManager::LoadMainMenuBitmap()
-{
-	const char* filePath = "sprites/mainMenuSprites.txt";
 	ifstream readFile;
-
 	string bitmapPath;
 	BitmapInfo bitmapInfo;
 
-	readFile.open(filePath);
+	switch (state)
+	{
+	case State::MAIN_MENU:
+		readFile.open(mainMenuFilePath);
+		break;
+	case State::RANK_MENU:
+		break;
+	case State::GAME:
+		readFile.open(gameFilePath);
+		break;
+	default:
+		return;
+	}
+
 	if (readFile.is_open())
 	{
 		while (!readFile.eof())
@@ -90,6 +103,21 @@ void BitmapManager::LoadMainMenuBitmap()
 	readFile.close();
 }
 
+vector<HwndInfo>* BitmapManager::GetHwnd(State state)
+{
+	switch (state)
+	{
+	case State::MAIN_MENU:
+		return &mainMenuHwnd;
+	case State::RANK_MENU:
+		return nullptr;
+	case State::GAME:
+		return &gameHwnd;
+	default:
+		return nullptr;
+	}
+}
+
 vector<BitmapInfo>* BitmapManager::GetBitmap(State state)
 {
 	switch (state)
@@ -99,7 +127,7 @@ vector<BitmapInfo>* BitmapManager::GetBitmap(State state)
 	case State::RANK_MENU:
 		return nullptr;
 	case State::GAME:
-		return nullptr;
+		return &gameBitmap;
 	default:
 		return nullptr;
 	}

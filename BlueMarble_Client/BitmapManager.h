@@ -34,15 +34,19 @@ private:
 	std::vector<BitmapInfo> mainMenuBitmap;
 	std::vector<HwndInfo> mainMenuHwnd;
 
+	std::vector<BitmapInfo> gameBitmap;
+	std::vector<HwndInfo> gameHwnd;
+
 	BitmapManager();
 	~BitmapManager();
 public:
 	static BitmapManager* GetInstance();
 	static void ReleaseInstance();
 
-	void LoadMainMenuHwnd();
+	void LoadHwndData(State state);
+	void LoadBitmapData(State state);
+
 	vector<HwndInfo>* GetHwnd(State state);
-	void LoadMainMenuBitmap();
 	vector<BitmapInfo>* GetBitmap(State state);
 };
 

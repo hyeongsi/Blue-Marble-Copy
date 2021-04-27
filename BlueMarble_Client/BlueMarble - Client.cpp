@@ -1,8 +1,6 @@
 ﻿#include "framework.h"
 #include "BlueMarble - Client.h"
 
-#define MAX_LOADSTRING 100
-
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
 
 ATOM                MyRegisterClass(HINSTANCE hInstance, State state);
@@ -17,6 +15,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     MyRegisterClass(hInstance, State::MAIN_MENU);
+    MyRegisterClass(hInstance, State::GAME);
 
     if (!InitInstance (hInstance, nCmdShow))
     {
@@ -52,18 +51,29 @@ ATOM MyRegisterClass(HINSTANCE hInstance, State state)
 {
     WNDCLASSEXW wcex;
 
-    wcex.cbSize = sizeof(WNDCLASSEX);
+    switch (state)
+    {
+    case State::MAIN_MENU:
+        wcex.lpszClassName = MAIN_WINDOW_CLASSNAME;
+        wcex.lpfnWndProc = MainWindow::GetInstance()->WndProc;
+        break;
+    case State::GAME:
+        wcex.lpszClassName = GAME_WINDOW_CLASSNAME;
+        wcex.lpfnWndProc = GameWindow::GetInstance()->WndProc;
+        break;
+    default:
+        break;
+    }
 
+    wcex.cbSize = sizeof(WNDCLASSEX);
     wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = MainWindow::GetInstance()->WndProc;
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = hInstance;
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_BLUEMARBLECLIENT));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName = NULL; //MAKEINTRESOURCEW(IDC_BLUEMARBLECLIENT);
-    wcex.lpszClassName  = L"MainMenu";
+    wcex.lpszMenuName = NULL;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
     return RegisterClassExW(&wcex);
@@ -73,16 +83,31 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-   HWND hWnd = CreateWindowW(L"MainMenu", L"부루마블", WS_OVERLAPPEDWINDOW,
+   mainWindowHwnd = CreateWindowW(MAIN_WINDOW_CLASSNAME, L"M", WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
-   if (!hWnd)
+   gameWindowHwnd = CreateWindowW(GAME_WINDOW_CLASSNAME, L"G", WS_OVERLAPPEDWINDOW,
+       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+
+   SetWindowText(mainWindowHwnd, "BlueMarble - Main"); // <- 이것 또한 앞 1글자만 인식
+   // 왜 제목이 1글자밖에 인식을 못하는건지
+   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+   //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+   if (!mainWindowHwnd)
    {
       return FALSE;
    }
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+   if (!gameWindowHwnd)
+   {
+       return FALSE;
+   }
+
+   ShowWindow(mainWindowHwnd, nCmdShow);
+   ShowWindow(gameWindowHwnd, nCmdShow);
 
    return TRUE;
 }
