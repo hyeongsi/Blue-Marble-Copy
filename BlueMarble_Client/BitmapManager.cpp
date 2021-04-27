@@ -25,8 +25,8 @@ void BitmapManager::ReleaseInstance()
 
 void BitmapManager::LoadHwndData(State state)
 {
-	const char* mainMenuFilePath = "sprites/mainMenuHwnd.txt";
-	const char* gameFilePath = "sprites/gameHwnd.txt";
+	const char* mainMenuFilePath = "sprites/MainMenu/mainMenuHwnd.txt";
+	const char* gameFilePath = "sprites/Game/gameHwnd.txt";
 
 	ifstream readFile;
 	HwndInfo hwndInfo;
@@ -66,8 +66,8 @@ void BitmapManager::LoadHwndData(State state)
 
 void BitmapManager::LoadBitmapData(State state)
 {
-	const char* mainMenuFilePath = "sprites/mainMenuSprites.txt";
-	const char* gameFilePath = "sprites/gameSprites.txt";
+	const char* mainMenuFilePath = "sprites/MainMenu/mainMenuSprites.txt";
+	const char* gameFilePath = "sprites/Game/gameSprites.txt";
 
 	ifstream readFile;
 	string bitmapPath;

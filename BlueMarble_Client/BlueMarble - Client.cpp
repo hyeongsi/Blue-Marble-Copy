@@ -43,7 +43,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         mainSystem->Update();
     }
 
-
     return (int) msg.wParam;
 }
 
@@ -83,13 +82,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-   mainWindowHwnd = CreateWindowW(MAIN_WINDOW_CLASSNAME, L"M", WS_OVERLAPPEDWINDOW,
+   mainWindowHwnd = CreateWindowW(MAIN_WINDOW_CLASSNAME, L"Main", WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
-   gameWindowHwnd = CreateWindowW(GAME_WINDOW_CLASSNAME, L"G", WS_OVERLAPPEDWINDOW,
+   gameWindowHwnd = CreateWindowW(GAME_WINDOW_CLASSNAME, L"Game", WS_OVERLAPPEDWINDOW,
        CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
-   SetWindowText(mainWindowHwnd, "BlueMarble - Main"); // <- 이것 또한 앞 1글자만 인식
+   SetWindowText(mainWindowHwnd, _T("BlueMarble - Main")); // <- 이것 또한 앞 1글자만 인식
    // 왜 제목이 1글자밖에 인식을 못하는건지
    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
