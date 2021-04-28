@@ -2,16 +2,19 @@
 #include <WinSock2.h>
 #include <string>
 #include <List>
+#include <mutex>
 #pragma comment(lib, "ws2_32")
+
+using namespace std;
 
 constexpr const int PORT = 4567;
 constexpr const int PACKET_SIZE = 1024;
 
 enum ErrorCode
 {
-	WSAStartupError = 0,
-	BindError = 1,
-	ListenError = 2,
+	WSAStartupError = 100,
+	BindError = 101,
+	ListenError = 102,
 };
 
 class GameServer
@@ -24,7 +27,7 @@ private:
 	SOCKADDR_IN clientAddress = {};
 	SOCKADDR_IN serverAddress = {};
 
-	std::list<SOCKET> clientSocketList;
+	list<SOCKET> clientSocketList;
 	mutex clientSocketMutex;
 
 	GameServer();
@@ -36,7 +39,7 @@ private:
 	void StartListenThread(SOCKET clientSocket);
 	static UINT WINAPI ListenThread(void* arg);
 
-	std::string GetClientIp(SOCKADDR_IN clientAddress);
+	string GetClientIp(SOCKADDR_IN clientAddress);
 public:
 	static GameServer* GetInstance();
 	static void ReleaseInstance();

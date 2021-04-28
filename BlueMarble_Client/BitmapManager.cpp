@@ -37,7 +37,7 @@ void BitmapManager::LoadHwndData(State state)
 		readFile.open(mainMenuFilePath);
 		break;
 	case State::RANK_MENU:
-		break;
+		return;
 	case State::GAME:
 		readFile.open(gameFilePath);
 		break;
@@ -57,7 +57,17 @@ void BitmapManager::LoadHwndData(State state)
 			readFile >> hwndInfo.size.cx;
 			readFile >> hwndInfo.size.cy;
 
-			mainMenuHwnd.emplace_back(hwndInfo);
+			switch (state)
+			{
+			case State::MAIN_MENU:
+				mainMenuHwnd.emplace_back(hwndInfo);
+				break;
+			case State::RANK_MENU:
+				break;
+			case State::GAME:
+				gameHwnd.emplace_back(hwndInfo);
+				break;
+			}
 		}
 	}
 
@@ -79,7 +89,7 @@ void BitmapManager::LoadBitmapData(State state)
 		readFile.open(mainMenuFilePath);
 		break;
 	case State::RANK_MENU:
-		break;
+		return;
 	case State::GAME:
 		readFile.open(gameFilePath);
 		break;
@@ -96,7 +106,18 @@ void BitmapManager::LoadBitmapData(State state)
 			readFile >> bitmapInfo.point.y;
 
 			bitmapInfo.bitmap = (HBITMAP)LoadImageA(NULL, bitmapPath.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-			mainMenuBitmap.emplace_back(bitmapInfo);
+			
+			switch (state)
+			{
+			case State::MAIN_MENU:
+				mainMenuBitmap.emplace_back(bitmapInfo);
+				break;
+			case State::RANK_MENU:
+				return;
+			case State::GAME:
+				gameBitmap.emplace_back(bitmapInfo);
+				break;
+			}
 		}
 	}
 

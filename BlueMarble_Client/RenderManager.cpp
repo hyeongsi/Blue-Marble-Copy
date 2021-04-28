@@ -64,13 +64,13 @@ void RenderManager::RenderInitSetting()
     FillRect(memDC, &windowRect, (HBRUSH)GetStockObject(WHITE_BRUSH));      // 바탕 흰색으로 초기화
 }
 
-void RenderManager::DrawMainMenu()
+void RenderManager::DrawWindow(State state)
 {
-    vector<BitmapInfo>* mainMenuBitmap = BitmapManager::GetInstance()->GetBitmap(State::MAIN_MENU);
-    if (nullptr == mainMenuBitmap)
+    vector<BitmapInfo>* windowBitmap = BitmapManager::GetInstance()->GetBitmap(state);
+    if (nullptr == windowBitmap)
         return;
 
-    for (const auto&  bitmapIterator : *mainMenuBitmap)
+    for (const auto&  bitmapIterator : *windowBitmap)
     {
         DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
     }

@@ -7,24 +7,24 @@ GameWindow* GameWindow::instance = nullptr;
 GameWindow::GameWindow() {}
 GameWindow::~GameWindow() {}
 
-void GameWindow::InitMainMenu(HWND hWnd)
+void GameWindow::InitClass(HWND hWnd)
 {
-    instance->hWnd = hWnd;
-    instance->hInst = (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE);
-
     instance->renderManager = RenderManager::GetInstance();
-    instance->renderManager->Init(instance->hWnd);        // MainMenu <- -> Game Render
     instance->bitmapManager = BitmapManager::GetInstance();
 
-    ResizeWindow(instance->renderManager->GetClientSize()->cx, instance->renderManager->GetClientSize()->cy, POINT(300, 100));
+    ResizeWindow(instance->renderManager->GetClientSize()->cx, instance->renderManager->GetClientSize()->cy, POINT(300, 100), hWnd);
 
     instance->bitmapManager->LoadHwndData(State::GAME);
     instance->bitmapManager->LoadBitmapData(State::GAME);  // game bitmap loading
+}
 
+void GameWindow::ReInitGame(HWND hWnd)
+{
+    instance->renderManager->Init(hWnd);        // MainMenu <- -> Game Render
     MainSystem::GetInstance()->RegistUpdateCallbackFunction(GameUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
 }
 
-void GameWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint)
+void GameWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd)
 {
     RECT g_clientRect{ 0,0, width, height }; // 클라이언트 크기
     SIZE clientSize;
@@ -32,7 +32,7 @@ void GameWindow::ResizeWindow(const LONG width, const LONG height, const POINT p
     AdjustWindowRect(&g_clientRect, WS_OVERLAPPEDWINDOW, false);    // 메뉴창 크기 빼고 윈도우 크기 계산
     clientSize.cx = g_clientRect.right - g_clientRect.left;
     clientSize.cy = g_clientRect.bottom - g_clientRect.top;
-    MoveWindow(instance->hWnd, printPoint.x, printPoint.y, clientSize.cx, clientSize.cy, true);   // printPoint 지점에 clientSize 크기로 출력
+    MoveWindow(hWnd, printPoint.x, printPoint.y, clientSize.cx, clientSize.cy, true);   // printPoint 지점에 clientSize 크기로 출력
 }
 
 GameWindow* GameWindow::GetInstance()
@@ -56,18 +56,10 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
     switch (message)
     {
     case WM_CREATE:
-        GetInstance()->InitMainMenu(hWnd);
+        GetInstance()->InitClass(hWnd);
         break;
-    case WM_COMMAND:
-        /*switch (LOWORD(wParam))
-        {
-        case IDC_START:
-            StartGameMethod();
-            break;
-        case IDC_RANKING:
-            GetRankingDataMethod();
-            break;
-        }*/
+    case SW_SHOW:
+        GetInstance()->ReInitGame(hWnd);
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
@@ -81,8 +73,6 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 void GameWindow::GameUpdate()
 {
     instance->renderManager->RenderInitSetting();
-
-    // 그리기
-
+    instance->renderManager->DrawWindow(State::GAME);
     instance->renderManager->Render();
 }

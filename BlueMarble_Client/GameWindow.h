@@ -7,8 +7,6 @@ class GameWindow
 {
 private:
 	static GameWindow* instance;
-	HWND hWnd = nullptr;
-	HINSTANCE hInst = nullptr;
 
 	RenderManager* renderManager = nullptr;
 	BitmapManager* bitmapManager = nullptr;
@@ -16,8 +14,9 @@ private:
 	GameWindow();
 	~GameWindow();
 
-	void InitMainMenu(HWND hWnd);
-	void ResizeWindow(const LONG width, const LONG height, const POINT printPoint);
+	void InitClass(HWND hWnd);
+	void ReInitGame(HWND hWnd);
+	void ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd);
 public:
 	static GameWindow* GetInstance();
 	static void ReleaseInstance();

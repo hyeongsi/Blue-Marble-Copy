@@ -43,6 +43,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         mainSystem->Update();
     }
 
+    MainSystem::ReleaseInstance();
     return (int) msg.wParam;
 }
 
@@ -106,7 +107,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    }
 
    ShowWindow(mainWindowHwnd, nCmdShow);
-   ShowWindow(gameWindowHwnd, nCmdShow);
+   ShowWindow(gameWindowHwnd, SW_HIDE);
+
+   MainSystem::GetInstance()->SetWindowHwnd(State::MAIN_MENU, mainWindowHwnd);
+   MainSystem::GetInstance()->SetWindowHwnd(State::GAME, gameWindowHwnd);
 
    return TRUE;
 }

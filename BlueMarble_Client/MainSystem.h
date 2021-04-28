@@ -1,14 +1,8 @@
 ﻿#pragma once
 #include <Windows.h>
+#include "commonResource.h"
 
 typedef void(*CALLBACK_FUNC)(void);
-
-enum class State
-{
-	MAIN_MENU = 0,
-	RANK_MENU = 1,
-	GAME = 2,
-};
 
 constexpr const ULONGLONG FPS = 60;
 
@@ -17,6 +11,9 @@ class MainSystem
 private:
 	static MainSystem* instance;
 	CALLBACK_FUNC updateCBF = nullptr;
+
+	HWND mainWindowHwnd = nullptr;
+	HWND gameWindowHwnd = nullptr;
 
 	float dwElapsedTicks = 0; //루프 순회간 경과된 시간
 	ULONGLONG dwLastTicks = 0;	//이전 루프 순회가 끝난 시간
@@ -27,6 +24,9 @@ private:
 public:
 	static MainSystem* GetInstance();
 	static void ReleaseInstance();
+
+	void SetWindowHwnd(State state, HWND hwnd);
+	HWND GetWindowHwnd(State state);
 
 	void RegistUpdateCallbackFunction(CALLBACK_FUNC cbf);
 	void Update();

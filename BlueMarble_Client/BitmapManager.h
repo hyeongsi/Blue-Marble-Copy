@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <vector>
 #include <string>
+#include "commonResource.h"
 #include "MainSystem.h"
 
 using namespace std;

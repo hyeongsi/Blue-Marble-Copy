@@ -3,9 +3,6 @@
 #include <process.h>
 #include <signal.h>
 #include <WS2tcpip.h>	// inet_ntop()
-#include <mutex>
-
-using namespace std;
 
 GameServer* GameServer::instance = nullptr;
 
@@ -33,14 +30,14 @@ bool GameServer::InitServer()
 
 	if (-1 == bind(serverSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress)))
 	{
-		PrintErrorCode(WSAStartupError);
+		PrintErrorCode(BindError);
 		return false;
 	}
 	cout << "bind" << endl;
 
 	if (-1 == listen(serverSocket, SOMAXCONN))
 	{
-		PrintErrorCode(WSAStartupError);
+		PrintErrorCode(ListenError);
 		return false;
 	}
 	cout << "listen" << endl;

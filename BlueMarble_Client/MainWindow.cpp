@@ -1,9 +1,9 @@
 ﻿#include "MainWindow.h"
 #include "Resource.h"
 #include "MainSystem.h"
-#include "HttpTransfer.h"
 #include "RenderManager.h"
 #include "BitmapManager.h"
+#include "HttpTransfer.h"
 
 MainWindow* MainWindow::instance = nullptr;
 
@@ -12,25 +12,26 @@ MainWindow::~MainWindow() {}
 
 void MainWindow::InitMainMenu(HWND hWnd)
 {
-    instance->hWnd = hWnd;
-    instance->hInst = (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE);
-
     instance->renderManager = RenderManager::GetInstance();
-    //instance->renderManager->Init(instance->hWnd);  // MainMenu <- -> Game Render
     instance->bitmapManager = BitmapManager::GetInstance();
 
-    ResizeWindow(instance->renderManager->GetClientSize()->cx, instance->renderManager->GetClientSize()->cy, POINT(300,100));
+    ResizeWindow(instance->renderManager->GetClientSize()->cx, instance->renderManager->GetClientSize()->cy, POINT(300,100), hWnd);
 
     instance->bitmapManager->LoadHwndData(State::MAIN_MENU);
     instance->bitmapManager->LoadBitmapData(State::MAIN_MENU);  // main menu bitmap loading 
 
-    CreateButton();
-    ShowButton();
-
-    //MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
+    CreateButton(hWnd);
 }
 
-void MainWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint)
+void MainWindow::ReInitMainMenu(HWND hWnd)
+{
+    ShowButton();
+
+    instance->renderManager->Init(hWnd);  // MainMenu <- -> Game Render
+    MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
+}
+
+void MainWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd)
 {
     RECT g_clientRect{ 0,0, width, height }; // 클라이언트 크기
     SIZE clientSize;
@@ -38,10 +39,10 @@ void MainWindow::ResizeWindow(const LONG width, const LONG height, const POINT p
     AdjustWindowRect(&g_clientRect, WS_OVERLAPPEDWINDOW, false);    // 메뉴창 크기 빼고 윈도우 크기 계산
     clientSize.cx = g_clientRect.right - g_clientRect.left;
     clientSize.cy = g_clientRect.bottom - g_clientRect.top;
-    MoveWindow(instance->hWnd, printPoint.x, printPoint.y, clientSize.cx, clientSize.cy, true);   // printPoint 지점에 clientSize 크기로 출력
+    MoveWindow(hWnd, printPoint.x, printPoint.y, clientSize.cx, clientSize.cy, true);   // printPoint 지점에 clientSize 크기로 출력
 }
 
-void MainWindow::CreateButton()
+void MainWindow::CreateButton(HWND hWnd)
 {
     vector<HwndInfo>* hwndInfo = instance->bitmapManager->GetHwnd(State::MAIN_MENU);
 
@@ -53,7 +54,7 @@ void MainWindow::CreateButton()
         instance->hwndWindow.emplace_back(CreateWindow(hwndIterator.type.c_str(), hwndIterator.text.c_str(), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
             hwndIterator.point.x, hwndIterator.point.y,
             hwndIterator.size.cx, hwndIterator.size.cy,
-            instance->hWnd, (HMENU)hwndIterator.id, instance->hInst, NULL));
+            hWnd, (HMENU)hwndIterator.id, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL));
     }
 }
 
@@ -80,7 +81,11 @@ void MainWindow::StartGameMethod()
 
 void MainWindow::StartGame()
 {
-    
+    if (SocketTransfer::GetInstance()->ConnectServer())
+    {
+        ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::GAME), SW_SHOW);
+        ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU), SW_HIDE);
+    }
 }
 
 void MainWindow::GetRankingDataMethod()
@@ -90,6 +95,7 @@ void MainWindow::GetRankingDataMethod()
 
 void MainWindow::GetRankingData()
 {
+    SocketTransfer::GetInstance()->PrintErrorCode(0);
     // 랭킹창으로 이동 후 랭킹을 보여줄 수 있도록
     // HttpTransfer::GetInstance()->GetRanking();
 }
@@ -117,6 +123,9 @@ LRESULT MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
     case WM_CREATE:
         GetInstance()->InitMainMenu(hWnd);
         break;
+    case SW_SHOW:
+        GetInstance()->ReInitMainMenu(hWnd);
+        break;
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
@@ -140,7 +149,7 @@ LRESULT MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 void MainWindow::MainMenuUpdate()
 {
     instance->renderManager->RenderInitSetting();
-    instance->renderManager->DrawMainMenu();
+    instance->renderManager->DrawWindow(State::MAIN_MENU);
 
     for (int i = 0; i < (int)instance->hwndWindow.size(); i++)
     {

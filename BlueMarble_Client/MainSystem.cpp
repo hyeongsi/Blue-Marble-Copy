@@ -23,6 +23,38 @@ void MainSystem::ReleaseInstance()
 	instance = nullptr;
 }
 
+void MainSystem::SetWindowHwnd(State state, HWND hwnd)
+{
+	switch (state)
+	{
+	case State::MAIN_MENU:
+		mainWindowHwnd = hwnd;
+		break;
+	case State::RANK_MENU:
+		break;
+	case State::GAME:
+		gameWindowHwnd = hwnd;
+		break;
+	default:
+		break;
+	}
+}
+
+HWND MainSystem::GetWindowHwnd(const State state)
+{
+	switch (state)
+	{
+	case State::MAIN_MENU:
+		return mainWindowHwnd;
+	case State::RANK_MENU:
+		return nullptr;
+	case State::GAME:
+		return gameWindowHwnd;
+	default:
+		return nullptr;;
+	}
+}
+
 void MainSystem::RegistUpdateCallbackFunction(CALLBACK_FUNC cbf)
 {
 	updateCBF = cbf;
