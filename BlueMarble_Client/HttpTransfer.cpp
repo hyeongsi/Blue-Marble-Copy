@@ -34,20 +34,21 @@ void HttpTransfer::ReleaseInstance()
 string HttpTransfer::GetRanking()
 {
 	curl_global_init(CURL_GLOBAL_ALL);
-	curl = curl_easy_init();
+	instance->curl = curl_easy_init();
 
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-	curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:3000/ranking");	// ip, port 설정
+	string readBuffer;
+	curl_easy_setopt(instance->curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+	curl_easy_setopt(instance->curl, CURLOPT_WRITEDATA, &readBuffer);
+	curl_easy_setopt(instance->curl, CURLOPT_URL, "http://localhost:3000/ranking");	// ip, port 설정
 
-	rc = curl_easy_perform(curl);	// 데이터 긇어오는 역할
-	if (CURLE_OK != rc)
+	instance->rc = curl_easy_perform(instance->curl);	// 데이터 가져오는 역할
+	if (CURLE_OK != instance->rc)
 	{
 		readBuffer = "";
 	}
 
-	if (curl)
-		curl_easy_cleanup(curl);
+	if (instance->curl)
+		curl_easy_cleanup(instance->curl);
 
 	curl_global_cleanup();
 

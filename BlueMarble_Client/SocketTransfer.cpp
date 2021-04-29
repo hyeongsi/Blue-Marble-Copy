@@ -1,6 +1,7 @@
 #include "SocketTransfer.h"
 #include <string>
 #include <WS2tcpip.h>	// inet_pton()
+#include "MainSystem.h"
 
 using namespace std;
 
@@ -11,7 +12,8 @@ SocketTransfer::~SocketTransfer() {}
 
 void SocketTransfer::PrintErrorCode(const int errorCode)
 {
-	//MessageBox(MainWindow::GetInstance()->hWnd, "error code : ", "error 발생", MB_OK);
+	MessageBox(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU), 
+		("error code : " + to_string(errorCode)).c_str(), "error 발생", MB_OK);
 }
 
 SocketTransfer* SocketTransfer::GetInstance()

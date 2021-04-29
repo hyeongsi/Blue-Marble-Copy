@@ -1,6 +1,5 @@
 #pragma once
 #include <WinSock2.h>
-#include "MainWindow.h"
 
 #pragma comment(lib, "ws2_32")
 

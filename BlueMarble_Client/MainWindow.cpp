@@ -95,9 +95,17 @@ void MainWindow::GetRankingDataMethod()
 
 void MainWindow::GetRankingData()
 {
-    SocketTransfer::GetInstance()->PrintErrorCode(0);
-    // 랭킹창으로 이동 후 랭킹을 보여줄 수 있도록
-    // HttpTransfer::GetInstance()->GetRanking();
+    string rankingData = HttpTransfer::GetInstance()->GetRanking();
+    if (rankingData == "")
+    {
+        SocketTransfer::GetInstance()->PrintErrorCode(0);
+    }
+    else
+    {
+        MessageBox(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU),
+            rankingData.c_str(), "Ranking", MB_OK);
+        rankingData = "";
+    }
 }
 
 MainWindow* MainWindow::GetInstance()
