@@ -11,7 +11,6 @@ private:
 	CURL* curl = nullptr;
 	CURLcode rc;
 	
-
 	HttpTransfer();
 	~HttpTransfer();
 

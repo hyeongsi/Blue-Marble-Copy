@@ -36,8 +36,8 @@ private:
 	void PrintErrorCode(int errorCode);
 	bool InitServer();
 	void AcceptMethod();
-	void StartListenThread(SOCKET clientSocket);
-	static UINT WINAPI ListenThread(void* arg);
+	void StartRecvDataThread(SOCKET clientSocket);
+	static UINT WINAPI RecvDataThread(void* arg);
 
 	string GetClientIp(SOCKADDR_IN clientAddress);
 public:

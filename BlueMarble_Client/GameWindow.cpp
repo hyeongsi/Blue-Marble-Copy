@@ -22,6 +22,7 @@ void GameWindow::ReInitGame(HWND hWnd)
 {
     instance->renderManager->Init(hWnd);        // MainMenu <- -> Game Render
     MainSystem::GetInstance()->RegistUpdateCallbackFunction(GameUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
+    SocketTransfer::GetInstance()->StartRecvDataThread();
 }
 
 void GameWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd)
@@ -58,7 +59,7 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
     case WM_CREATE:
         GetInstance()->InitClass(hWnd);
         break;
-    case SW_SHOW:
+    case WM_SHOWWINDOW:
         GetInstance()->ReInitGame(hWnd);
         break;
     case WM_DESTROY:

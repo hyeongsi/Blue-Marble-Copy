@@ -58,11 +58,11 @@ void GameServer::AcceptMethod()
 		cout << "Connect Ip : " << GetClientIp(clientAddress) << endl;
 		cout << "Working AcceptThread" << endl << endl;;
 
-		_beginthreadex(NULL, 0, ListenThread, &clientSocket, 0, NULL);	// recv thread 실행
+		_beginthreadex(NULL, 0, RecvDataThread, &clientSocket, 0, NULL);	// recv thread 실행
 	}
 }
 
-void GameServer::StartListenThread(SOCKET clientSocket)
+void GameServer::StartRecvDataThread(SOCKET clientSocket)
 {
 	cout << "start ListenThread" << endl;
 
@@ -82,9 +82,9 @@ void GameServer::StartListenThread(SOCKET clientSocket)
 	clientSocketMutex.unlock();
 }
 
-UINT WINAPI GameServer::ListenThread(void* arg)
+UINT WINAPI GameServer::RecvDataThread(void* arg)
 {
-	instance->StartListenThread(*(SOCKET*)arg);
+	instance->StartRecvDataThread(*(SOCKET*)arg);
 	return 0;
 }
 

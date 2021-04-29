@@ -1,14 +1,33 @@
 #include "SocketTransfer.h"
 #include <string>
 #include <WS2tcpip.h>	// inet_pton()
+#include <process.h>
 #include "MainSystem.h"
-
-using namespace std;
 
 SocketTransfer* SocketTransfer::instance = nullptr;
 
 SocketTransfer::SocketTransfer() {}
 SocketTransfer::~SocketTransfer() {}
+
+void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
+{
+	while (true)
+	{
+		recvThreadMutex.lock();	// thread Å»Ãâ ·ÎÁ÷
+		if (nullptr != recvThreadHandle)
+		{
+			recvThreadMutex.unlock();
+			break;
+		}
+		recvThreadMutex.unlock();
+	}
+}
+
+UINT WINAPI SocketTransfer::RecvDataThread(void* arg)
+{
+	instance->RecvDataMethod(GetInstance()->clientSocket);
+	return 0;
+}
 
 void SocketTransfer::PrintErrorCode(const int errorCode)
 {
@@ -54,4 +73,21 @@ bool SocketTransfer::ConnectServer()
 	}
 
 	return true;
+}
+
+void SocketTransfer::StartRecvDataThread()
+{
+	if (nullptr != recvThreadHandle)
+	{
+		TerminateRecvDataThread();
+	}
+
+	recvThreadHandle = (HANDLE)_beginthreadex(NULL, 0, GetInstance()->RecvDataThread, nullptr, 0, NULL);   // recv thread start
+}
+
+void SocketTransfer::TerminateRecvDataThread()
+{
+	recvThreadMutex.lock();
+	recvThreadHandle = nullptr;
+	recvThreadMutex.unlock();
 }

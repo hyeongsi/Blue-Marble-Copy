@@ -1,5 +1,5 @@
 #pragma once
-#include <Windows.h>
+#include "SocketTransfer.h"
 
 class RenderManager;
 class BitmapManager;
@@ -17,6 +17,7 @@ private:
 	void InitClass(HWND hWnd);
 	void ReInitGame(HWND hWnd);
 	void ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd);
+
 public:
 	static GameWindow* GetInstance();
 	static void ReleaseInstance();

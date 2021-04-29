@@ -1,5 +1,6 @@
 ﻿#pragma warning(disable: 26812)	// 열거형 찾을 수 없습니다. - CURLcode 에서 계속 뜸 - 외부라이브러리라 바꾸기 꺼림직함
 #include "HttpTransfer.h"
+#include <process.h>
 
 HttpTransfer* HttpTransfer::instance = nullptr;
 

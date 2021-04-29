@@ -23,29 +23,30 @@ var app = http.createServer(function(request,response){
         connection.connect();
         connection.query('SELECT * FROM ranking', function(err, rows, fields)
         {
-        if(err)
-        {
-            console.log(err);
-        }
-        else
-        {
-            for (var i = 0; i < rows.length; i++) 
+            if(err)
             {
-                console.log(rows[i].name + " : " + rows[i].score);
-
-                if(i == rows.length-1)
-                {
-                    result+=rows[i].name + " : " + rows[i].score;
-                }
-                else
-                {
-                    result+=rows[i].name + " : " + rows[i].score + "\n";
-                }
+                console.log(err);
+                connection.end();
             }
-            response.writeHead(200);
-            response.end(result);
-            connection.end();
-        }
+            else
+            {
+                for (var i = 0; i < rows.length; i++) 
+                {
+                    console.log(rows[i].name + " : " + rows[i].score);
+
+                    if(i == rows.length-1)
+                    {
+                        result+=rows[i].name + " : " + rows[i].score;
+                    }
+                    else
+                    {
+                        result+=rows[i].name + " : " + rows[i].score + "\n";
+                    }
+                }
+                response.writeHead(200);
+                response.end(result);
+                connection.end();
+            }
         });
     }
     else if(pathname == '/addRank' && request.method == 'POST')
@@ -67,6 +68,10 @@ var app = http.createServer(function(request,response){
 
       response.writeHead(200);
       response.end(result);
+    }
+    else
+    {
+        response.end("");
     }
 });
 app.listen(3000);
