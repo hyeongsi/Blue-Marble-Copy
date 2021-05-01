@@ -6,3 +6,5 @@ enum class State
 	RANK_MENU = 1,
 	GAME = 2,
 };
+
+constexpr const int PACKET_SIZE = 1024;

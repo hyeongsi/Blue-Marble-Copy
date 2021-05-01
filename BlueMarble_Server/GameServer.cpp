@@ -67,6 +67,7 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 	cout << "start ListenThread" << endl;
 
 	char cBuffer[PACKET_SIZE] = {};
+	customPacket packet;
 
 	clientSocketMutex.lock();
 	clientSocketList.emplace_back(clientSocket);
@@ -74,12 +75,24 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 
 	while ((recv(clientSocket, cBuffer, PACKET_SIZE, 0)) != -1)
 	{
+		packet = *(customPacket*)cBuffer;
 
+		switch (packet.header)	// 나중에 enum 값으로 변경하기
+		{
+		case 0:
+			break;
+		case 1:
+			break;
+		default:
+			break;
+		}
 	}
 
 	clientSocketMutex.lock();
 	clientSocketList.remove(clientSocket);
 	clientSocketMutex.unlock();
+
+	cout << "lost connect : " << GetClientIp(clientAddress) << endl;
 }
 
 UINT WINAPI GameServer::RecvDataThread(void* arg)
