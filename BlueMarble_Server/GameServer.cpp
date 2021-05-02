@@ -3,6 +3,8 @@
 #include <process.h>
 #include <signal.h>
 #include <WS2tcpip.h>	// inet_ntop()
+#include "RecvDataProcessor.h"
+#include "MapManager.h"
 
 GameServer* GameServer::instance = nullptr;
 
@@ -68,6 +70,7 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 
 	char cBuffer[PACKET_SIZE] = {};
 	customPacket packet;
+	RecvDataProcessor recvDataProcessor;
 
 	clientSocketMutex.lock();
 	clientSocketList.emplace_back(clientSocket);
@@ -79,9 +82,8 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 
 		switch (packet.header)	// 나중에 enum 값으로 변경하기
 		{
-		case 0:
-			break;
-		case 1:
+		case GET_MAPDATA:
+			//recvDataProcessor.
 			break;
 		default:
 			break;
@@ -126,11 +128,13 @@ void GameServer::ReleaseInstance()
 void GameServer::StartServer()
 {
 	GetInstance();
+	MapManager::GetInstance()->LoadMapData();
 
 	if (!InitServer())
 		return;
 
 	AcceptMethod();
 
+	MapManager::ReleaseInstance();
 	ReleaseInstance();
 }

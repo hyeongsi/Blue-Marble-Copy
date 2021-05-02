@@ -3,6 +3,7 @@
 #include <WS2tcpip.h>	// inet_pton()
 #include <process.h>
 #include "MainSystem.h"
+#include "GameManager.h"
 
 SocketTransfer* SocketTransfer::instance = nullptr;
 
@@ -18,16 +19,15 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 	{
 		if ((recv(clientSocket, cBuffer, PACKET_SIZE, 0)) == -1)
 		{
-			PrintErrorCode(RecvError);
+			PrintErrorCode(RECV_ERROR);
 			break;
 		}
 		
 		packet = *(customPacket*)cBuffer;
 		switch (packet.header)	// 나중에 enum 값으로 변경하기
 		{
-		case 0:
-			break;
-		case 1:
+		case GET_MAPDATA:
+
 			break;
 		default:
 			break;
@@ -61,7 +61,7 @@ SocketTransfer* SocketTransfer::GetInstance()
 
 		if (0 != WSAStartup(MAKEWORD(2, 2), &instance->wsaData))
 		{
-			instance->PrintErrorCode(WSAStartupError);
+			instance->PrintErrorCode(WSASTARTUP_ERROR);
 		}
 	}
 
@@ -86,7 +86,7 @@ bool SocketTransfer::ConnectServer()
 	int connectResult = connect(clientSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress));
 	if (connectResult != 0)
 	{
-		PrintErrorCode(ConnectError);
+		PrintErrorCode(CONNECT_ERROR);
 		return false;
 	}
 
@@ -116,6 +116,6 @@ void SocketTransfer::SendMessageToGameServer(int header, int dataSize, char* dat
 
 	if (send(clientSocket, (char*)&packet, PACKET_SIZE, 0) == -1)
 	{
-		PrintErrorCode(SendError);
+		PrintErrorCode(SEND_ERROR);
 	}
 }

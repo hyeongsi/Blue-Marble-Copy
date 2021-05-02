@@ -1,31 +1,9 @@
 ﻿#pragma once
-#include <WinSock2.h>
+
 #include <string>
 #include <List>
 #include <mutex>
-#pragma comment(lib, "ws2_32")
-
-using namespace std;
-
-constexpr const int PORT = 4567;
-constexpr const int PACKET_SIZE = 1024;
-
-typedef struct customPackets
-{
-	int header = -1;
-	int dataSize = 0;
-	char* data = nullptr;
-	customPackets() {};
-	customPackets(int _header, int _dataSize, char* _data) :
-		header(_header), dataSize(_dataSize), data(_data) {};
-} customPacket;
-
-enum ErrorCode
-{
-	WSAStartupError = 100,
-	BindError = 101,
-	ListenError = 102,
-};
+#include "TransferResource.h"
 
 class GameServer
 {
@@ -55,5 +33,6 @@ public:
 	static void ReleaseInstance();
 
 	void StartServer();
+
 };
 

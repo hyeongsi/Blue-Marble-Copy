@@ -20,10 +20,15 @@ typedef struct customPackets
 
 enum ErrorCode
 {
-	WSAStartupError = 200,
-	ConnectError = 201,
-	RecvError = 202,
-	SendError = 203,
+	WSASTARTUP_ERROR = 200,
+	CONNECT_ERROR = 201,
+	RECV_ERROR = 202,
+	SEND_ERROR = 203,
+};
+
+enum MessageCode
+{
+	GET_MAPDATA = 1,
 };
 
 class SocketTransfer
