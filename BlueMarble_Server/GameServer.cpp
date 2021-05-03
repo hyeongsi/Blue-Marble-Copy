@@ -3,7 +3,7 @@
 #include <process.h>
 #include <signal.h>
 #include <WS2tcpip.h>	// inet_ntop()
-#include "RecvDataProcessor.h"
+#include "GameManager.h"
 #include "MapManager.h"
 
 GameServer* GameServer::instance = nullptr;
@@ -20,7 +20,7 @@ bool GameServer::InitServer()
 {
 	if (0 != WSAStartup(MAKEWORD(2, 2), &wsaData))
 	{
-		PrintErrorCode(WSAStartupError);
+		PrintErrorCode(WSASTARTUP_ERROR);
 		return false;
 	}
 	cout << "WSAStartup" << endl;
@@ -32,14 +32,14 @@ bool GameServer::InitServer()
 
 	if (-1 == bind(serverSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress)))
 	{
-		PrintErrorCode(BindError);
+		PrintErrorCode(BIND_ERROR);
 		return false;
 	}
 	cout << "bind" << endl;
 
 	if (-1 == listen(serverSocket, SOMAXCONN))
 	{
-		PrintErrorCode(ListenError);
+		PrintErrorCode(LISTEN_ERROR);
 		return false;
 	}
 	cout << "listen" << endl;
@@ -70,7 +70,6 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 
 	char cBuffer[PACKET_SIZE] = {};
 	customPacket packet;
-	RecvDataProcessor recvDataProcessor;
 
 	clientSocketMutex.lock();
 	clientSocketList.emplace_back(clientSocket);
@@ -80,10 +79,10 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 	{
 		packet = *(customPacket*)cBuffer;
 
-		switch (packet.header)	// 나중에 enum 값으로 변경하기
+		switch (packet.header)	
 		{
 		case GET_MAPDATA:
-			//recvDataProcessor.
+			GetMapDataMethod(clientSocket, packet);
 			break;
 		default:
 			break;
@@ -137,4 +136,38 @@ void GameServer::StartServer()
 
 	MapManager::ReleaseInstance();
 	ReleaseInstance();
+}
+
+void GameServer::GetMapDataMethod(SOCKET& socekt, customPacket& packet)
+{
+	cout << "recv " << packet.header << endl;
+
+	customPacket sendPacket = packet;
+	boardData* board = MapManager::GetInstance()->GetBoardData(0);	// 나중에 enum 값으로 변경하기
+
+	if (nullptr != board)
+	{
+		PacektSendMethod(socekt, sendPacket, (char*)board->mapSize, sizeof(board->mapSize));
+		PacektSendMethod(socekt, sendPacket, (char*)board->code, sizeof(int)* board->mapSize* DIRECTION);
+		PacektSendMethod(socekt, sendPacket, (char*)board->name, sizeof(char)* NAME_SIZE* board->mapSize* DIRECTION);
+	}
+	else
+	{
+		PrintErrorCode(NOT_FOUND_BOARDDATA_ERROR);
+	}
+}
+
+void GameServer::PacektSendMethod(SOCKET& socekt, customPacket& packet, char* data, int size)
+{
+	memcpy(&packet.data, &data, size);
+	packet.dataSize = size;
+
+	if (send(socekt, (char*)&packet, PACKET_SIZE, 0) == -1)
+	{
+		PrintErrorCode(SEND_ERROR);
+	}
+	else
+	{
+		cout << "send " << packet.header << endl;
+	}
 }

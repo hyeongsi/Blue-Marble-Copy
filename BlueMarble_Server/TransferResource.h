@@ -5,7 +5,7 @@
 using namespace std;
 
 constexpr const int PORT = 4567;
-constexpr const int PACKET_SIZE = 1024;
+constexpr const int PACKET_SIZE = 2048;
 
 typedef struct customPackets
 {
@@ -19,9 +19,11 @@ typedef struct customPackets
 
 enum ErrorCode
 {
-	WSAStartupError = 100,
-	BindError = 101,
-	ListenError = 102,
+	WSASTARTUP_ERROR = 100,
+	BIND_ERROR = 101,
+	LISTEN_ERROR = 102,
+	NOT_FOUND_BOARDDATA_ERROR = 103,
+	SEND_ERROR = 104,
 };
 
 enum MessageCode

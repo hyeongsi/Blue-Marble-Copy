@@ -12,22 +12,21 @@ SocketTransfer::~SocketTransfer() {}
 
 void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 {
-	char cBuffer[PACKET_SIZE] = {};
-	customPacket packet;
-
 	while (nullptr != recvThreadHandle)
 	{
+		customPacket* packet;
+		char cBuffer[PACKET_SIZE] = {};
+
 		if ((recv(clientSocket, cBuffer, PACKET_SIZE, 0)) == -1)
 		{
-			PrintErrorCode(RECV_ERROR);
+			PrintErrorCode(State::GAME, RECV_ERROR);
 			break;
 		}
-		
-		packet = *(customPacket*)cBuffer;
-		switch (packet.header)	// 나중에 enum 값으로 변경하기
+		packet = (customPacket*)cBuffer;
+		switch (packet->header)	// 나중에 enum 값으로 변경하기
 		{
 		case GET_MAPDATA:
-
+			GetMapDataMethod(packet);
 			break;
 		default:
 			break;
@@ -47,10 +46,62 @@ UINT WINAPI SocketTransfer::RecvDataThread(void* arg)
 	return 0;
 }
 
-void SocketTransfer::PrintErrorCode(const int errorCode)
+void SocketTransfer::GetMapDataMethod(customPacket* packet)
 {
-	MessageBox(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU), 
-		("error code : " + to_string(errorCode)).c_str(), "error 발생", MB_OK);
+	const int RECV_COUNT = 2;
+
+	boardData board;
+	board.mapSize = (int)packet->data;
+
+	board.code = new int[board.mapSize * DIRECTION];
+	board.name = new char* [board.mapSize * DIRECTION];
+
+	for (int i = 0; i < board.mapSize * DIRECTION; i++)
+	{
+		board.name[i] = new char[NAME_SIZE];
+	}
+
+	char cBuffer[PACKET_SIZE] = {};
+
+	for (int i = 0; i < RECV_COUNT; i++)
+	{
+		if ((recv(clientSocket, cBuffer, PACKET_SIZE, 0)) == -1)
+		{
+			PrintErrorCode(State::GAME, RECV_ERROR);
+			return;
+		}
+		packet = (customPacket*)cBuffer;
+
+		if (0 == i)
+		{
+			memcpy(&board.code, &packet->data, packet->dataSize);
+		}
+		else if (1 == i)
+		{
+			memcpy(&board.name, &packet->data, packet->dataSize);
+		}
+	}
+
+	GameManager::GetInstance()->SetBoardData(board);
+}
+
+void SocketTransfer::PrintErrorCode(State state, const int errorCode)
+{
+	switch (state)
+	{
+	case State::MAIN_MENU:
+	case State::RANK_MENU:
+		MessageBox(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU),
+			("error code : " + to_string(errorCode)).c_str(), "error 발생", MB_OK);
+		break;
+	case State::GAME:
+		MessageBox(MainSystem::GetInstance()->GetWindowHwnd(State::GAME),
+			("error code : " + to_string(errorCode)).c_str(), "error 발생", MB_OK);
+		break;
+	default:
+		break;
+	}
+	
 }
 
 SocketTransfer* SocketTransfer::GetInstance()
@@ -61,7 +112,7 @@ SocketTransfer* SocketTransfer::GetInstance()
 
 		if (0 != WSAStartup(MAKEWORD(2, 2), &instance->wsaData))
 		{
-			instance->PrintErrorCode(WSASTARTUP_ERROR);
+			instance->PrintErrorCode(State::GAME, WSASTARTUP_ERROR);
 		}
 	}
 
@@ -86,7 +137,7 @@ bool SocketTransfer::ConnectServer()
 	int connectResult = connect(clientSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress));
 	if (connectResult != 0)
 	{
-		PrintErrorCode(CONNECT_ERROR);
+		PrintErrorCode(State::GAME, CONNECT_ERROR);
 		return false;
 	}
 
@@ -116,6 +167,6 @@ void SocketTransfer::SendMessageToGameServer(int header, int dataSize, char* dat
 
 	if (send(clientSocket, (char*)&packet, PACKET_SIZE, 0) == -1)
 	{
-		PrintErrorCode(SEND_ERROR);
+		PrintErrorCode(State::GAME, SEND_ERROR);
 	}
 }

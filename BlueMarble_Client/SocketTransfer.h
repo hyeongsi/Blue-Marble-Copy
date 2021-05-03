@@ -1,6 +1,7 @@
 #pragma once
 #include <WinSock2.h>
 #include <mutex>
+#include "commonResource.h"
 
 #pragma comment(lib, "ws2_32")
 using namespace std;
@@ -48,8 +49,10 @@ private:
 
 	void RecvDataMethod(SOCKET clientSocket);
 	static UINT WINAPI RecvDataThread(void* arg);
+
+	void GetMapDataMethod(customPacket* packet);
 public:
-	void PrintErrorCode(const int errorCode);
+	void PrintErrorCode(State state, const int errorCode);
 
 	static SocketTransfer* GetInstance();
 	static void ReleaseInstance();

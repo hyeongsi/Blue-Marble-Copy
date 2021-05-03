@@ -98,7 +98,7 @@ void MainWindow::GetRankingData()
     string rankingData = HttpTransfer::GetInstance()->GetRanking();
     if (rankingData == "")
     {
-        SocketTransfer::GetInstance()->PrintErrorCode(0);
+        SocketTransfer::GetInstance()->PrintErrorCode(State::RANK_MENU, 0);
     }
     else
     {

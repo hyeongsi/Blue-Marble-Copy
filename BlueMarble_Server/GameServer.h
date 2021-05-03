@@ -33,6 +33,7 @@ public:
 	static void ReleaseInstance();
 
 	void StartServer();
-
+	void GetMapDataMethod(SOCKET& socekt, customPacket& packet);
+	void PacektSendMethod(SOCKET& socekt, customPacket& packet, char* data, int size);
 };
 

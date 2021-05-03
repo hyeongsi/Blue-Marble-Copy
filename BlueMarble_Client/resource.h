@@ -12,7 +12,6 @@
 #define IDI_SMALL                       108
 #define IDC_BLUEMARBLECLIENT            109
 #define IDR_MAINFRAME                   128
-#define WM_ENABLE                       1021
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
