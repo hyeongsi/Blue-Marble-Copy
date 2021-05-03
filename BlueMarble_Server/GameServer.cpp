@@ -147,9 +147,9 @@ void GameServer::GetMapDataMethod(SOCKET& socekt, customPacket& packet)
 
 	if (nullptr != board)
 	{
-		PacektSendMethod(socekt, sendPacket, (char*)board->mapSize, sizeof(board->mapSize));
-		PacektSendMethod(socekt, sendPacket, (char*)board->code, sizeof(int)* board->mapSize* DIRECTION);
-		PacektSendMethod(socekt, sendPacket, (char*)board->name, sizeof(char)* NAME_SIZE* board->mapSize* DIRECTION);
+		//PacektSendMethod(socekt, sendPacket, &board->mapSize, sizeof(board->mapSize));
+		PacektSendMethod(socekt, sendPacket, &board->code, sizeof(int)* board->mapSize* DIRECTION);
+		//PacektSendMethod(socekt, sendPacket, board->name, sizeof(char)* NAME_SIZE* board->mapSize* DIRECTION);
 	}
 	else
 	{
@@ -157,12 +157,12 @@ void GameServer::GetMapDataMethod(SOCKET& socekt, customPacket& packet)
 	}
 }
 
-void GameServer::PacektSendMethod(SOCKET& socekt, customPacket& packet, char* data, int size)
+void GameServer::PacektSendMethod(SOCKET& socekt, customPacket& packet, void* data, int size)
 {
-	memcpy(&packet.data, &data, size);
+	memcpy(&packet.data, data, size);
 	packet.dataSize = size;
 
-	if (send(socekt, (char*)&packet, PACKET_SIZE, 0) == -1)
+	if (send(socekt, (char*)(&packet), PACKET_SIZE, 0) == -1)
 	{
 		PrintErrorCode(SEND_ERROR);
 	}

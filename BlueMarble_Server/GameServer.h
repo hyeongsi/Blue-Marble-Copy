@@ -34,6 +34,6 @@ public:
 
 	void StartServer();
 	void GetMapDataMethod(SOCKET& socekt, customPacket& packet);
-	void PacektSendMethod(SOCKET& socekt, customPacket& packet, char* data, int size);
+	void PacektSendMethod(SOCKET& socekt, customPacket& packet, void* data, int size);
 };
 

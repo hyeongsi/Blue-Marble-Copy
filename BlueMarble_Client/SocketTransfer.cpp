@@ -14,7 +14,7 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 {
 	while (nullptr != recvThreadHandle)
 	{
-		customPacket* packet;
+		customPacket packet;
 		char cBuffer[PACKET_SIZE] = {};
 
 		if ((recv(clientSocket, cBuffer, PACKET_SIZE, 0)) == -1)
@@ -22,11 +22,12 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			PrintErrorCode(State::GAME, RECV_ERROR);
 			break;
 		}
-		packet = (customPacket*)cBuffer;
-		switch (packet->header)	// 나중에 enum 값으로 변경하기
+		memcpy(&packet, cBuffer, sizeof(customPacket));
+
+		switch (packet.header)	// 나중에 enum 값으로 변경하기
 		{
 		case GET_MAPDATA:
-			GetMapDataMethod(packet);
+			GetMapDataMethod(&packet);
 			break;
 		default:
 			break;
@@ -48,7 +49,17 @@ UINT WINAPI SocketTransfer::RecvDataThread(void* arg)
 
 void SocketTransfer::GetMapDataMethod(customPacket* packet)
 {
-	const int RECV_COUNT = 2;
+	/*boardData board;
+	board.code = new int[8 * DIRECTION];
+
+	memcpy(&board.code, packet->data, 8 * DIRECTION);
+
+	for (int i = 0; i < 8 * DIRECTION; i++)
+	{
+		board.code[i];
+	}*/
+
+	/*const int RECV_COUNT = 2;
 
 	boardData board;
 	board.mapSize = (int)packet->data;
@@ -74,15 +85,15 @@ void SocketTransfer::GetMapDataMethod(customPacket* packet)
 
 		if (0 == i)
 		{
-			memcpy(&board.code, &packet->data, packet->dataSize);
+			memcpy(&board.code, packet->data, packet->dataSize);
 		}
 		else if (1 == i)
 		{
-			memcpy(&board.name, &packet->data, packet->dataSize);
+			memcpy(&board.name, packet->data, packet->dataSize);
 		}
 	}
 
-	GameManager::GetInstance()->SetBoardData(board);
+	GameManager::GetInstance()->SetBoardData(board);*/
 }
 
 void SocketTransfer::PrintErrorCode(State state, const int errorCode)
