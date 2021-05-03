@@ -1,0 +1,7 @@
+﻿  GameManager.cpp
+  GameServer.cpp
+C:\Users\parks\Desktop\BlueMarble_Server\GameServer.cpp(150,61): warning C4312: '형식 캐스트': 'int'에서 더 큰 'char *'(으)로의 변환입니다.
+  main.cpp
+  MapManager.cpp
+  코드를 생성하고 있습니다...
+  BlueMarble_Server.vcxproj -> C:\Users\parks\Desktop\BlueMarble_Server\x64\Debug\BlueMarble_Server.exe

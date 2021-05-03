@@ -1,0 +1,2 @@
+C:\Users\parks\Desktop\BlueMarble_Server\x64\Debug\BlueMarble_Server.exe
+C:\Users\parks\Desktop\BlueMarble_Server\x64\Debug\BlueMarble_Server.pdb
