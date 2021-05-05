@@ -5,17 +5,7 @@
 using namespace std;
 
 constexpr const int PORT = 4567;
-constexpr const int PACKET_SIZE = 2048;
-
-typedef struct customPackets
-{
-	int header = -1;
-	int dataSize = 0;
-	char* data = nullptr;
-	customPackets() {};
-	customPackets(int _header, int _dataSize, char* _data) :
-		header(_header), dataSize(_dataSize), data(_data) {};
-} customPacket;
+constexpr const int MAX_PACKET_SIZE = 1048;
 
 enum ErrorCode
 {

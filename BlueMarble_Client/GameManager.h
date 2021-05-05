@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -9,8 +10,8 @@ constexpr const int NAME_SIZE = 50;
 typedef struct BoardData
 {
 	int mapSize = 0;
-	int* code = nullptr;
-	char** name = nullptr;
+	vector<int> code;
+	vector<string> name;
 } boardData;
 
 class GameManager
@@ -27,6 +28,6 @@ public:
 	static void ReleaseInstance();
 
 	void SetBoardData(boardData board);
-	boardData* GetBoardData();
+	boardData GetBoardData();
 };
 

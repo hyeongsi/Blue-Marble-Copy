@@ -9,16 +9,6 @@ using namespace std;
 constexpr const int PORT = 4567;
 constexpr const char* SERVER_IP = "192.168.123.101";
 
-typedef struct customPackets
-{
-	int header = -1;
-	int dataSize = 0;
-	char* data = nullptr;
-	customPackets() {};
-	customPackets(int _header, int _dataSize, char* _data) :
-		header(_header), dataSize(_dataSize), data(_data) {};
-} customPacket;
-
 enum ErrorCode
 {
 	WSASTARTUP_ERROR = 200,
@@ -50,7 +40,7 @@ private:
 	void RecvDataMethod(SOCKET clientSocket);
 	static UINT WINAPI RecvDataThread(void* arg);
 
-	void GetMapDataMethod(customPacket* packet);
+	void GetMapDataMethod(char* packet);
 public:
 	void PrintErrorCode(State state, const int errorCode);
 
@@ -61,5 +51,5 @@ public:
 	void StartRecvDataThread();
 	void TerminateRecvDataThread();
 
-	void SendMessageToGameServer(int header, int dataSize, char* data);
+	void SendMessageToGameServer(char header, unsigned int dataSize, char* data);
 };

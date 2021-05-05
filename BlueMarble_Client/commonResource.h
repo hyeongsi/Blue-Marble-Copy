@@ -7,4 +7,4 @@ enum class State
 	GAME = 2,
 };
 
-constexpr const int PACKET_SIZE = 2048;
+constexpr const int MAX_PACKET_SIZE = 1048;

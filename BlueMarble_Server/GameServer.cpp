@@ -68,21 +68,23 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 {
 	cout << "start ListenThread" << endl;
 
-	char cBuffer[PACKET_SIZE] = {};
-	customPacket packet;
+	char cBuffer[MAX_PACKET_SIZE] = {};
+	char header = NULL;
+	unsigned int dataSize = 0;
 
 	clientSocketMutex.lock();
 	clientSocketList.emplace_back(clientSocket);
 	clientSocketMutex.unlock();
 
-	while ((recv(clientSocket, cBuffer, PACKET_SIZE, 0)) != -1)
+	while ((recv(clientSocket, cBuffer, MAX_PACKET_SIZE, 0)) != -1)
 	{
-		packet = *(customPacket*)cBuffer;
+		memcpy(&header, &cBuffer[0], sizeof(char));
+		cout << "recv " << (int)header << endl;
 
-		switch (packet.header)	
+		switch (header)
 		{
 		case GET_MAPDATA:
-			GetMapDataMethod(clientSocket, packet);
+			GetMapDataMethod(clientSocket);
 			break;
 		default:
 			break;
@@ -138,18 +140,24 @@ void GameServer::StartServer()
 	ReleaseInstance();
 }
 
-void GameServer::GetMapDataMethod(SOCKET& socekt, customPacket& packet)
+void GameServer::GetMapDataMethod(SOCKET& socekt)
 {
-	cout << "recv " << packet.header << endl;
-
-	customPacket sendPacket = packet;
 	boardData* board = MapManager::GetInstance()->GetBoardData(0);	// 나중에 enum 값으로 변경하기
 
 	if (nullptr != board)
 	{
-		//PacektSendMethod(socekt, sendPacket, &board->mapSize, sizeof(board->mapSize));
-		PacektSendMethod(socekt, sendPacket, &board->code, sizeof(int)* board->mapSize* DIRECTION);
-		//PacektSendMethod(socekt, sendPacket, board->name, sizeof(char)* NAME_SIZE* board->mapSize* DIRECTION);
+		PacektSendMethod(socekt, GET_MAPDATA, sizeof(board->mapSize), &board->mapSize);	// 맵 사이즈
+		cout << "send mapSize " << endl;
+		for (size_t i = 0; i < board->code.size(); i++)
+		{
+			PacektSendMethod(socekt, NULL, sizeof(int), &board->code[i]);
+		}
+		cout << "send code " << endl;
+		for (size_t i = 0; i < board->name.size(); i++)
+		{
+			PacektSendMethod(socekt, NULL, sizeof(board->name[i].size()+1), &board->name[i]);
+		}
+		cout << "send name " << endl;
 	}
 	else
 	{
@@ -157,17 +165,38 @@ void GameServer::GetMapDataMethod(SOCKET& socekt, customPacket& packet)
 	}
 }
 
-void GameServer::PacektSendMethod(SOCKET& socekt, customPacket& packet, void* data, int size)
+void GameServer::PacektSendMethod(SOCKET& socekt, char header, unsigned int dataSize, void* data)
 {
-	memcpy(&packet.data, data, size);
-	packet.dataSize = size;
+	unsigned int packetSize = NULL;
+	char* buf = nullptr;
 
-	if (send(socekt, (char*)(&packet), PACKET_SIZE, 0) == -1)
+	if (NULL == header)	// header 없이 전송
+	{
+		if (0 >= dataSize)
+		{
+			return;
+		}
+
+		packetSize = sizeof(unsigned int) + dataSize;	// datasize + data
+		buf = new char[packetSize];
+
+		memcpy(&buf[0], &dataSize, sizeof(unsigned int));	// datasize setting
+		memcpy(&buf[sizeof(unsigned int)], data, dataSize);
+	}
+	else   // header 포함 전송
+	{
+		packetSize = sizeof(char) + sizeof(unsigned int) + dataSize;	// header + datasize + data
+		buf = new char[packetSize];
+
+		buf[0] = header;	// header setting
+		memcpy(&buf[1], &dataSize, sizeof(unsigned int));	// datasize setting
+		memcpy(&buf[1 + sizeof(unsigned int)], data, dataSize);
+	}
+
+	if (send(socekt, buf, packetSize, 0) == -1)
 	{
 		PrintErrorCode(SEND_ERROR);
 	}
-	else
-	{
-		cout << "send " << packet.header << endl;
-	}
+
+	delete[] buf;
 }

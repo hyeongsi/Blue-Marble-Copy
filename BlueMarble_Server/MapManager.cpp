@@ -39,13 +39,6 @@ void MapManager::LoadMapData()
 			readFile >> mapSize;	// 맵 사이즈
 
 			board.mapSize = mapSize;
-			board.name = new char*[mapSize* DIRECTION];	// 사이즈만큼 공간 확보
-
-			for (int i = 0; i < mapSize * DIRECTION; i++)
-			{
-				board.name[i] = new char[NAME_SIZE];
-			}
-			board.code = new int[mapSize* DIRECTION];
 
 			for (int i = 0; i < mapSize * DIRECTION; i++)
 			{
@@ -54,8 +47,8 @@ void MapManager::LoadMapData()
 
 				readFile >> name;
 				readFile >> code;
-				strcpy_s(board.name[i], NAME_SIZE, name.c_str());
-				board.code[i] = code;
+				board.name.emplace_back(name);
+				board.code.emplace_back(code);
 			}
 		}
 	}

@@ -14,20 +14,22 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 {
 	while (nullptr != recvThreadHandle)
 	{
-		customPacket packet;
-		char cBuffer[PACKET_SIZE] = {};
+		char cBuffer[MAX_PACKET_SIZE] = {};
+		char header = NULL;
+		unsigned int dataSize = 0;
 
-		if ((recv(clientSocket, cBuffer, PACKET_SIZE, 0)) == -1)
+		if ((recv(clientSocket, cBuffer, MAX_PACKET_SIZE, 0)) == -1)
 		{
 			PrintErrorCode(State::GAME, RECV_ERROR);
 			break;
 		}
-		memcpy(&packet, cBuffer, sizeof(customPacket));
 
-		switch (packet.header)	// 나중에 enum 값으로 변경하기
+		memcpy(&header, &cBuffer[0], sizeof(char));
+
+		switch (header)	// 나중에 enum 값으로 변경하기
 		{
 		case GET_MAPDATA:
-			GetMapDataMethod(&packet);
+			GetMapDataMethod(cBuffer);
 			break;
 		default:
 			break;
@@ -47,53 +49,46 @@ UINT WINAPI SocketTransfer::RecvDataThread(void* arg)
 	return 0;
 }
 
-void SocketTransfer::GetMapDataMethod(customPacket* packet)
+void SocketTransfer::GetMapDataMethod(char* packet)
 {
-	/*boardData board;
-	board.code = new int[8 * DIRECTION];
-
-	memcpy(&board.code, packet->data, 8 * DIRECTION);
-
-	for (int i = 0; i < 8 * DIRECTION; i++)
-	{
-		board.code[i];
-	}*/
-
-	/*const int RECV_COUNT = 2;
-
+	unsigned int dataSize = 0;
+	unsigned int mapSize = 0;
 	boardData board;
-	board.mapSize = (int)packet->data;
+	int code = NULL;
+	string name = "";
 
-	board.code = new int[board.mapSize * DIRECTION];
-	board.name = new char* [board.mapSize * DIRECTION];
+	memcpy(&dataSize, &packet[1], sizeof(unsigned int));
+	memcpy(&mapSize, &packet[1 + sizeof(unsigned int)], dataSize);
 
-	for (int i = 0; i < board.mapSize * DIRECTION; i++)
+	char cBuffer[MAX_PACKET_SIZE] = {};
+
+	for (size_t i = 0; i < mapSize*DIRECTION; i++)	// get map code (mapsize * direction)
 	{
-		board.name[i] = new char[NAME_SIZE];
-	}
-
-	char cBuffer[PACKET_SIZE] = {};
-
-	for (int i = 0; i < RECV_COUNT; i++)
-	{
-		if ((recv(clientSocket, cBuffer, PACKET_SIZE, 0)) == -1)
+		if ((recv(clientSocket, cBuffer, MAX_PACKET_SIZE, 0)) == -1)
 		{
 			PrintErrorCode(State::GAME, RECV_ERROR);
-			return;
 		}
-		packet = (customPacket*)cBuffer;
 
-		if (0 == i)
-		{
-			memcpy(&board.code, packet->data, packet->dataSize);
-		}
-		else if (1 == i)
-		{
-			memcpy(&board.name, packet->data, packet->dataSize);
-		}
+		memcpy(&dataSize, &cBuffer, sizeof(unsigned int));
+		memcpy(&code, &cBuffer[sizeof(unsigned int)], dataSize);
+
+		board.code.emplace_back(code);
 	}
 
-	GameManager::GetInstance()->SetBoardData(board);*/
+	for (size_t i = 0; i < mapSize * DIRECTION; i++)	// get map name (mapsize * direction)
+	{
+		if ((recv(clientSocket, cBuffer, MAX_PACKET_SIZE, 0)) == -1)
+		{
+			PrintErrorCode(State::GAME, RECV_ERROR);
+		}
+
+		memcpy(&dataSize, &cBuffer, sizeof(unsigned int));
+		memcpy(&name, &cBuffer[sizeof(unsigned int)], dataSize);
+
+		board.name.emplace_back(name);
+	}
+
+	GameManager::GetInstance()->SetBoardData(board);
 }
 
 void SocketTransfer::PrintErrorCode(State state, const int errorCode)
@@ -172,12 +167,38 @@ void SocketTransfer::TerminateRecvDataThread()
 	recvThreadMutex.unlock();
 }
 
-void SocketTransfer::SendMessageToGameServer(int header, int dataSize, char* data)
+void SocketTransfer::SendMessageToGameServer(char header, unsigned int dataSize, char* data)
 {
-	customPacket packet(header, dataSize, data);
+	unsigned int packetSize = NULL;
+	char* buf = nullptr;
 
-	if (send(clientSocket, (char*)&packet, PACKET_SIZE, 0) == -1)
+	if (NULL == header)	// header 없이 전송
+	{
+		if (0 >= dataSize)
+		{
+			return;
+		}
+
+		packetSize = sizeof(unsigned int) + dataSize;	// datasize + data
+		buf = new char[packetSize];
+
+		memcpy(&buf, &dataSize, sizeof(unsigned int));	// datasize setting
+		memcpy(&buf[sizeof(unsigned int)], &data, dataSize);
+	}
+	else   // header 포함 전송
+	{
+		packetSize = sizeof(char) + sizeof(unsigned int) + dataSize;	// header + datasize + data
+		buf = new char[packetSize];
+
+		buf[0] = header;	// header setting
+		memcpy(&buf[1], &dataSize, sizeof(unsigned int));	// datasize setting
+		memcpy(&buf[1 + sizeof(unsigned int)], &data, dataSize);
+	}
+
+	if (send(clientSocket, buf, packetSize, 0) == -1)
 	{
 		PrintErrorCode(State::GAME, SEND_ERROR);
 	}
+
+	delete[] buf;
 }
