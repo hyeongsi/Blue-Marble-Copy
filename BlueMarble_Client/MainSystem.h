@@ -2,8 +2,6 @@
 #include <Windows.h>
 #include "commonResource.h"
 
-typedef void(*CALLBACK_FUNC)(void);
-
 constexpr const ULONGLONG FPS = 60;
 
 class MainSystem

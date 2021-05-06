@@ -5,7 +5,7 @@
 using namespace std;
 
 constexpr const int PORT = 4567;
-constexpr const int MAX_PACKET_SIZE = 1048;
+constexpr const int MAX_PACKET_SIZE = 1024;
 
 enum ErrorCode
 {

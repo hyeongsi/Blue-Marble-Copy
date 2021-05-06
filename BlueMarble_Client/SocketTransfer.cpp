@@ -16,7 +16,6 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 	{
 		char cBuffer[MAX_PACKET_SIZE] = {};
 		char header = NULL;
-		unsigned int dataSize = 0;
 
 		if ((recv(clientSocket, cBuffer, MAX_PACKET_SIZE, 0)) == -1)
 		{
@@ -24,20 +23,23 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			break;
 		}
 
-		memcpy(&header, &cBuffer[0], sizeof(char));
-
-		switch (header)	// 나중에 enum 값으로 변경하기
+		if (nullptr != recvCBF)
 		{
-		case GET_MAPDATA:
-			GetMapDataMethod(cBuffer);
-			break;
-		default:
-			break;
+			recvCBF(cBuffer);
 		}
-		// recv를 callback으로 구현하려 생각해 봤지만, 그렇게 구현하려면 send 후에만 recv를 수행하도록 구현해야 callback 사용 가능
-		// send하지 않고도 recv 수행하도록 만들기 위해, callback 사용 X
-		// 또한 send하고 recv callback 대기중인데 서버에서 공지를 준다고 가정하면, send의 recv 처리가 아닌
-		// 다른 recv 처리를 할 상황이 생기면 오류가 날 수 있음.
+		else
+		{
+			memcpy(&header, &cBuffer[0], sizeof(char));
+
+			switch (header)	// 나중에 enum 값으로 변경하기
+			{
+			case GET_MAPDATA:
+				GetMapDataMethod1(cBuffer);
+				break;
+			default:
+				break;
+			}
+		}
 	}
 
 	TerminateRecvDataThread();
@@ -49,46 +51,52 @@ UINT WINAPI SocketTransfer::RecvDataThread(void* arg)
 	return 0;
 }
 
-void SocketTransfer::GetMapDataMethod(char* packet)
+void SocketTransfer::GetMapDataMethod1(char* packet)
 {
-	unsigned int dataSize = 0;
-	unsigned int mapSize = 0;
-	boardData board;
-	int code = NULL;
-	string name = "";
+	instance->GetMapData1(packet);
+}
 
-	memcpy(&dataSize, &packet[1], sizeof(unsigned int));
-	memcpy(&mapSize, &packet[1 + sizeof(unsigned int)], dataSize);
+void SocketTransfer::GetMapData1(char* packet)
+{
+	mapPacket1 _mapPacket1;
+	int code = 0;
 
-	char cBuffer[MAX_PACKET_SIZE] = {};
-
-	for (size_t i = 0; i < mapSize*DIRECTION; i++)	// get map code (mapsize * direction)
+	memcpy(&_mapPacket1.mapSize, &packet[0], sizeof(unsigned int));	// get mapSize
+	for (int i = 0; i < (int)_mapPacket1.mapSize * DIRECTION; i++)
 	{
-		if ((recv(clientSocket, cBuffer, MAX_PACKET_SIZE, 0)) == -1)
-		{
-			PrintErrorCode(State::GAME, RECV_ERROR);
-		}
-
-		memcpy(&dataSize, &cBuffer, sizeof(unsigned int));
-		memcpy(&code, &cBuffer[sizeof(unsigned int)], dataSize);
-
-		board.code.emplace_back(code);
+		memcpy(&code, &packet[sizeof(unsigned int) + (i*sizeof(int))], sizeof(int));	// get mapCode
+		_mapPacket1.code.emplace_back(code);
 	}
 
-	for (size_t i = 0; i < mapSize * DIRECTION; i++)	// get map name (mapsize * direction)
+	GameManager::GetInstance()->GetBoardDataAddress()->mapSize = _mapPacket1.mapSize;
+	GameManager::GetInstance()->GetBoardDataAddress()->code = _mapPacket1.code;
+	recvCBF = GetMapDataMethod2;
+}
+
+void SocketTransfer::GetMapDataMethod2(char* packet)
+{
+	instance->GetMapData2(packet);
+}
+
+void SocketTransfer::GetMapData2(char* packet)
+{
+	mapPacket2 _mapPacket2;
+	char str[100];
+	unsigned int stackMemorySize = 0;
+
+	for (int i = 0; i < 8 * DIRECTION; i++)
 	{
-		if ((recv(clientSocket, cBuffer, MAX_PACKET_SIZE, 0)) == -1)
-		{
-			PrintErrorCode(State::GAME, RECV_ERROR);
-		}
+		memcpy(&_mapPacket2.charSize, &packet[stackMemorySize], sizeof(unsigned int));	// get charSize
+		stackMemorySize += sizeof(unsigned int);
 
-		memcpy(&dataSize, &cBuffer, sizeof(unsigned int));
-		memcpy(&name, &cBuffer[sizeof(unsigned int)], dataSize);
+		strcpy_s(str, _mapPacket2.charSize, &packet[stackMemorySize]);
+		stackMemorySize += _mapPacket2.charSize;
 
-		board.name.emplace_back(name);
+		_mapPacket2.name.emplace_back(str);
 	}
 
-	GameManager::GetInstance()->SetBoardData(board);
+	GameManager::GetInstance()->GetBoardDataAddress()->name = _mapPacket2.name;
+	recvCBF = nullptr;
 }
 
 void SocketTransfer::PrintErrorCode(State state, const int errorCode)
@@ -167,38 +175,50 @@ void SocketTransfer::TerminateRecvDataThread()
 	recvThreadMutex.unlock();
 }
 
-void SocketTransfer::SendMessageToGameServer(char header, unsigned int dataSize, char* data)
+void SocketTransfer::MakePacket(char header)
 {
-	unsigned int packetSize = NULL;
-	char* buf = nullptr;
-
-	if (NULL == header)	// header 없이 전송
+	if(NULL != header)
 	{
-		if (0 >= dataSize)
-		{
-			return;
-		}
-
-		packetSize = sizeof(unsigned int) + dataSize;	// datasize + data
-		buf = new char[packetSize];
-
-		memcpy(&buf, &dataSize, sizeof(unsigned int));	// datasize setting
-		memcpy(&buf[sizeof(unsigned int)], &data, dataSize);
+		memset(sendPacket, 0, MAX_PACKET_SIZE);		// 패킷 초기화
+		sendPacket[0] = header;	// header setting
+		packetLastIndex = 1;
 	}
-	else   // header 포함 전송
+	else
 	{
-		packetSize = sizeof(char) + sizeof(unsigned int) + dataSize;	// header + datasize + data
-		buf = new char[packetSize];
-
-		buf[0] = header;	// header setting
-		memcpy(&buf[1], &dataSize, sizeof(unsigned int));	// datasize setting
-		memcpy(&buf[1 + sizeof(unsigned int)], &data, dataSize);
+		memset(sendPacket, 0, MAX_PACKET_SIZE);		// 패킷 초기화
+		packetLastIndex = 0;
 	}
+}
 
-	if (send(clientSocket, buf, packetSize, 0) == -1)
+template<class T>
+void SocketTransfer::AppendPacketData(T data, unsigned int dataSize, bool isAddress)
+{
+	memcpy(&sendPacket[packetLastIndex], &data, dataSize);
+	packetLastIndex += dataSize;
+}
+
+void SocketTransfer::AppendPacketPointerData(char* data, unsigned int dataSize)
+{
+	memcpy(&sendPacket[packetLastIndex], data, dataSize);
+	packetLastIndex += dataSize;
+}
+
+void SocketTransfer::SendMessageToGameServer()
+{
+	if (send(clientSocket, sendPacket, MAX_PACKET_SIZE, 0) == -1)
 	{
 		PrintErrorCode(State::GAME, SEND_ERROR);
 	}
 
-	delete[] buf;
+	switch (sendPacket[0])	// header check
+	{
+	case GET_MAPDATA:
+		recvCBF = GetMapDataMethod1;
+		break;
+	}
+}
+
+void SocketTransfer::RegistRecvCallbackFunction(CALLBACK_FUNC_PACKET cbf)
+{
+	recvCBF = cbf;
 }

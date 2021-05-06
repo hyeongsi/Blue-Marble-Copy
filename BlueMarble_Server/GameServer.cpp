@@ -67,10 +67,9 @@ void GameServer::AcceptMethod()
 void GameServer::StartRecvDataThread(SOCKET clientSocket)
 {
 	cout << "start ListenThread" << endl;
-
+	
 	char cBuffer[MAX_PACKET_SIZE] = {};
 	char header = NULL;
-	unsigned int dataSize = 0;
 
 	clientSocketMutex.lock();
 	clientSocketList.emplace_back(clientSocket);
@@ -78,16 +77,23 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 
 	while ((recv(clientSocket, cBuffer, MAX_PACKET_SIZE, 0)) != -1)
 	{
-		memcpy(&header, &cBuffer[0], sizeof(char));
-		cout << "recv " << (int)header << endl;
-
-		switch (header)
+		if (nullptr != recvCBF)
 		{
-		case GET_MAPDATA:
-			GetMapDataMethod(clientSocket);
-			break;
-		default:
-			break;
+			recvCBF(cBuffer);
+		}
+		else
+		{
+			memcpy(&header, &cBuffer[0], sizeof(char));
+			cout << "recv " << (int)header << endl;
+
+			switch (header)
+			{
+			case GET_MAPDATA:
+				GetMapDataMethod(clientSocket);
+				break;
+			default:
+				break;
+			}
 		}
 	}
 
@@ -142,22 +148,26 @@ void GameServer::StartServer()
 
 void GameServer::GetMapDataMethod(SOCKET& socekt)
 {
-	boardData* board = MapManager::GetInstance()->GetBoardData(0);	// 나중에 enum 값으로 변경하기
+	boardData* board = MapManager::GetInstance()->GetBoardData(ORIGINAL);	// 나중에 enum 값으로 변경하기
 
 	if (nullptr != board)
 	{
-		PacektSendMethod(socekt, GET_MAPDATA, sizeof(board->mapSize), board->mapSize);	// 맵 사이즈
-		cout << "send mapSize " << endl;
-		for (size_t i = 0; i < board->code.size(); i++)
+		MakePacket(NULL);
+		AppendPacketData(board->mapSize, sizeof(board->mapSize));
+		for (int i = 0; i < (int)board->code.size(); i++)
 		{
-			PacektSendMethod(socekt, NULL, sizeof(int), board->code[i]);
+			AppendPacketData(board->code[i], sizeof(board->code[i]));
 		}
-		cout << "send code " << endl;
-		for (size_t i = 0; i < board->name.size(); i++)
+		PacektSendMethod(socekt);
+
+		MakePacket(NULL);
+		for (int i = 0; i < (int)board->code.size(); i++)
 		{
-			PacektSendMethod(socekt, NULL, board->name[i].size(), board->name[i].c_str());
+			AppendPacketData(board->name[i].size()+1, sizeof(unsigned int));
+			AppendPacketPointerData(board->name[i].c_str(), board->name[i].size());
+			AppendPacketData('\0', sizeof(char));
 		}
-		cout << "send name " << endl;
+		PacektSendMethod(socekt);
 	}
 	else
 	{
@@ -165,39 +175,44 @@ void GameServer::GetMapDataMethod(SOCKET& socekt)
 	}
 }
 
-template<class T>
-void GameServer::PacektSendMethod(SOCKET& socekt, char header, unsigned int dataSize, T data)
+void GameServer::RegistRecvCallbackFunction(CALLBACK_FUNC_PACKET cbf)
 {
-	unsigned int packetSize = NULL;
-	char* buf = nullptr;
+	recvCBF = cbf;
+}
 
-	if (NULL == header)	// header 없이 전송
+void GameServer::MakePacket(char header)
+{
+	if (NULL != header)
 	{
-		if (0 >= dataSize)
-		{
-			return;
-		}
-
-		packetSize = sizeof(unsigned int) + dataSize;	// datasize + data
-		buf = new char[packetSize];
-
-		memcpy(&buf[0], &dataSize, sizeof(unsigned int));	// datasize setting
-		memcpy(&buf[sizeof(unsigned int)], &data, dataSize);
+		memset(sendPacket, 0, MAX_PACKET_SIZE);		// 패킷 초기화
+		sendPacket[0] = header;	// header setting
+		packetLastIndex = 1;
 	}
-	else   // header 포함 전송
+	else
 	{
-		packetSize = sizeof(char) + sizeof(unsigned int) + dataSize;	// header + datasize + data
-		buf = new char[packetSize];
-
-		buf[0] = header;	// header setting
-		memcpy(&buf[1], &dataSize, sizeof(unsigned int));	// datasize setting
-		memcpy(&buf[1 + sizeof(unsigned int)], &data, dataSize);
+		memset(sendPacket, 0, MAX_PACKET_SIZE);		// 패킷 초기화
+		packetLastIndex = 0;
 	}
+}
 
-	if (send(socekt, buf, packetSize, 0) == -1)
+template<class T>
+void GameServer::AppendPacketData(T data, unsigned int dataSize)
+{
+	memcpy(&sendPacket[packetLastIndex], &data, dataSize);
+	packetLastIndex += dataSize;
+}
+
+void GameServer::AppendPacketPointerData(const char* data, unsigned int dataSize)
+{
+	memcpy(&sendPacket[packetLastIndex], data, dataSize);
+	packetLastIndex += dataSize;
+}
+
+void GameServer::PacektSendMethod(SOCKET& socket)
+{
+	if (send(socket, sendPacket, MAX_PACKET_SIZE, 0) == -1)
 	{
 		PrintErrorCode(SEND_ERROR);
 	}
-
-	delete[] buf;
+	cout << "send Data" << endl;
 }

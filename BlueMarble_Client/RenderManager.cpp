@@ -68,11 +68,6 @@ void RenderManager::DrawBoardMap()
 {
     boardData board = GameManager::GetInstance()->GetBoardData();
 
-    board.mapSize = 8;  // 임시로 출력하고있는거
-    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-
     int width = (RIGHT_BOTTOM_PRINT_POINT.x - LEFT_TOP_PRINT_POINT.x) / (board.mapSize+1);
     int height = (RIGHT_BOTTOM_PRINT_POINT.y - LEFT_TOP_PRINT_POINT.y) / (board.mapSize+1);
 

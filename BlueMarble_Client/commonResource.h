@@ -1,5 +1,8 @@
 #pragma once
 
+typedef void(*CALLBACK_FUNC)(void);
+typedef void(*CALLBACK_FUNC_PACKET)(char*);
+
 enum class State
 {
 	MAIN_MENU = 0,
@@ -7,4 +10,4 @@ enum class State
 	GAME = 2,
 };
 
-constexpr const int MAX_PACKET_SIZE = 1048;
+constexpr const int MAX_PACKET_SIZE = 1024;

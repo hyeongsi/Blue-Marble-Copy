@@ -27,7 +27,7 @@ public:
 	static GameManager* GetInstance();
 	static void ReleaseInstance();
 
-	void SetBoardData(boardData board);
+	boardData* GetBoardDataAddress();
 	boardData GetBoardData();
 };
 

@@ -5,10 +5,15 @@
 #include <mutex>
 #include "TransferResource.h"
 
+typedef void(*CALLBACK_FUNC_PACKET)(char*);
+
 class GameServer
 {
 private:
 	static GameServer* instance;
+
+	char sendPacket[MAX_PACKET_SIZE] = {};
+	unsigned int packetLastIndex = 0;
 
 	WSADATA wsaData;
 	SOCKET serverSocket;
@@ -17,6 +22,7 @@ private:
 
 	list<SOCKET> clientSocketList;
 	mutex clientSocketMutex;
+	CALLBACK_FUNC_PACKET recvCBF = nullptr;
 
 	GameServer();
 	~GameServer();
@@ -34,7 +40,12 @@ public:
 
 	void StartServer();
 	void GetMapDataMethod(SOCKET& socekt);
+
+	void MakePacket(char header);
 	template<class T>
-	void PacektSendMethod(SOCKET& socekt, char header, unsigned int dataSize, T data);
+	void AppendPacketData(T data, unsigned int dataSize);
+	void AppendPacketPointerData(const char* data, unsigned int dataSize);
+	void PacektSendMethod(SOCKET& socket);
+	void RegistRecvCallbackFunction(CALLBACK_FUNC_PACKET cbf);
 };
 

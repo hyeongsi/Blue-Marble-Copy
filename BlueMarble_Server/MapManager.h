@@ -14,6 +14,11 @@ typedef struct BoardData
 	vector<string> name;
 } boardData;
 
+enum MapData
+{
+	ORIGINAL = 0,
+};
+
 class MapManager
 {
 private:

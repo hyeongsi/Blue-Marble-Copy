@@ -2,30 +2,17 @@
 #include <WinSock2.h>
 #include <mutex>
 #include "commonResource.h"
+#include "PacketResource.h"
 
 #pragma comment(lib, "ws2_32")
-using namespace std;
-
-constexpr const int PORT = 4567;
-constexpr const char* SERVER_IP = "192.168.123.101";
-
-enum ErrorCode
-{
-	WSASTARTUP_ERROR = 200,
-	CONNECT_ERROR = 201,
-	RECV_ERROR = 202,
-	SEND_ERROR = 203,
-};
-
-enum MessageCode
-{
-	GET_MAPDATA = 1,
-};
 
 class SocketTransfer
 {
 private:
 	static SocketTransfer* instance;
+
+	char sendPacket[MAX_PACKET_SIZE] = {};
+	unsigned int packetLastIndex = 0;
 
 	WSADATA wsaData;
 	SOCKET clientSocket;
@@ -33,6 +20,7 @@ private:
 	HANDLE recvThreadHandle = nullptr;
 	
 	mutex recvThreadMutex;
+	CALLBACK_FUNC_PACKET recvCBF = nullptr;
 
 	SocketTransfer();
 	~SocketTransfer();
@@ -40,7 +28,10 @@ private:
 	void RecvDataMethod(SOCKET clientSocket);
 	static UINT WINAPI RecvDataThread(void* arg);
 
-	void GetMapDataMethod(char* packet);
+	static void GetMapDataMethod1(char* packet);
+	void GetMapData1(char* packet);
+	static void GetMapDataMethod2(char* packet);
+	void GetMapData2(char* packet);
 public:
 	void PrintErrorCode(State state, const int errorCode);
 
@@ -51,5 +42,10 @@ public:
 	void StartRecvDataThread();
 	void TerminateRecvDataThread();
 
-	void SendMessageToGameServer(char header, unsigned int dataSize, char* data);
+	void MakePacket(char header);
+	template<class T>
+	void AppendPacketData(T data, unsigned int dataSize, bool isAddress = false);
+	void AppendPacketPointerData(char* data, unsigned int dataSize);
+	void SendMessageToGameServer();
+	void RegistRecvCallbackFunction(CALLBACK_FUNC_PACKET cbf);
 };

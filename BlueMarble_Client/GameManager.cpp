@@ -21,9 +21,9 @@ void GameManager::ReleaseInstance()
 	instance = nullptr;
 }
 
-void GameManager::SetBoardData(boardData board)
+boardData* GameManager::GetBoardDataAddress()
 {
-	this->board = board;
+	return &board;
 }
 
 boardData GameManager::GetBoardData()
