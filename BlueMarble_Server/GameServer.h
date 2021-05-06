@@ -34,6 +34,7 @@ public:
 
 	void StartServer();
 	void GetMapDataMethod(SOCKET& socekt);
-	void PacektSendMethod(SOCKET& socekt, char header, unsigned int dataSize, void* data);
+	template<class T>
+	void PacektSendMethod(SOCKET& socekt, char header, unsigned int dataSize, T data);
 };
 

@@ -75,6 +75,7 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 void GameWindow::GameUpdate()
 {
     instance->renderManager->RenderInitSetting();
+    instance->renderManager->DrawBoardMap();
     instance->renderManager->DrawWindow(State::GAME);
     instance->renderManager->Render();
 }

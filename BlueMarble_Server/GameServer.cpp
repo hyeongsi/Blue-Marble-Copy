@@ -146,16 +146,16 @@ void GameServer::GetMapDataMethod(SOCKET& socekt)
 
 	if (nullptr != board)
 	{
-		PacektSendMethod(socekt, GET_MAPDATA, sizeof(board->mapSize), &board->mapSize);	// 맵 사이즈
+		PacektSendMethod(socekt, GET_MAPDATA, sizeof(board->mapSize), board->mapSize);	// 맵 사이즈
 		cout << "send mapSize " << endl;
 		for (size_t i = 0; i < board->code.size(); i++)
 		{
-			PacektSendMethod(socekt, NULL, sizeof(int), &board->code[i]);
+			PacektSendMethod(socekt, NULL, sizeof(int), board->code[i]);
 		}
 		cout << "send code " << endl;
 		for (size_t i = 0; i < board->name.size(); i++)
 		{
-			PacektSendMethod(socekt, NULL, sizeof(board->name[i].size()+1), &board->name[i]);
+			PacektSendMethod(socekt, NULL, board->name[i].size(), board->name[i].c_str());
 		}
 		cout << "send name " << endl;
 	}
@@ -165,7 +165,8 @@ void GameServer::GetMapDataMethod(SOCKET& socekt)
 	}
 }
 
-void GameServer::PacektSendMethod(SOCKET& socekt, char header, unsigned int dataSize, void* data)
+template<class T>
+void GameServer::PacektSendMethod(SOCKET& socekt, char header, unsigned int dataSize, T data)
 {
 	unsigned int packetSize = NULL;
 	char* buf = nullptr;
@@ -181,7 +182,7 @@ void GameServer::PacektSendMethod(SOCKET& socekt, char header, unsigned int data
 		buf = new char[packetSize];
 
 		memcpy(&buf[0], &dataSize, sizeof(unsigned int));	// datasize setting
-		memcpy(&buf[sizeof(unsigned int)], data, dataSize);
+		memcpy(&buf[sizeof(unsigned int)], &data, dataSize);
 	}
 	else   // header 포함 전송
 	{
@@ -190,7 +191,7 @@ void GameServer::PacektSendMethod(SOCKET& socekt, char header, unsigned int data
 
 		buf[0] = header;	// header setting
 		memcpy(&buf[1], &dataSize, sizeof(unsigned int));	// datasize setting
-		memcpy(&buf[1 + sizeof(unsigned int)], data, dataSize);
+		memcpy(&buf[1 + sizeof(unsigned int)], &data, dataSize);
 	}
 
 	if (send(socekt, buf, packetSize, 0) == -1)

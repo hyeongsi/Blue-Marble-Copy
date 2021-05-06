@@ -3,6 +3,8 @@
 #include "commonResource.h"
 #include "GameManager.h"
 
+#pragma comment(lib, "msimg32.lib")
+
 class RenderManager
 {
 private:
@@ -13,8 +15,8 @@ private:
 	HDC backMemDC{ nullptr };
 	HBITMAP oldCreateBitmap = nullptr;
 	SIZE ClientSize = { 1280,720 };
-	const POINT LEFT_TOP_PRINT_POINT = { 240,130 };
-	const POINT RIGHT_BOTTOM_PRINT_POINT = { 1040,590 };
+	const POINT LEFT_TOP_PRINT_POINT = { 240,60 };
+	const POINT RIGHT_BOTTOM_PRINT_POINT = { 1040,640 };
 
 	RenderManager();
 	~RenderManager();
@@ -26,10 +28,10 @@ public:
 	void Init(HWND hWnd);
 	void RenderInitSetting();
 
-	void DrawBoardMap(boardData board);
+	void DrawBoardMap();
 	void DrawWindow(State state);
 	void DrawHwnd(const HWND dHwnd, const POINT printPoint, const SIZE hwndSize);
-	void DrawBitmap(const HBITMAP bitmap, const POINT printPoint);
+	void DrawBitmap(const HBITMAP bitmap, const POINT printPoint, bool isTransparentBlt = false);
 	void Render();
 };
 
