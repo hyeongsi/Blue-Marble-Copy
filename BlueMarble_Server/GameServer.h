@@ -4,8 +4,7 @@
 #include <List>
 #include <mutex>
 #include "TransferResource.h"
-
-typedef void(*CALLBACK_FUNC_PACKET)(char*);
+#include "MatchingClient.h"
 
 class GameServer
 {

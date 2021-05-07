@@ -1,0 +1,2 @@
+C:\Users\parks\Desktop\GitHub\Blue-Marble-Project\BlueMarble_MatchMaking_Server\Debug\BlueMarble_MatchMaking_Server.exe
+C:\Users\parks\Desktop\GitHub\Blue-Marble-Project\BlueMarble_MatchMaking_Server\Debug\BlueMarble_MatchMaking_Server.pdb
