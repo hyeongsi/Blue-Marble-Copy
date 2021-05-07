@@ -3,6 +3,7 @@
 #include <mutex>
 #include "commonResource.h"
 #include "PacketResource.h"
+#include "RenderManager.h"
 
 #pragma comment(lib, "ws2_32")
 

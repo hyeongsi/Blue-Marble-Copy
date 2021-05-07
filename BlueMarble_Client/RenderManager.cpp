@@ -64,35 +64,80 @@ void RenderManager::RenderInitSetting()
     FillRect(memDC, &windowRect, (HBRUSH)GetStockObject(WHITE_BRUSH));      // 바탕 흰색으로 초기화
 }
 
+void RenderManager::InitDrawBoardMap()
+{
+    rectVector.clear();
+    int boardSize = GameManager::GetInstance()->GetBoardData().mapSize;
+    RECT rect;
+
+    tileWidth = (RIGHT_BOTTOM_PRINT_POINT.x - LEFT_TOP_PRINT_POINT.x) / (boardSize + 1);
+    tileHeight = (RIGHT_BOTTOM_PRINT_POINT.y - LEFT_TOP_PRINT_POINT.y) / (boardSize + 1);
+
+    for (int i = 0; i < boardSize; i++)   // 하단가로
+    {
+        rect.left = RIGHT_BOTTOM_PRINT_POINT.x - (tileWidth * (i + 1));
+        rect.top = RIGHT_BOTTOM_PRINT_POINT.y - tileHeight;
+        rect.right = RIGHT_BOTTOM_PRINT_POINT.x - (tileWidth * i);
+        rect.bottom = RIGHT_BOTTOM_PRINT_POINT.y;
+        rectVector.emplace_back(rect);
+    }
+    for (int i = 0; i < boardSize; i++)   // 좌측세로
+    {
+        rect.left = LEFT_TOP_PRINT_POINT.x;
+        rect.top = RIGHT_BOTTOM_PRINT_POINT.y - (tileHeight * (i + 1));
+        rect.right = LEFT_TOP_PRINT_POINT.x + tileWidth;
+        rect.bottom = RIGHT_BOTTOM_PRINT_POINT.y - (tileHeight * i);
+        rectVector.emplace_back(rect);
+    }
+    for (int i = 0; i < boardSize; i++)   // 상단가로
+    {
+        rect.left = LEFT_TOP_PRINT_POINT.x + (tileWidth * i);
+        rect.top = LEFT_TOP_PRINT_POINT.y;
+        rect.right = LEFT_TOP_PRINT_POINT.x + (tileWidth * (i + 1));
+        rect.bottom = LEFT_TOP_PRINT_POINT.y + tileHeight;
+        rectVector.emplace_back(rect);
+    }
+    for (int i = 0; i < boardSize; i++)  // 우측세로
+    {
+        rect.left = RIGHT_BOTTOM_PRINT_POINT.x - tileWidth;
+        rect.top = LEFT_TOP_PRINT_POINT.y + (tileHeight * i);
+        rect.right = RIGHT_BOTTOM_PRINT_POINT.x;
+        rect.bottom = LEFT_TOP_PRINT_POINT.y + (tileHeight * (i + 1));
+        rectVector.emplace_back(rect);
+    }
+}
+
 void RenderManager::DrawBoardMap()
 {
     boardData board = GameManager::GetInstance()->GetBoardData();
 
-    int width = (RIGHT_BOTTOM_PRINT_POINT.x - LEFT_TOP_PRINT_POINT.x) / (board.mapSize+1);
-    int height = (RIGHT_BOTTOM_PRINT_POINT.y - LEFT_TOP_PRINT_POINT.y) / (board.mapSize+1);
-
     Rectangle(memDC, LEFT_TOP_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y, RIGHT_BOTTOM_PRINT_POINT.x, RIGHT_BOTTOM_PRINT_POINT.y);
-    Rectangle(memDC, LEFT_TOP_PRINT_POINT.x + width, LEFT_TOP_PRINT_POINT.y + height, RIGHT_BOTTOM_PRINT_POINT.x - width, RIGHT_BOTTOM_PRINT_POINT.y - height);
+    Rectangle(memDC, LEFT_TOP_PRINT_POINT.x + tileWidth, LEFT_TOP_PRINT_POINT.y + tileHeight, RIGHT_BOTTOM_PRINT_POINT.x - tileWidth, RIGHT_BOTTOM_PRINT_POINT.y - tileHeight);
 
-    for (int i = 0; i < (int)board.mapSize; i++)   // 좌상단
+    for (int i = 0; i < (int)board.mapSize; i++)   // 하단가로
     {
-        MoveToEx(memDC, LEFT_TOP_PRINT_POINT.x + (width * (i+1)), LEFT_TOP_PRINT_POINT.y, NULL);
-        LineTo(memDC, LEFT_TOP_PRINT_POINT.x + (width * (i+1)), LEFT_TOP_PRINT_POINT.y + height);
+        MoveToEx(memDC, RIGHT_BOTTOM_PRINT_POINT.x - (tileWidth * (i + 1)), RIGHT_BOTTOM_PRINT_POINT.y - tileHeight, NULL);
+        LineTo(memDC, RIGHT_BOTTOM_PRINT_POINT.x - (tileWidth * (i + 1)), RIGHT_BOTTOM_PRINT_POINT.y);
     }
-    for (int i = 0; i < (int)board.mapSize; i++)  // 우상단
+    for (int i = 0; i < (int)board.mapSize; i++)   // 좌측세로
     {
-        MoveToEx(memDC, RIGHT_BOTTOM_PRINT_POINT.x - width, LEFT_TOP_PRINT_POINT.y + (height * (i+1)), NULL);
-        LineTo(memDC, RIGHT_BOTTOM_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y + (height * (i+1)));
+        MoveToEx(memDC, LEFT_TOP_PRINT_POINT.x, RIGHT_BOTTOM_PRINT_POINT.y - (tileHeight * (i + 1)), NULL);
+        LineTo(memDC, LEFT_TOP_PRINT_POINT.x + tileWidth, RIGHT_BOTTOM_PRINT_POINT.y - (tileHeight * (i + 1)));
     }
-    for (int i = 0; i < (int)board.mapSize; i++)   // 우하단
+    for (int i = 0; i < (int)board.mapSize; i++)   // 상단가로
     {
-        MoveToEx(memDC, RIGHT_BOTTOM_PRINT_POINT.x - (width * (i+1)), RIGHT_BOTTOM_PRINT_POINT.y - height, NULL);
-        LineTo(memDC, RIGHT_BOTTOM_PRINT_POINT.x - (width * (i+1)), RIGHT_BOTTOM_PRINT_POINT.y);
+        MoveToEx(memDC, LEFT_TOP_PRINT_POINT.x + (tileWidth * (i+1)), LEFT_TOP_PRINT_POINT.y, NULL);
+        LineTo(memDC, LEFT_TOP_PRINT_POINT.x + (tileWidth * (i+1)), LEFT_TOP_PRINT_POINT.y + tileHeight);
     }
-    for (int i = 0; i < (int)board.mapSize; i++)   // 좌상단
+    for (int i = 0; i < (int)board.mapSize; i++)  // 우측세로
     {
-        MoveToEx(memDC, LEFT_TOP_PRINT_POINT.x, RIGHT_BOTTOM_PRINT_POINT.y - (height * (i+1)), NULL);
-        LineTo(memDC, LEFT_TOP_PRINT_POINT.x + width, RIGHT_BOTTOM_PRINT_POINT.y - (height * (i+1)));
+        MoveToEx(memDC, RIGHT_BOTTOM_PRINT_POINT.x - tileWidth, LEFT_TOP_PRINT_POINT.y + (tileHeight * (i+1)), NULL);
+        LineTo(memDC, RIGHT_BOTTOM_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y + (tileHeight * (i+1)));
+    }
+    
+    for (int i = 0; i < (int)board.mapSize * DIRECTION; i++)
+    {
+        DrawText(memDC, board.name[i].c_str(), -1, &rectVector[i], DT_NOCLIP | DT_CENTER);
     }
 }
 

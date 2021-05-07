@@ -96,6 +96,7 @@ void SocketTransfer::GetMapData2(char* packet)
 	}
 
 	GameManager::GetInstance()->GetBoardDataAddress()->name = _mapPacket2.name;
+	RenderManager::GetInstance()->InitDrawBoardMap();
 	recvCBF = nullptr;
 }
 

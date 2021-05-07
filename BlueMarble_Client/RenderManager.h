@@ -18,6 +18,9 @@ private:
 	const POINT LEFT_TOP_PRINT_POINT = { 240,60 };
 	const POINT RIGHT_BOTTOM_PRINT_POINT = { 1040,640 };
 
+	vector<RECT> rectVector;
+	int tileWidth = 0, tileHeight = 0;
+
 	RenderManager();
 	~RenderManager();
 public:
@@ -28,6 +31,7 @@ public:
 	void Init(HWND hWnd);
 	void RenderInitSetting();
 
+	void InitDrawBoardMap();
 	void DrawBoardMap();
 	void DrawWindow(State state);
 	void DrawHwnd(const HWND dHwnd, const POINT printPoint, const SIZE hwndSize);
