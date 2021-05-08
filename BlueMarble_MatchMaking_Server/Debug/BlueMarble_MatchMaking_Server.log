@@ -1,5 +1,2 @@
 ﻿  main.cpp
-  MatchMakingServer.cpp
-C:\Users\parks\Desktop\GitHub\Blue-Marble-Project\BlueMarble_MatchMaking_Server\MatchMakingServer.cpp(42,4): warning C4065: switch문에 'default'가 있으나 'case' 레이블이 없습니다.
-  코드를 생성하고 있습니다...
   BlueMarble_MatchMaking_Server.vcxproj -> C:\Users\parks\Desktop\GitHub\Blue-Marble-Project\BlueMarble_MatchMaking_Server\Debug\BlueMarble_MatchMaking_Server.exe

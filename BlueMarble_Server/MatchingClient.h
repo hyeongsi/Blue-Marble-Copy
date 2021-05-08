@@ -1,10 +1,16 @@
-#pragma once
+﻿#pragma once
 #include "TransferResource.h"
 #include <iostream>
 #include <WS2tcpip.h>	// inet_pton()
 #include <process.h>
 
 using namespace std;
+
+typedef struct MatchMakingPacket
+{
+	int user1Id;
+	int user2Id;
+}matchMakingPacket;
 
 class MatchingClient
 {
@@ -40,8 +46,7 @@ public:
 	void ConnectMathchServer();
 
 	void MakePacket(char header);
-	template<class T>
-	void AppendPacketData(T data, unsigned int dataSize, bool isAddress = false);
+	void AppendPacketDataMethod(int data, unsigned int dataSize);
 	void AppendPacketPointerData(char* data, unsigned int dataSize);
 	void SendMessageToMatchServer();
 };

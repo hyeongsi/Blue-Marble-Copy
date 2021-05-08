@@ -1,4 +1,4 @@
-#include "SocketTransfer.h"
+ï»¿#include "SocketTransfer.h"
 #include <string>
 #include <WS2tcpip.h>	// inet_pton()
 #include <process.h>
@@ -31,7 +31,7 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 		{
 			memcpy(&header, &cBuffer[0], sizeof(char));
 
-			switch (header)	// ³ªÁß¿¡ enum °ªÀ¸·Î º¯°æÇÏ±â
+			switch (header)	// ë‚˜ì¤‘ì— enum ê°’ìœ¼ë¡œ ë³€ê²½í•˜ê¸°
 			{
 			case GET_MAPDATA:
 				GetMapDataMethod1(cBuffer);
@@ -107,11 +107,11 @@ void SocketTransfer::PrintErrorCode(State state, const int errorCode)
 	case State::MAIN_MENU:
 	case State::RANK_MENU:
 		MessageBox(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU),
-			("error code : " + to_string(errorCode)).c_str(), "error ¹ß»ı", MB_OK);
+			("error code : " + to_string(errorCode)).c_str(), "error ë°œìƒ", MB_OK);
 		break;
 	case State::GAME:
 		MessageBox(MainSystem::GetInstance()->GetWindowHwnd(State::GAME),
-			("error code : " + to_string(errorCode)).c_str(), "error ¹ß»ı", MB_OK);
+			("error code : " + to_string(errorCode)).c_str(), "error ë°œìƒ", MB_OK);
 		break;
 	default:
 		break;
@@ -180,13 +180,13 @@ void SocketTransfer::MakePacket(char header)
 {
 	if(NULL != header)
 	{
-		memset(sendPacket, 0, MAX_PACKET_SIZE);		// ÆĞÅ¶ ÃÊ±âÈ­
+		memset(sendPacket, 0, MAX_PACKET_SIZE);		// íŒ¨í‚· ì´ˆê¸°í™”
 		sendPacket[0] = header;	// header setting
 		packetLastIndex = 1;
 	}
 	else
 	{
-		memset(sendPacket, 0, MAX_PACKET_SIZE);		// ÆĞÅ¶ ÃÊ±âÈ­
+		memset(sendPacket, 0, MAX_PACKET_SIZE);		// íŒ¨í‚· ì´ˆê¸°í™”
 		packetLastIndex = 0;
 	}
 }

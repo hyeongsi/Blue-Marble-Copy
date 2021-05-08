@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 typedef void(*CALLBACK_FUNC)(void);
 typedef void(*CALLBACK_FUNC_PACKET)(char*);

@@ -1,4 +1,4 @@
-#include "MatchMakingServer.h"
+ï»¿#include "MatchMakingServer.h"
 
 MatchMakingServer* MatchMakingServer::instance = nullptr;
 
@@ -37,7 +37,8 @@ void MatchMakingServer::StartRecvDataThread(SOCKET clientSocket)
 
 			switch (header)
 			{
-			case 0:
+			case SET_MATCHING_USER_PACKET:
+				PushUserId(cBuffer);
 				break;
 			default:
 				break;
@@ -85,7 +86,15 @@ void MatchMakingServer::AcceptSocket()
 	cout << "Connect Ip : " << GetClientIp(clientAddress) << endl;
 	cout << "Working AcceptThread" << endl << endl;;
 
-	_beginthreadex(NULL, 0, RecvDataThread, &clientSocket, 0, NULL);	// recv thread ½ÇÇà
+	_beginthreadex(NULL, 0, RecvDataThread, &clientSocket, 0, NULL);	// recv thread ì‹¤í–‰
+}
+
+void MatchMakingServer::PushUserId(char* packet)
+{
+	int userId;
+
+	memcpy(&userId, &packet[sizeof(char)], sizeof(int));
+	matchQueue.push(userId);
 }
 
 MatchMakingServer* MatchMakingServer::GetInstance()
@@ -128,13 +137,13 @@ void MatchMakingServer::MakePacket(char header)
 {
 	if (NULL != header)
 	{
-		memset(sendPacket, 0, MAX_PACKET_SIZE);		// ÆÐÅ¶ ÃÊ±âÈ­
+		memset(sendPacket, 0, MAX_PACKET_SIZE);		// íŒ¨í‚· ì´ˆê¸°í™”
 		sendPacket[0] = header;	// header setting
 		packetLastIndex = 1;
 	}
 	else
 	{
-		memset(sendPacket, 0, MAX_PACKET_SIZE);		// ÆÐÅ¶ ÃÊ±âÈ­
+		memset(sendPacket, 0, MAX_PACKET_SIZE);		// íŒ¨í‚· ì´ˆê¸°í™”
 		packetLastIndex = 0;
 	}
 }

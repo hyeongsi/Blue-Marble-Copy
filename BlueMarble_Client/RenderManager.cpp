@@ -110,6 +110,8 @@ void RenderManager::InitDrawBoardMap()
 void RenderManager::DrawBoardMap()
 {
     boardData board = GameManager::GetInstance()->GetBoardData();
+    if (0 >= board.mapSize)
+        return;
 
     Rectangle(memDC, LEFT_TOP_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y, RIGHT_BOTTOM_PRINT_POINT.x, RIGHT_BOTTOM_PRINT_POINT.y);
     Rectangle(memDC, LEFT_TOP_PRINT_POINT.x + tileWidth, LEFT_TOP_PRINT_POINT.y + tileHeight, RIGHT_BOTTOM_PRINT_POINT.x - tileWidth, RIGHT_BOTTOM_PRINT_POINT.y - tileHeight);

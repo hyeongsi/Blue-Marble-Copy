@@ -1,4 +1,4 @@
-#include "GameWindow.h"
+ï»¿#include "GameWindow.h"
 #include "RenderManager.h"
 #include "BitmapManager.h"
 
@@ -30,13 +30,13 @@ void GameWindow::ReInitGame(HWND hWnd)
 
 void GameWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd)
 {
-    RECT g_clientRect{ 0,0, width, height }; // Å¬¶óÀÌ¾ğÆ® Å©±â
+    RECT g_clientRect{ 0,0, width, height }; // í´ë¼ì´ì–¸íŠ¸ í¬ê¸°
     SIZE clientSize;
 
-    AdjustWindowRect(&g_clientRect, WS_OVERLAPPEDWINDOW, false);    // ¸Ş´ºÃ¢ Å©±â »©°í À©µµ¿ì Å©±â °è»ê
+    AdjustWindowRect(&g_clientRect, WS_OVERLAPPEDWINDOW, false);    // ë©”ë‰´ì°½ í¬ê¸° ë¹¼ê³  ìœˆë„ìš° í¬ê¸° ê³„ì‚°
     clientSize.cx = g_clientRect.right - g_clientRect.left;
     clientSize.cy = g_clientRect.bottom - g_clientRect.top;
-    MoveWindow(hWnd, printPoint.x, printPoint.y, clientSize.cx, clientSize.cy, true);   // printPoint ÁöÁ¡¿¡ clientSize Å©±â·Î Ãâ·Â
+    MoveWindow(hWnd, printPoint.x, printPoint.y, clientSize.cx, clientSize.cy, true);   // printPoint ì§€ì ì— clientSize í¬ê¸°ë¡œ ì¶œë ¥
 }
 
 GameWindow* GameWindow::GetInstance()

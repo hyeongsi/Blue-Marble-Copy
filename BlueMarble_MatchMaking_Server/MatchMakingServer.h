@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <WinSock2.h>
 #include <iostream>
@@ -47,6 +47,7 @@ private:
 
 	void InitServer();
 	void AcceptSocket();
+	void PushUserId(char * packet);
 public:
 	static MatchMakingServer* GetInstance();
 	static void ReleaseInstance();

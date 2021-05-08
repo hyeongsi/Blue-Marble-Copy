@@ -1,4 +1,4 @@
-#include "MapManager.h"
+Ôªø#include "MapManager.h"
 #include <fstream>
 #include <string>
 
@@ -36,7 +36,7 @@ void MapManager::LoadMapData()
 	{
 		while (!readFile.eof())
 		{
-			readFile >> mapSize;	// ∏  ªÁ¿Ã¡Ó
+			readFile >> mapSize;	// Îßµ ÏÇ¨Ïù¥Ï¶à
 
 			board.mapSize = mapSize;
 

@@ -1,4 +1,4 @@
-#include "GameManager.h"
+﻿#include "GameManager.h"
 
 GameManager* GameManager::instance = nullptr;
 

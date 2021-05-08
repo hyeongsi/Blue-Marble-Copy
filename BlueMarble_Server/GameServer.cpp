@@ -60,9 +60,8 @@ void GameServer::AcceptMethod()
 		cout << "Connect Ip : " << GetClientIp(clientAddress) << endl;
 		cout << "Working AcceptThread" << endl << endl;;
 		MatchingClient::GetInstance()->MakePacket(SET_MATCHING_USER_PACKET);
-		// append 하고,
-		// sendMessage 하도록
-		// 지금 당장은 id가 결정 안났기 때문에 안보내는 중
+		MatchingClient::GetInstance()->AppendPacketDataMethod((int)1, sizeof(1));
+		MatchingClient::GetInstance()->SendMessageToMatchServer();
 
 		_beginthreadex(NULL, 0, RecvDataThread, &clientSocket, 0, NULL);	// recv thread 실행
 	}
@@ -141,6 +140,14 @@ void GameServer::StartServer()
 	GetInstance();
 	MapManager::GetInstance()->LoadMapData();
 	MatchingClient::GetInstance()->ConnectMathchServer();	// 매칭서버 연결
+
+	MatchingClient::GetInstance()->MakePacket(SET_MATCHING_USER_PACKET);
+	MatchingClient::GetInstance()->AppendPacketDataMethod((int)1, sizeof(1));
+	MatchingClient::GetInstance()->SendMessageToMatchServer();
+
+	MatchingClient::GetInstance()->MakePacket(SET_MATCHING_USER_PACKET);
+	MatchingClient::GetInstance()->AppendPacketDataMethod((int)2, sizeof(2));
+	MatchingClient::GetInstance()->SendMessageToMatchServer();
 
 	if (!InitServer())
 		return;

@@ -1,10 +1,10 @@
-#pragma once
+Ôªø#pragma once
 #include <string>
 #include <vector>
 
 using namespace std;
 
-constexpr const int DIRECTION = 4;	// ≥≤,º≠,∫œ,µø
+constexpr const int DIRECTION = 4;	// ÎÇ®,ÏÑú,Î∂Å,Îèô
 constexpr const int NAME_SIZE = 50;
 
 typedef struct BoardData

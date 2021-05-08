@@ -1,4 +1,4 @@
-#include "MatchingClient.h"
+ï»¿#include "MatchingClient.h"
 
 MatchingClient* MatchingClient::instance = nullptr;
 
@@ -23,7 +23,7 @@ bool MatchingClient::Connect()
 	clientSocket = socket(PF_INET, SOCK_STREAM, 0);
 
 	serverAddress.sin_family = AF_INET;
-	serverAddress.sin_port = htons(PORT);
+	serverAddress.sin_port = htons(MATCH_SERVER_PORT);
 	inet_pton(AF_INET, SERVER_IP, &serverAddress.sin_addr);
 
 	int connectResult = connect(clientSocket, (SOCKADDR*)&serverAddress, sizeof(serverAddress));
@@ -44,7 +44,7 @@ UINT WINAPI MatchingClient::RecvDataThread(void* arg)
 
 void MatchingClient::RecvDataMethod()
 {
-	while (nullptr != recvThreadHandle)
+	while (true)
 	{
 		char cBuffer[MAX_PACKET_SIZE] = {};
 		char header = NULL;
@@ -55,6 +55,7 @@ void MatchingClient::RecvDataMethod()
 			break;
 		}
 
+
 		if (nullptr != recvCBF)
 		{
 			recvCBF(cBuffer);
@@ -63,7 +64,7 @@ void MatchingClient::RecvDataMethod()
 		{
 			//memcpy(&header, &cBuffer[0], sizeof(char));
 
-			//switch (header)	// ³ªÁß¿¡ enum °ªÀ¸·Î º¯°æÇÏ±â
+			//switch (header)	// ë‚˜ì¤‘ì— enum ê°’ìœ¼ë¡œ ë³€ê²½í•˜ê¸°
 			//{
 			//case GET_MATCHING_USER_PACKET:
 			//	//GetMapDataMethod1(cBuffer);
@@ -82,7 +83,12 @@ void MatchingClient::SetMatchUserPacketMethod(char* packet)
 
 void MatchingClient::SetMatchUser(char* packet)
 {
-	// °ÔÀÓ ½ÃÀÛ¿¡ ¹ÞÀº À¯ÀúµéÀ» ¸ð¾Æ¼­ ½ÇÁ¦ °ÔÀÓ ÇÃ·¹ÀÌ ÇÏµµ·Ï ±¸ÇöÇÏ±â
+	matchMakingPacket userPacket;
+
+	memcpy(&userPacket.user1Id, &packet[1], sizeof(int));	// get mapSize
+	memcpy(&userPacket.user2Id, &packet[1 + sizeof(int)], sizeof(int));	// get mapSize
+
+	// ë°›ì€ 2ê°œ ì•„ì´ë””ë¡œ ê²Œìž„ë°© ë§Œë“¤ì–´ì„œ ì§„í–‰í•˜ê¸°,
 }
 
 MatchingClient* MatchingClient::GetInstance()
@@ -109,6 +115,8 @@ void MatchingClient::ConnectMathchServer()
 	if (Connect())
 	{
 		_beginthreadex(NULL, 0, GetInstance()->RecvDataThread, nullptr, 0, NULL);
+		cout << "connect MatchServer" << endl;
+		cout << "start MatchServer RecvThread" << endl << endl;
 	}
 }
 
@@ -116,22 +124,21 @@ void MatchingClient::MakePacket(char header)
 {
 	if (NULL != header)
 	{
-		memset(sendPacket, 0, MAX_PACKET_SIZE);		// ÆÐÅ¶ ÃÊ±âÈ­
+		memset(sendPacket, 0, MAX_PACKET_SIZE);		// íŒ¨í‚· ì´ˆê¸°í™”
 		sendPacket[0] = header;	// header setting
 		packetLastIndex = 1;
 	}
 	else
 	{
-		memset(sendPacket, 0, MAX_PACKET_SIZE);		// ÆÐÅ¶ ÃÊ±âÈ­
+		memset(sendPacket, 0, MAX_PACKET_SIZE);		// íŒ¨í‚· ì´ˆê¸°í™”
 		packetLastIndex = 0;
 	}
 }
 
-template<class T>
-void MatchingClient::AppendPacketData(T data, unsigned int dataSize, bool isAddress)
+void MatchingClient::AppendPacketDataMethod(int data, unsigned int dataSize)
 {
-	memcpy(&sendPacket[packetLastIndex], &data, dataSize);
-	packetLastIndex += dataSize;
+	memcpy(&instance->sendPacket[instance->packetLastIndex], &data, dataSize);
+	instance->packetLastIndex += dataSize;
 }
 
 void MatchingClient::AppendPacketPointerData(char* data, unsigned int dataSize)
