@@ -1,4 +1,5 @@
 ﻿#include "MatchingClient.h"
+#include "GameServer.h"
 
 MatchingClient* MatchingClient::instance = nullptr;
 
@@ -85,10 +86,10 @@ void MatchingClient::SetMatchUser(char* packet)
 {
 	matchMakingPacket userPacket;
 
-	memcpy(&userPacket.user1Id, &packet[1], sizeof(int));	// get mapSize
-	memcpy(&userPacket.user2Id, &packet[1 + sizeof(int)], sizeof(int));	// get mapSize
+	memcpy(&userPacket.user1Id, &packet[1], sizeof(unsigned int));	// get socket
+	memcpy(&userPacket.user2Id, &packet[1 + sizeof(unsigned int)], sizeof(unsigned int));	// get socket
 
-	// 받은 2개 아이디로 게임방 만들어서 진행하기,
+	// 받은 소켓으로 게임방 만들기
 }
 
 MatchingClient* MatchingClient::GetInstance()
@@ -135,7 +136,7 @@ void MatchingClient::MakePacket(char header)
 	}
 }
 
-void MatchingClient::AppendPacketDataMethod(int data, unsigned int dataSize)
+void MatchingClient::AppendPacketDataMethod(unsigned int data, unsigned int dataSize)
 {
 	memcpy(&instance->sendPacket[instance->packetLastIndex], &data, dataSize);
 	instance->packetLastIndex += dataSize;

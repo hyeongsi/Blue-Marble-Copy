@@ -25,7 +25,7 @@ class MatchMakingServer
 private:
 	static MatchMakingServer* instance;
 
-	queue<int> matchQueue;
+	queue<unsigned int> matchQueue;
 
 	char sendPacket[MAX_PACKET_SIZE] = {};
 	unsigned int packetLastIndex = 0;

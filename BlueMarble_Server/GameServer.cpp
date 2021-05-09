@@ -50,7 +50,6 @@ bool GameServer::InitServer()
 void GameServer::AcceptMethod()
 {
 	int clientAddressSize = sizeof(instance->clientAddress);
-	
 	cout << "start Accept" << endl;
 
 	while (true)
@@ -59,9 +58,6 @@ void GameServer::AcceptMethod()
 		clientSocket = accept(serverSocket, (SOCKADDR*)&clientAddress, &clientAddressSize);
 		cout << "Connect Ip : " << GetClientIp(clientAddress) << endl;
 		cout << "Working AcceptThread" << endl << endl;;
-		MatchingClient::GetInstance()->MakePacket(SET_MATCHING_USER_PACKET);
-		MatchingClient::GetInstance()->AppendPacketDataMethod((int)1, sizeof(1));
-		MatchingClient::GetInstance()->SendMessageToMatchServer();
 
 		_beginthreadex(NULL, 0, RecvDataThread, &clientSocket, 0, NULL);	// recv thread 실행
 	}
@@ -77,6 +73,10 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 	clientSocketMutex.lock();
 	clientSocketList.emplace_back(clientSocket);
 	clientSocketMutex.unlock();
+
+	MatchingClient::GetInstance()->MakePacket(SET_MATCHING_USER_PACKET);
+	MatchingClient::GetInstance()->AppendPacketDataMethod(clientSocket, sizeof(unsigned int));
+	MatchingClient::GetInstance()->SendMessageToMatchServer();
 
 	while ((recv(clientSocket, cBuffer, MAX_PACKET_SIZE, 0)) != -1)
 	{
@@ -141,14 +141,6 @@ void GameServer::StartServer()
 	MapManager::GetInstance()->LoadMapData();
 	MatchingClient::GetInstance()->ConnectMathchServer();	// 매칭서버 연결
 
-	MatchingClient::GetInstance()->MakePacket(SET_MATCHING_USER_PACKET);
-	MatchingClient::GetInstance()->AppendPacketDataMethod((int)1, sizeof(1));
-	MatchingClient::GetInstance()->SendMessageToMatchServer();
-
-	MatchingClient::GetInstance()->MakePacket(SET_MATCHING_USER_PACKET);
-	MatchingClient::GetInstance()->AppendPacketDataMethod((int)2, sizeof(2));
-	MatchingClient::GetInstance()->SendMessageToMatchServer();
-
 	if (!InitServer())
 		return;
 
@@ -190,6 +182,11 @@ void GameServer::GetMapDataMethod(SOCKET& socekt)
 void GameServer::RegistRecvCallbackFunction(CALLBACK_FUNC_PACKET cbf)
 {
 	recvCBF = cbf;
+}
+
+list<SOCKET> GameServer::GetClientSocketList()
+{
+	return clientSocketList;
 }
 
 void GameServer::MakePacket(char header)

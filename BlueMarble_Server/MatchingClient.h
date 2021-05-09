@@ -8,8 +8,8 @@ using namespace std;
 
 typedef struct MatchMakingPacket
 {
-	int user1Id;
-	int user2Id;
+	unsigned int user1Id;
+	unsigned int user2Id;
 }matchMakingPacket;
 
 class MatchingClient
@@ -46,7 +46,7 @@ public:
 	void ConnectMathchServer();
 
 	void MakePacket(char header);
-	void AppendPacketDataMethod(int data, unsigned int dataSize);
+	void AppendPacketDataMethod(unsigned int data, unsigned int dataSize);
 	void AppendPacketPointerData(char* data, unsigned int dataSize);
 	void SendMessageToMatchServer();
 };

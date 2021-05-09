@@ -46,5 +46,7 @@ public:
 	void AppendPacketPointerData(const char* data, unsigned int dataSize);
 	void PacektSendMethod(SOCKET& socket);
 	void RegistRecvCallbackFunction(CALLBACK_FUNC_PACKET cbf);
+
+	list<SOCKET> GetClientSocketList();
 };
 

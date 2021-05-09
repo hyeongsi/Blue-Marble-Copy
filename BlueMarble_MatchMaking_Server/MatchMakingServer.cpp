@@ -91,9 +91,9 @@ void MatchMakingServer::AcceptSocket()
 
 void MatchMakingServer::PushUserId(char* packet)
 {
-	int userId;
+	unsigned int userId;
 
-	memcpy(&userId, &packet[sizeof(char)], sizeof(int));
+	memcpy(&userId, &packet[sizeof(char)], sizeof(unsigned int));
 	matchQueue.push(userId);
 }
 
@@ -123,9 +123,9 @@ void MatchMakingServer::StartServer()
 		if (2 <= matchQueue.size())
 		{
 			MakePacket(SET_MATCHING_USER_PACKET);
-			AppendPacketData(matchQueue.front(), sizeof(int));
+			AppendPacketData(matchQueue.front(), sizeof(unsigned int));
 			matchQueue.pop();
-			AppendPacketData(matchQueue.front(), sizeof(int));
+			AppendPacketData(matchQueue.front(), sizeof(unsigned int));
 			matchQueue.pop();
 
 			PacektSendMethod(clientSocket);
