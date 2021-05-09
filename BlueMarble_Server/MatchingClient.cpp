@@ -61,19 +61,6 @@ void MatchingClient::RecvDataMethod()
 		{
 			recvCBF(cBuffer);
 		}
-		else
-		{
-			//memcpy(&header, &cBuffer[0], sizeof(char));
-
-			//switch (header)	// 나중에 enum 값으로 변경하기
-			//{
-			//case GET_MATCHING_USER_PACKET:
-			//	//GetMapDataMethod1(cBuffer);
-			//	break;
-			//default:
-			//	break;
-			//}
-		}
 	}
 }
 

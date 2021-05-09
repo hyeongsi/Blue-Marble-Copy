@@ -22,10 +22,6 @@ void GameWindow::ReInitGame(HWND hWnd)
 {
     instance->renderManager->Init(hWnd);        // MainMenu <- -> Game Render
     MainSystem::GetInstance()->RegistUpdateCallbackFunction(GameUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
-    SocketTransfer::GetInstance()->StartRecvDataThread();
-
-    SocketTransfer::GetInstance()->MakePacket(GET_MAPDATA); // init packet
-    SocketTransfer::GetInstance()->SendMessageToGameServer();   // send packet
 }
 
 void GameWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd)

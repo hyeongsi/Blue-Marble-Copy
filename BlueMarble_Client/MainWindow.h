@@ -8,6 +8,8 @@ class MainWindow
 {
 private:
 	static MainWindow* instance;
+	static bool isRunRankingThread;
+	static bool isRunStartThread;
 
 	std::vector<HWND> hwndWindow;
 
@@ -24,9 +26,9 @@ private:
 	void ShowButton();	// 버튼 출력
 	void HideButton();	// 버튼 숨기기
 	static void StartGameMethod();	// 시작 버튼 작동
-	void StartGame();
+	static UINT WINAPI StartGame(void* arg);
 	static void GetRankingDataMethod();	// 랭킹 정보 요청
-	void GetRankingData();
+	static UINT WINAPI GetRankingData(void* arg);
 public:
 	static MainWindow* GetInstance();
 	static void ReleaseInstance();

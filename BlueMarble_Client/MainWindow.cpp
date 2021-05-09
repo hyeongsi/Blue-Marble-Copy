@@ -4,8 +4,11 @@
 #include "RenderManager.h"
 #include "BitmapManager.h"
 #include "HttpTransfer.h"
+#include <process.h>
 
 MainWindow* MainWindow::instance = nullptr;
+bool MainWindow::isRunRankingThread = false;
+bool MainWindow::isRunStartThread = false;
 
 MainWindow::MainWindow() {}
 MainWindow::~MainWindow() {}
@@ -76,25 +79,41 @@ void MainWindow::HideButton()
 
 void MainWindow::StartGameMethod()
 {
-    instance->StartGame();
+    if (!isRunStartThread)
+    {
+        _beginthreadex(NULL, 0, StartGame, NULL, 0, NULL);
+    }
 }
 
-void MainWindow::StartGame()
+UINT WINAPI MainWindow::StartGame(void* arg)
 {
+    isRunStartThread = true;
     if (SocketTransfer::GetInstance()->ConnectServer())
     {
+        SocketTransfer::GetInstance()->StartRecvDataThread();
+        SocketTransfer::GetInstance()->MakePacket(GET_MAPDATA); // init packet
+        SocketTransfer::GetInstance()->SendMessageToGameServer();   // send packet
+
         ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::GAME), SW_SHOW);
         ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU), SW_HIDE);
     }
+    isRunStartThread = false;
+
+    return 0;
 }
 
 void MainWindow::GetRankingDataMethod()
 {
-    instance->GetRankingData();
+    if (!isRunRankingThread)
+    {
+        _beginthreadex(NULL, 0, GetRankingData, NULL, 0, NULL);
+    }
 }
 
-void MainWindow::GetRankingData()
+UINT WINAPI MainWindow::GetRankingData(void* arg)
 {
+    isRunRankingThread = true;
+
     string rankingData = HttpTransfer::GetInstance()->GetRanking();
     if (rankingData == "")
     {
@@ -104,8 +123,12 @@ void MainWindow::GetRankingData()
     {
         MessageBox(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU),
             rankingData.c_str(), "Ranking", MB_OK);
+
         rankingData = "";
     }
+
+    isRunRankingThread = false;
+    return 0;
 }
 
 MainWindow* MainWindow::GetInstance()
