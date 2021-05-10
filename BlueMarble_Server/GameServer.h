@@ -11,9 +11,6 @@ class GameServer
 private:
 	static GameServer* instance;
 
-	char sendPacket[MAX_PACKET_SIZE] = {};
-	unsigned int packetLastIndex = 0;
-
 	WSADATA wsaData;
 	SOCKET serverSocket;
 	SOCKADDR_IN clientAddress = {};
@@ -21,7 +18,6 @@ private:
 
 	list<SOCKET> clientSocketList;
 	mutex clientSocketMutex;
-	CALLBACK_FUNC_PACKET recvCBF = nullptr;
 
 	GameServer();
 	~GameServer();
@@ -33,19 +29,19 @@ private:
 	static UINT WINAPI RecvDataThread(void* arg);
 
 	string GetClientIp(SOCKADDR_IN clientAddress);
+	void GetReadySignMethod(SOCKET& socekt, GameRoom* myRoom);
 public:
 	static GameServer* GetInstance();
 	static void ReleaseInstance();
 
 	void StartServer();
-	void GetMapDataMethod(SOCKET& socekt);
+	void SendMapDataMethod(SOCKET& socekt);
 
-	void MakePacket(char header);
+	void MakePacket(char* sendPacket, unsigned int* packetLastIndex, char header);
 	template<class T>
-	void AppendPacketData(T data, unsigned int dataSize);
-	void AppendPacketPointerData(const char* data, unsigned int dataSize);
-	void PacektSendMethod(SOCKET& socket);
-	void RegistRecvCallbackFunction(CALLBACK_FUNC_PACKET cbf);
+	void AppendPacketData(char* sendPacket, unsigned int* packetLastIndex, T data, unsigned int dataSize);
+	void AppendPacketPointerData(char* sendPacket, unsigned int* packetLastIndex, const char* data, unsigned int dataSize);
+	void PacektSendMethod(char* sendPacket, SOCKET& socket);
 
 	list<SOCKET> GetClientSocketList();
 };

@@ -149,12 +149,20 @@ void RenderManager::DrawWindow(State state)
     if (nullptr == windowBitmap)
         return;
 
+    int count = 0;
     for (const auto&  bitmapIterator : *windowBitmap)
     {
-        if(State::GAME == state)
+        if (State::GAME == state)
+        {
+            if ((count < MAX_PLAYER) && (GameManager::GetInstance()->GetPlayerCount() <= count))
+                continue;   // 플레이어 숫자에 따라 출력되는 캐릭터 수 제한
+
             DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);
+        }
         else
             DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
+
+        count++;
     }
 }
 

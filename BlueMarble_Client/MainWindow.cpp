@@ -91,8 +91,6 @@ UINT WINAPI MainWindow::StartGame(void* arg)
     if (SocketTransfer::GetInstance()->ConnectServer())
     {
         SocketTransfer::GetInstance()->StartRecvDataThread();
-        SocketTransfer::GetInstance()->MakePacket(GET_MAPDATA); // init packet
-        SocketTransfer::GetInstance()->SendMessageToGameServer();   // send packet
 
         ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::GAME), SW_SHOW);
         ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU), SW_HIDE);

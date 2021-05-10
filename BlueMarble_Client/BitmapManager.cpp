@@ -34,11 +34,17 @@ void BitmapManager::LoadHwndData(State state)
 	switch (state)
 	{
 	case State::MAIN_MENU:
+		if (0 != mainMenuHwnd.size())
+			return;
+
 		readFile.open(mainMenuFilePath);
 		break;
 	case State::RANK_MENU:
 		return;
 	case State::GAME:
+		if (0 != gameHwnd.size())
+			return;
+
 		readFile.open(gameFilePath);
 		break;
 	default:
@@ -86,11 +92,17 @@ void BitmapManager::LoadBitmapData(State state)
 	switch (state)
 	{
 	case State::MAIN_MENU:
+		if (0 != mainMenuBitmap.size())
+			return;
+
 		readFile.open(mainMenuFilePath);
 		break;
 	case State::RANK_MENU:
 		return;
 	case State::GAME:
+		if (0 != gameBitmap.size())
+			return;
+
 		readFile.open(gameFilePath);
 		break;
 	default:

@@ -4,6 +4,7 @@
 #include <process.h>
 #include "MainSystem.h"
 #include "GameManager.h"
+#include "GameWindow.h"
 
 SocketTransfer* SocketTransfer::instance = nullptr;
 
@@ -12,10 +13,12 @@ SocketTransfer::~SocketTransfer() {}
 
 void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 {
+	char header = NULL;
+
 	while (nullptr != recvThreadHandle)
 	{
 		char cBuffer[MAX_PACKET_SIZE] = {};
-		char header = NULL;
+		header = NULL;
 
 		if ((recv(clientSocket, cBuffer, MAX_PACKET_SIZE, 0)) == -1)
 		{
@@ -35,6 +38,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			{
 			case GET_MAPDATA:
 				GetMapDataMethod1(cBuffer);
+				break;
+			case READY:
+				GetReadyMethod(cBuffer);
 				break;
 			default:
 				break;
@@ -61,10 +67,10 @@ void SocketTransfer::GetMapData1(char* packet)
 	mapPacket1 _mapPacket1;
 	int code = 0;
 
-	memcpy(&_mapPacket1.mapSize, &packet[0], sizeof(unsigned int));	// get mapSize
+	memcpy(&_mapPacket1.mapSize, &packet[1], sizeof(unsigned int));	// get mapSize
 	for (int i = 0; i < (int)_mapPacket1.mapSize * DIRECTION; i++)
 	{
-		memcpy(&code, &packet[sizeof(unsigned int) + (i*sizeof(int))], sizeof(int));	// get mapCode
+		memcpy(&code, &packet[1 + sizeof(unsigned int) + (i*sizeof(int))], sizeof(int));	// get mapCode
 		_mapPacket1.code.emplace_back(code);
 	}
 
@@ -98,6 +104,21 @@ void SocketTransfer::GetMapData2(char* packet)
 	GameManager::GetInstance()->GetBoardDataAddress()->name = _mapPacket2.name;
 	RenderManager::GetInstance()->InitDrawBoardMap();
 	recvCBF = nullptr;
+}
+
+void SocketTransfer::GetReadyMethod(char* packet)
+{
+	readyPacket rPacket;
+	memcpy(&rPacket.header, &packet[0], sizeof(char));					// get ready sign
+	memcpy(&rPacket.roomIndex, &packet[1], sizeof(int));				// get roomIndex
+	memcpy(&rPacket.number, &packet[1 + sizeof(int)], sizeof(int));		// get number
+	memcpy(&rPacket.playerCount, &packet[1 + sizeof(int) + sizeof(int)], sizeof(int));		// get playerCount
+
+	GameManager::GetInstance()->SetPlayerCount(rPacket.playerCount);
+
+	MakePacket(READY);
+	AppendPacketData(rPacket.roomIndex, sizeof(int));
+	SendMessageToGameServer();
 }
 
 void SocketTransfer::PrintErrorCode(State state, const int errorCode)
@@ -192,7 +213,7 @@ void SocketTransfer::MakePacket(char header)
 }
 
 template<class T>
-void SocketTransfer::AppendPacketData(T data, unsigned int dataSize, bool isAddress)
+void SocketTransfer::AppendPacketData(T data, unsigned int dataSize)
 {
 	memcpy(&sendPacket[packetLastIndex], &data, dataSize);
 	packetLastIndex += dataSize;

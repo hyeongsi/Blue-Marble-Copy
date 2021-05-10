@@ -33,6 +33,7 @@ private:
 	void GetMapData1(char* packet);
 	static void GetMapDataMethod2(char* packet);
 	void GetMapData2(char* packet);
+	void GetReadyMethod(char* packet);
 public:
 	void PrintErrorCode(State state, const int errorCode);
 
@@ -45,7 +46,7 @@ public:
 
 	void MakePacket(char header);
 	template<class T>
-	void AppendPacketData(T data, unsigned int dataSize, bool isAddress = false);
+	void AppendPacketData(T data, unsigned int dataSize);
 	void AppendPacketPointerData(char* data, unsigned int dataSize);
 	void SendMessageToGameServer();
 	void RegistRecvCallbackFunction(CALLBACK_FUNC_PACKET cbf);

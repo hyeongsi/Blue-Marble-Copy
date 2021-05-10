@@ -66,9 +66,11 @@ void GameServer::AcceptMethod()
 void GameServer::StartRecvDataThread(SOCKET clientSocket)
 {
 	cout << "start ListenThread" << endl;
-	
+	CALLBACK_FUNC_PACKET recvCBF = nullptr;
+
 	char cBuffer[MAX_PACKET_SIZE] = {};
 	char header = NULL;
+	GameRoom* myRoom = nullptr;
 
 	clientSocketMutex.lock();
 	clientSocketList.emplace_back(clientSocket);
@@ -91,8 +93,8 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 
 			switch (header)
 			{
-			case GET_MAPDATA:
-				GetMapDataMethod(clientSocket);
+			case READY:
+				GetReadySignMethod(clientSocket, myRoom);
 				break;
 			default:
 				break;
@@ -117,6 +119,17 @@ string GameServer::GetClientIp(SOCKADDR_IN clientAddress)
 {
 	char buf[32] = { 0, };
 	return inet_ntop(AF_INET, &clientAddress.sin_addr, buf, sizeof(buf));
+}
+
+void GameServer::GetReadySignMethod(SOCKET& socekt, GameRoom* myRoom)
+{
+	readyPacket rPacket;
+	char cBuffer[MAX_PACKET_SIZE] = {};
+
+	memcpy(&rPacket.roomIndex, &cBuffer[1], sizeof(int));
+	myRoom = GameManager::GetInstance()->GetRoom(rPacket.roomIndex);	// 방 수신 후 
+
+	SendMapDataMethod(socekt);
 }
 
 GameServer* GameServer::GetInstance()
@@ -150,28 +163,32 @@ void GameServer::StartServer()
 	ReleaseInstance();
 }
 
-void GameServer::GetMapDataMethod(SOCKET& socekt)
+void GameServer::SendMapDataMethod(SOCKET& socekt)
 {
 	boardData* board = MapManager::GetInstance()->GetBoardData(ORIGINAL);	// 나중에 enum 값으로 변경하기
+	char sendPacket[MAX_PACKET_SIZE] = {};
+	unsigned int packetLastIndex = 0;
 
 	if (nullptr != board)
 	{
-		MakePacket(NULL);
-		AppendPacketData(board->mapSize, sizeof(board->mapSize));
+		MakePacket(sendPacket, &packetLastIndex, GET_MAPDATA);
+		AppendPacketData(sendPacket, &packetLastIndex,board->mapSize, sizeof(board->mapSize));
 		for (int i = 0; i < (int)board->code.size(); i++)
 		{
-			AppendPacketData(board->code[i], sizeof(board->code[i]));
+			AppendPacketData(sendPacket, &packetLastIndex,  board->code[i], sizeof(board->code[i]));
 		}
-		PacektSendMethod(socekt);
+		PacektSendMethod(sendPacket, socekt);
+		cout << "send MapData1" << endl;
 
-		MakePacket(NULL);
+		MakePacket(sendPacket, &packetLastIndex, NULL);
 		for (int i = 0; i < (int)board->code.size(); i++)
 		{
-			AppendPacketData(board->name[i].size()+1, sizeof(unsigned int));
-			AppendPacketPointerData(board->name[i].c_str(), board->name[i].size());
-			AppendPacketData('\0', sizeof(char));
+			AppendPacketData(sendPacket, &packetLastIndex, board->name[i].size()+1, sizeof(unsigned int));
+			AppendPacketPointerData(sendPacket, &packetLastIndex, board->name[i].c_str(), board->name[i].size());
+			AppendPacketData(sendPacket, &packetLastIndex, '\0', sizeof(char));
 		}
-		PacektSendMethod(socekt);
+		PacektSendMethod(sendPacket, socekt);
+		cout << "send MapData2" << endl;
 	}
 	else
 	{
@@ -179,45 +196,40 @@ void GameServer::GetMapDataMethod(SOCKET& socekt)
 	}
 }
 
-void GameServer::RegistRecvCallbackFunction(CALLBACK_FUNC_PACKET cbf)
-{
-	recvCBF = cbf;
-}
-
 list<SOCKET> GameServer::GetClientSocketList()
 {
 	return clientSocketList;
 }
 
-void GameServer::MakePacket(char header)
+void GameServer::MakePacket(char* sendPacket, unsigned int* packetLastIndex, char header)
 {
 	if (NULL != header)
 	{
 		memset(sendPacket, 0, MAX_PACKET_SIZE);		// 패킷 초기화
 		sendPacket[0] = header;	// header setting
-		packetLastIndex = 1;
+		*packetLastIndex = 1;
 	}
 	else
 	{
 		memset(sendPacket, 0, MAX_PACKET_SIZE);		// 패킷 초기화
-		packetLastIndex = 0;
+		*packetLastIndex = 0;
 	}
 }
 
 template<class T>
-void GameServer::AppendPacketData(T data, unsigned int dataSize)
+void GameServer::AppendPacketData(char* sendPacket, unsigned int* packetLastIndex, T data, unsigned int dataSize)
 {
-	memcpy(&sendPacket[packetLastIndex], &data, dataSize);
-	packetLastIndex += dataSize;
+	memcpy(&sendPacket[*packetLastIndex], &data, dataSize);
+	*packetLastIndex += dataSize;
 }
 
-void GameServer::AppendPacketPointerData(const char* data, unsigned int dataSize)
+void GameServer::AppendPacketPointerData(char* sendPacket, unsigned int* packetLastIndex, const char* data, unsigned int dataSize)
 {
-	memcpy(&sendPacket[packetLastIndex], data, dataSize);
-	packetLastIndex += dataSize;
+	memcpy(&sendPacket[*packetLastIndex], data, dataSize);
+	*packetLastIndex += dataSize;
 }
 
-void GameServer::PacektSendMethod(SOCKET& socket)
+void GameServer::PacektSendMethod(char* sendPacket, SOCKET& socket)
 {
 	if (send(socket, sendPacket, MAX_PACKET_SIZE, 0) == -1)
 	{

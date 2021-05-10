@@ -56,7 +56,6 @@ void MatchingClient::RecvDataMethod()
 			break;
 		}
 
-
 		if (nullptr != recvCBF)
 		{
 			recvCBF(cBuffer);
@@ -76,7 +75,7 @@ void MatchingClient::SetMatchUser(char* packet)
 	memcpy(&userPacket.user1Id, &packet[1], sizeof(unsigned int));	// get socket
 	memcpy(&userPacket.user2Id, &packet[1 + sizeof(unsigned int)], sizeof(unsigned int));	// get socket
 
-	// 받은 소켓으로 게임방 만들기
+	GameManager::GetInstance()->CreateRoom(userPacket.user1Id, userPacket.user2Id);
 }
 
 MatchingClient* MatchingClient::GetInstance()

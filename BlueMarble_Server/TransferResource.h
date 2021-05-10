@@ -27,5 +27,12 @@ enum ErrorCode
 enum MessageCode
 {
 	GET_MAPDATA = 1,
+	READY = 2,
 	SET_MATCHING_USER_PACKET = 100,
 };
+
+typedef struct ReadyPacket
+{
+	char header;
+	int roomIndex;
+}readyPacket;
