@@ -1,4 +1,5 @@
-﻿#include "GameManager.h"
+﻿#pragma once
+#include "GameManager.h"
 #include "GameServer.h"
 
 GameManager* GameManager::instance = nullptr;
@@ -47,4 +48,18 @@ GameRoom* GameManager::GetRoom(int index)
 		return nullptr;
 	else
 		return roomVector[index];
+}
+
+UINT WINAPI GameManager::RoomLogicThread(void* arg)
+{
+	instance->RoomLogicThreadMethod((GameRoom*)arg);
+	return 0;
+}
+
+void GameManager::RoomLogicThreadMethod(GameRoom* room)
+{
+	for (auto& userSocket : room->GetUserList())
+	{
+		room->SendMapDataMethod(userSocket);	// 맵 데이터 전송
+	} 
 }

@@ -1,5 +1,10 @@
-﻿#include "MatchingClient.h"
+﻿#pragma once
+#include "MatchingClient.h"
 #include "GameServer.h"
+#include <WS2tcpip.h>	// inet_pton()
+#include <process.h>
+#include <iostream>
+#include "GameManager.h"
 
 MatchingClient* MatchingClient::instance = nullptr;
 

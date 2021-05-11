@@ -1,13 +1,13 @@
 ﻿#pragma once
-#include "TransferResource.h"
-#include "GameRoom.h"
 #include <vector>
+#include <WinSock2.h>
 
+class GameRoom;
 class GameManager
 {
 private:
 	static GameManager* instance;
-	vector<GameRoom*> roomVector;
+	std::vector<GameRoom*> roomVector;
 
 	GameManager();
 	~GameManager();
@@ -17,5 +17,8 @@ public:
 
 	void CreateRoom(SOCKET& user1, SOCKET& user2);
 	GameRoom* GetRoom(int index);
+
+	static UINT WINAPI RoomLogicThread(void* arg);
+	void RoomLogicThreadMethod(GameRoom* room);
 };
 

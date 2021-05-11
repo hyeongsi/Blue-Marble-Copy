@@ -3,8 +3,8 @@
 #include <string>
 #include <List>
 #include <mutex>
-#include "TransferResource.h"
 #include "MatchingClient.h"
+#include "GameRoom.h"
 
 class GameServer
 {
@@ -22,7 +22,6 @@ private:
 	GameServer();
 	~GameServer();
 
-	void PrintErrorCode(int errorCode);
 	bool InitServer();
 	void AcceptMethod();
 	void StartRecvDataThread(SOCKET clientSocket);
@@ -34,8 +33,8 @@ public:
 	static GameServer* GetInstance();
 	static void ReleaseInstance();
 
+	void PrintErrorCode(int errorCode);
 	void StartServer();
-	void SendMapDataMethod(SOCKET& socekt);
 
 	void MakePacket(char* sendPacket, unsigned int* packetLastIndex, char header);
 	template<class T>
@@ -46,3 +45,9 @@ public:
 	list<SOCKET> GetClientSocketList();
 };
 
+template<class T>
+void GameServer::AppendPacketData(char* sendPacket, unsigned int* packetLastIndex, T data, unsigned int dataSize)
+{
+	memcpy(&sendPacket[*packetLastIndex], &data, dataSize);
+	*packetLastIndex += dataSize;
+}

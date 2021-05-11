@@ -1,4 +1,5 @@
-﻿#include "MapManager.h"
+﻿#pragma once
+#include "MapManager.h"
 #include <fstream>
 #include <string>
 

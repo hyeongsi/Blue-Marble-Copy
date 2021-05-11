@@ -1,11 +1,5 @@
 ﻿#pragma once
 #include "TransferResource.h"
-#include "GameManager.h"
-#include <iostream>
-#include <WS2tcpip.h>	// inet_pton()
-#include <process.h>
-
-using namespace std;
 
 typedef struct MatchMakingPacket
 {
