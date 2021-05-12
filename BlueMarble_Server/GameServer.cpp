@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "GameServer.h"
-#include <iostream>
+#include <stdio.h>
 #include <process.h>
 #include <signal.h>
 #include <WS2tcpip.h>	// inet_ntop()
@@ -14,7 +14,7 @@ GameServer::~GameServer() {}
 
 void GameServer::PrintErrorCode(int errorCode)
 {
-	cout << "error code : " << errorCode << endl;
+	printf("%s %d\n", "error code : ", errorCode);
 }
 
 bool GameServer::InitServer()
@@ -24,7 +24,7 @@ bool GameServer::InitServer()
 		PrintErrorCode(WSASTARTUP_ERROR);
 		return false;
 	}
-	cout << "WSAStartup" << endl;
+	printf("%s\n", "WSAStartup");
 	serverSocket = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 	serverAddress.sin_family = AF_INET;
@@ -36,14 +36,14 @@ bool GameServer::InitServer()
 		PrintErrorCode(BIND_ERROR);
 		return false;
 	}
-	cout << "bind" << endl;
+	printf("%s\n", "bind");
 
 	if (-1 == listen(serverSocket, SOMAXCONN))
 	{
 		PrintErrorCode(LISTEN_ERROR);
 		return false;
 	}
-	cout << "listen" << endl;
+	printf("%s\n", "listen");
 	
 	return true;
 }
@@ -51,14 +51,14 @@ bool GameServer::InitServer()
 void GameServer::AcceptMethod()
 {
 	int clientAddressSize = sizeof(instance->clientAddress);
-	cout << "start Accept" << endl;
+	printf("%s\n", "start Accept");
 
 	while (true)
 	{
 		SOCKET clientSocket;
 		clientSocket = accept(serverSocket, (SOCKADDR*)&clientAddress, &clientAddressSize);
-		cout << "Connect Ip : " << GetClientIp(clientAddress) << endl;
-		cout << "Working AcceptThread" << endl << endl;;
+		printf("%s %s\n", "Connect Ip : ", GetClientIp(clientAddress).c_str());
+		printf("%s\n", "Working AcceptThread");
 
 		_beginthreadex(NULL, 0, RecvDataThread, &clientSocket, 0, NULL);	// recv thread 실행
 	}
@@ -66,7 +66,7 @@ void GameServer::AcceptMethod()
 
 void GameServer::StartRecvDataThread(SOCKET clientSocket)
 {
-	cout << "start ListenThread" << endl;
+	printf("%s\n", "start ListenThread");
 	CALLBACK_FUNC_PACKET recvCBF = nullptr;
 
 	char cBuffer[MAX_PACKET_SIZE] = {};
@@ -90,12 +90,15 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 		else
 		{
 			memcpy(&header, &cBuffer[0], sizeof(char));
-			cout << "recv " << (int)header << endl;
+			printf("%s %d\n", "recv", (int)header);
 
 			switch (header)
 			{
 			case READY:
-				GetReadySignMethod(clientSocket, myRoom);
+				GetReadySignMethod(myRoom);
+				break;
+			case ROLL_DICE_SIGN:
+				GameManager::GetInstance()->RollTheDiceMethod(myRoom);
 				break;
 			default:
 				break;
@@ -107,7 +110,7 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 	clientSocketList.remove(clientSocket);
 	clientSocketMutex.unlock();
 
-	cout << "lost connect : " << GetClientIp(clientAddress) << endl;
+	printf("%s %s\n", "lost connect : ", GetClientIp(clientAddress).c_str());
 }
 
 UINT WINAPI GameServer::RecvDataThread(void* arg)
@@ -122,7 +125,7 @@ string GameServer::GetClientIp(SOCKADDR_IN clientAddress)
 	return inet_ntop(AF_INET, &clientAddress.sin_addr, buf, sizeof(buf));
 }
 
-void GameServer::GetReadySignMethod(SOCKET& socekt, GameRoom* myRoom)
+void GameServer::GetReadySignMethod(GameRoom* myRoom)
 {
 	readyPacket rPacket;
 	char cBuffer[MAX_PACKET_SIZE] = {};
@@ -200,5 +203,5 @@ void GameServer::PacektSendMethod(char* sendPacket, SOCKET& socket)
 	{
 		PrintErrorCode(SEND_ERROR);
 	}
-	cout << "send Data" << endl;
+	printf("%s\n", "send Data");
 }

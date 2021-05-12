@@ -29,17 +29,37 @@ void GameManager::Init()
 	playerCount = 0;
 }
 
-int GameManager::GetPlayerCount()
-{
-	return playerCount;
-}
-
 void GameManager::SetPlayerCount(int count)
 {
 	playerCount = count;
 }
 
-boardData* GameManager::GetBoardDataAddress()
+int GameManager::GetPlayerCount()
+{
+	return playerCount;
+}
+
+void GameManager::SetGameState(GameState state)
+{
+	this->state = state;
+}
+
+GameState GameManager::GetGameState()
+{
+	return state;
+}
+
+void GameManager::SetIsMyTurn(bool turn)
+{
+	isMyTurn = turn;
+}
+
+bool GameManager::GetIsMyTurn()
+{
+	return isMyTurn;
+}
+
+boardData* GameManager::GetAddressBoardData()
 {
 	return &board;
 }

@@ -42,6 +42,12 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case READY:
 				GetReadyMethod(cBuffer);
 				break;
+			case ROLL_DICE_SIGN:
+				GetRollDiceSignMethod(cBuffer);
+				break;
+			case ROLL_DICE:
+				GetRollDiceMethod(cBuffer);
+				break;
 			default:
 				break;
 			}
@@ -74,8 +80,8 @@ void SocketTransfer::GetMapData1(char* packet)
 		_mapPacket1.code.emplace_back(code);
 	}
 
-	GameManager::GetInstance()->GetBoardDataAddress()->mapSize = _mapPacket1.mapSize;
-	GameManager::GetInstance()->GetBoardDataAddress()->code = _mapPacket1.code;
+	GameManager::GetInstance()->GetAddressBoardData()->mapSize = _mapPacket1.mapSize;
+	GameManager::GetInstance()->GetAddressBoardData()->code = _mapPacket1.code;
 	recvCBF = GetMapDataMethod2;
 }
 
@@ -101,7 +107,7 @@ void SocketTransfer::GetMapData2(char* packet)
 		_mapPacket2.name.emplace_back(str);
 	}
 
-	GameManager::GetInstance()->GetBoardDataAddress()->name = _mapPacket2.name;
+	GameManager::GetInstance()->GetAddressBoardData()->name = _mapPacket2.name;
 	RenderManager::GetInstance()->InitDrawBoardMap();
 	recvCBF = nullptr;
 }
@@ -119,6 +125,33 @@ void SocketTransfer::GetReadyMethod(char* packet)
 	MakePacket(READY);
 	AppendPacketData(rPacket.roomIndex, sizeof(int));
 	SendMessageToGameServer();
+}
+
+void SocketTransfer::GetRollDiceSignMethod(char* packet)
+{
+	instance->GetRollDiceSign(packet);
+}
+
+void SocketTransfer::GetRollDiceSign(char* packet)
+{
+	GameManager::GetInstance()->SetIsMyTurn(true);
+	GameManager::GetInstance()->SetGameState(GameState::ROLL_DICE);
+}
+
+void SocketTransfer::GetRollDiceMethod(char* packet)
+{
+	instance->GetRollDice(packet);
+}
+
+void SocketTransfer::GetRollDice(char* packet)
+{
+	diceRollPacket dPacket;
+	memcpy(&dPacket.header, &packet[0], sizeof(char));					// get ready sign
+	memcpy(&dPacket.whosTurn, &packet[1], sizeof(int));				// get roomIndex
+	memcpy(&dPacket.diceValue, &packet[1 + sizeof(int)], sizeof(int));		// get number
+
+	// 주사위 값으로 클라이언트 갱신하기
+	// 갱신갱신
 }
 
 void SocketTransfer::PrintErrorCode(State state, const int errorCode)
@@ -243,4 +276,12 @@ void SocketTransfer::SendMessageToGameServer()
 void SocketTransfer::RegistRecvCallbackFunction(CALLBACK_FUNC_PACKET cbf)
 {
 	recvCBF = cbf;
+}
+
+void SocketTransfer::SendRollDiceSign()
+{
+	recvCBF = GetRollDiceMethod;
+
+	MakePacket(ROLL_DICE_SIGN);
+	SendMessageToGameServer();
 }

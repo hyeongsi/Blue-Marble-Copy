@@ -34,6 +34,13 @@ private:
 	static void GetMapDataMethod2(char* packet);
 	void GetMapData2(char* packet);
 	void GetReadyMethod(char* packet);
+
+	static void GetRollDiceSignMethod(char* packet);
+	void GetRollDiceSign(char* packet);
+
+	static void GetRollDiceMethod(char* packet);
+	void GetRollDice(char* packet);
+
 public:
 	void PrintErrorCode(State state, const int errorCode);
 
@@ -50,4 +57,6 @@ public:
 	void AppendPacketPointerData(char* data, unsigned int dataSize);
 	void SendMessageToGameServer();
 	void RegistRecvCallbackFunction(CALLBACK_FUNC_PACKET cbf);
+
+	void SendRollDiceSign();
 };

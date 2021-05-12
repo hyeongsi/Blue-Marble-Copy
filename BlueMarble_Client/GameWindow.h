@@ -7,6 +7,7 @@ class GameWindow
 {
 private:
 	static GameWindow* instance;
+	std::vector<HWND> hwndWindow;
 
 	RenderManager* renderManager = nullptr;
 	BitmapManager* bitmapManager = nullptr;
@@ -17,7 +18,12 @@ private:
 	void InitClass(HWND hWnd);
 	void ReInitGame(HWND hWnd);
 	void ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd);
+	void CreateButton(HWND hWnd);
+	void ShowButton();
+	void HideButton();
 
+	static void SendDiceTriggerMsgMethod();
+	void SendDiceTriggerMsg();
 public:
 	static GameWindow* GetInstance();
 	static void ReleaseInstance();

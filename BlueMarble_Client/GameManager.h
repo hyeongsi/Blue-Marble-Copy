@@ -15,13 +15,24 @@ typedef struct BoardData
 	vector<string> name;
 } boardData;
 
+enum class GameState
+{
+	WAIT = 0,
+	ROLL_DICE = 1,
+	BUY_LAND = 2,
+	SELL_LAND = 3,
+};
+
 class GameManager
 {
 private:
 	static GameManager* instance;
 
 	boardData board;
-	int playerCount = 0;
+	GameState state = GameState::WAIT;
+
+	bool isMyTurn = false;
+	int playerCount = 0;	// 총 플레이 유저 수
 
 	GameManager();
 	~GameManager();
@@ -30,10 +41,16 @@ public:
 	static void ReleaseInstance();
 
 	void Init();
+	void SetGameState(GameState state);
+	GameState GetGameState();
+
 	void SetPlayerCount(int count);
 	int GetPlayerCount();
 
-	boardData* GetBoardDataAddress();
+	void SetIsMyTurn(bool turn);
+	bool GetIsMyTurn();
+
+	boardData* GetAddressBoardData();
 	boardData GetBoardData();
 };
 

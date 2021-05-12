@@ -17,6 +17,8 @@ enum MessageCode
 {
 	GET_MAPDATA = 1,
 	READY = 2,
+	ROLL_DICE_SIGN = 3,
+	ROLL_DICE = 4,
 };
 
 typedef struct MapPacket1
@@ -39,3 +41,10 @@ typedef struct ReadyPacket
 	int number;	// 몇번째 캐릭터인지 구분하기 위해 사용
 	int playerCount;	// 총 플레이 유저 수
 }readyPacket;
+
+typedef struct DiceRollPacket
+{
+	char header;
+	int whosTurn;	// 누구차례인지
+	int diceValue;	// 주사위 값
+}diceRollPacket;

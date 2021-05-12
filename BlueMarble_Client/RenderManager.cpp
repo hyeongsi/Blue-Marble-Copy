@@ -137,7 +137,7 @@ void RenderManager::DrawBoardMap()
         LineTo(memDC, RIGHT_BOTTOM_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y + (tileHeight * (i+1)));
     }
     
-    for (int i = 0; i < board.name.size(); i++)
+    for (int i = 0; i < (int)board.name.size(); i++)
     {
         DrawText(memDC, board.name[i].c_str(), -1, &rectVector[i], DT_NOCLIP | DT_CENTER);
     }

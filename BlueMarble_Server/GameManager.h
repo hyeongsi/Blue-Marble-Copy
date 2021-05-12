@@ -20,5 +20,8 @@ public:
 
 	static UINT WINAPI RoomLogicThread(void* arg);
 	void RoomLogicThreadMethod(GameRoom* room);
+
+	static void RollTheDiceMethod(GameRoom* room);
+	void RollTheDice(GameRoom* room);
 };
 

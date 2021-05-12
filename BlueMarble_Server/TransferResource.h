@@ -28,6 +28,8 @@ enum MessageCode
 {
 	GET_MAPDATA = 1,
 	READY = 2,
+	ROLL_DICE_SIGN = 3,
+	ROLL_DICE = 4,
 	SET_MATCHING_USER_PACKET = 100,
 };
 

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "GameManager.h"
 #include "GameServer.h"
+#include <random>
 
 GameManager* GameManager::instance = nullptr;
 
@@ -58,8 +59,49 @@ UINT WINAPI GameManager::RoomLogicThread(void* arg)
 
 void GameManager::RoomLogicThreadMethod(GameRoom* room)
 {
-	for (auto& userSocket : room->GetUserList())
+	room->startTime = clock();
+	for (auto& userSocket : room->GetUserVector())
 	{
 		room->SendMapDataMethod(userSocket);	// 맵 데이터 전송
-	} 
+	}
+	room->finishTime = clock();
+	
+	while (true)
+	{
+		if (!room->CheckSendDelay())	// send delay check
+		{
+			continue;
+		}
+
+		switch (room->state)
+		{
+		case GameState::ROLL_DICE_SIGN:
+			room->SendRollDiceSignMethod(room->GetUserVector()[room->GetTakeControlPlayer()]);	// 해당 차례 유저에게 주사위 굴리기 메시지 전송
+			break;
+		case GameState::ROLL_DICE:
+			//RollTheDiceMethod(room);
+			break;
+		default:
+			break;
+		}
+		
+		room->finishTime = clock();
+	}
+}
+
+void GameManager::RollTheDiceMethod(GameRoom* room)
+{
+	instance->RollTheDice(room);
+}
+
+void GameManager::RollTheDice(GameRoom* room)
+{
+	random_device rd;
+	mt19937 gen(rd());		// random_device 를 통해 난수 생성 엔진을 초기화 한다.
+	uniform_int_distribution<int> dis(2, 12);		// 2 부터 12 까지 균등하게 나타나는 난수열을 생성하기 위해 균등 분포 정의.
+
+	int diceValue = dis(gen);
+
+	room->SendRollTheDice(diceValue);
+	room->UpdateMapData(diceValue);		// 맵데이터 업데이트 하도록
 }

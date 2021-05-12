@@ -28,7 +28,7 @@ private:
 	static UINT WINAPI RecvDataThread(void* arg);
 
 	string GetClientIp(SOCKADDR_IN clientAddress);
-	void GetReadySignMethod(SOCKET& socekt, GameRoom* myRoom);
+	void GetReadySignMethod(GameRoom* myRoom);
 public:
 	static GameServer* GetInstance();
 	static void ReleaseInstance();
