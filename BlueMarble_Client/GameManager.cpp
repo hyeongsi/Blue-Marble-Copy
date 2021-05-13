@@ -1,4 +1,5 @@
 ﻿#include "GameManager.h"
+#include "RenderManager.h"
 
 GameManager* GameManager::instance = nullptr;
 
@@ -34,9 +35,36 @@ void GameManager::SetPlayerCount(int count)
 	playerCount = count;
 }
 
+vector<int>* GameManager::GetUserPositionVector()
+{
+	return &userPositionVector;
+}
+
 int GameManager::GetPlayerCount()
 {
 	return playerCount;
+}
+
+void GameManager::SetGameMessage(string msg)
+{
+	gameMessage = msg;
+}
+
+void GameManager::MoveUserPosition(int userIndex, int diceValue)
+{
+	userPositionVector[userIndex] += diceValue;
+
+	if (userPositionVector[userIndex] >= (int)board.mapSize * DIRECTION)
+	{
+		userPositionVector[userIndex] -= diceValue;
+	}
+
+	RenderManager::GetInstance()->SetPlayerBitmapLocation(userIndex, userPositionVector[userIndex]);
+}
+
+string GameManager::GetGameMessage()
+{
+	return gameMessage;
 }
 
 void GameManager::SetGameState(GameState state)

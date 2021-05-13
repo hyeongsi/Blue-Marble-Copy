@@ -28,6 +28,12 @@ struct HwndInfo
 		type(_type), text(_text), id(_id), point(_point), size(_size) {}
 };
 
+enum GameBitmap
+{
+	Player_1 = 0,
+	Player_2 = 1,
+};
+
 class BitmapManager
 {
 private:

@@ -95,7 +95,7 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			switch (header)
 			{
 			case READY:
-				GetReadySignMethod(myRoom);
+				myRoom = GameManager::GetInstance()->GetRoom(GetReadySignMethod(myRoom));
 				break;
 			case ROLL_DICE_SIGN:
 				GameManager::GetInstance()->RollTheDiceMethod(myRoom);
@@ -125,7 +125,7 @@ string GameServer::GetClientIp(SOCKADDR_IN clientAddress)
 	return inet_ntop(AF_INET, &clientAddress.sin_addr, buf, sizeof(buf));
 }
 
-void GameServer::GetReadySignMethod(GameRoom* myRoom)
+int GameServer::GetReadySignMethod(GameRoom* myRoom)
 {
 	readyPacket rPacket;
 	char cBuffer[MAX_PACKET_SIZE] = {};
@@ -138,6 +138,8 @@ void GameServer::GetReadySignMethod(GameRoom* myRoom)
 	{
 		_beginthreadex(NULL, 0, GameManager::GetInstance()->RoomLogicThread, myRoom, 0, NULL);	// recv thread 실행
 	}
+
+	return rPacket.roomIndex;
 }
 
 GameServer* GameServer::GetInstance()

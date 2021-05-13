@@ -64,6 +64,28 @@ void RenderManager::RenderInitSetting()
     FillRect(memDC, &windowRect, (HBRUSH)GetStockObject(WHITE_BRUSH));      // 바탕 흰색으로 초기화
 }
 
+void RenderManager::SetPlayerBitmapLocation(int playerIndex, int tileIndex)
+{
+    POINT printPoint;
+
+    if (playerIndex % 2 == 0)
+    {
+        printPoint.x = 0;
+        printPoint.y = (35 * (playerIndex / 2));
+    }
+    else
+    {
+        printPoint.x = 35;
+        printPoint.y = (35 * (playerIndex / 2));
+    }
+
+    printPoint.x += playerBitmapPointVector[tileIndex].x;
+    printPoint.y += playerBitmapPointVector[tileIndex].y;
+
+    
+    (*BitmapManager::GetInstance()->GetBitmap(State::GAME))[playerIndex].point = printPoint;
+}
+
 void RenderManager::InitDrawBoardMap()
 {
     rectVector.clear();
@@ -105,6 +127,45 @@ void RenderManager::InitDrawBoardMap()
         rect.bottom = LEFT_TOP_PRINT_POINT.y + (tileHeight * (i + 1));
         rectVector.emplace_back(rect);
     }
+
+    PRINT_PLAYER_PIVOT_POINT[0] = POINT(970, 640);
+    PRINT_PLAYER_PIVOT_POINT[1] = 
+        POINT(PRINT_PLAYER_PIVOT_POINT[0].x - (tileWidth * (boardSize+1)),
+            PRINT_PLAYER_PIVOT_POINT[0].y - tileHeight);
+    PRINT_PLAYER_PIVOT_POINT[2] =
+        POINT(PRINT_PLAYER_PIVOT_POINT[1].x + tileWidth,
+            PRINT_PLAYER_PIVOT_POINT[1].y - (tileHeight * (boardSize + 1)));
+    PRINT_PLAYER_PIVOT_POINT[3] =
+        POINT(PRINT_PLAYER_PIVOT_POINT[2].x + (tileWidth * (boardSize + 1)),
+            PRINT_PLAYER_PIVOT_POINT[2].y + tileHeight);
+
+    // 캐릭터 출력 기준 위치 설정
+    playerBitmapPointVector.clear();
+    for (int i = 0; i < boardSize; i++)   // 하단가로
+    {
+        playerBitmapPointVector.emplace_back(
+            POINT(PRINT_PLAYER_PIVOT_POINT[0].x - (i * tileWidth),
+                PRINT_PLAYER_PIVOT_POINT[0].y));
+    }
+    for (int i = 0; i < boardSize; i++)   // 좌측세로
+    {
+        playerBitmapPointVector.emplace_back(
+            POINT(PRINT_PLAYER_PIVOT_POINT[1].x,
+                PRINT_PLAYER_PIVOT_POINT[1].y - (i * tileHeight)));
+    }
+    for (int i = 0; i < boardSize; i++)   // 상단가로
+    {
+        playerBitmapPointVector.emplace_back(
+            POINT(PRINT_PLAYER_PIVOT_POINT[2].x + (i * tileWidth),
+                PRINT_PLAYER_PIVOT_POINT[2].y));
+    }
+    for (int i = 0; i < boardSize; i++)  // 우측세로
+    {
+        playerBitmapPointVector.emplace_back(
+            POINT(PRINT_PLAYER_PIVOT_POINT[3].x,
+                PRINT_PLAYER_PIVOT_POINT[3].y + (i * tileHeight)));
+    }
+    
 }
 
 void RenderManager::DrawBoardMap()
@@ -189,6 +250,11 @@ void RenderManager::DrawBitmap(const HBITMAP bitmap, const POINT printPoint, boo
     {
         BitBlt(memDC, printPoint.x, printPoint.y, bitmapSize.bmWidth, bitmapSize.bmHeight, backMemDC, 0, 0, SRCCOPY);
     } 
+}
+
+void RenderManager::DrawGameMessage(string message)
+{
+    DrawText(memDC, message.c_str(), -1, &messageRect, DT_NOCLIP | DT_CENTER);
 }
 
 void RenderManager::Render()

@@ -1,5 +1,6 @@
 #pragma once
 #include "TransferResource.h"
+#include "MapManager.h"
 #include <vector>
 #include <time.h>
 
@@ -8,8 +9,9 @@ constexpr const int MAX_PLAYER = 2;
 enum class GameState
 {
 	WAIT = 0,
-	ROLL_DICE_SIGN = 1,
-	ROLL_DICE = 2,
+	SYNC_MAPDATA = 1,
+	ROLL_DICE_SIGN = 2,
+	ROLL_DICE = 3,
 };
 
 class GameServer;
@@ -18,7 +20,11 @@ class GameRoom
 private:
 	GameServer* gameServer = nullptr;
 	vector<SOCKET> userVector;
+
+	vector<int> userPositionVector;	// 유저 위치
 	int takeControlPlayer = 0;	// 누구 차례인지 구분 변수
+
+	boardData board;
 
 	char sendPacket[MAX_PACKET_SIZE] = {};
 	unsigned int packetLastIndex = 0;
@@ -40,6 +46,6 @@ public:
 	void SendRollDiceSignMethod(SOCKET& socket);
 
 	void SendRollTheDice(int value);
-	void UpdateMapData(int diceValue);
+	void MoveUserPosition(int diceValue);
 };
 

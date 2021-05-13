@@ -25,7 +25,7 @@ void GameWindow::ReInitGame(HWND hWnd)
 {
     instance->renderManager->Init(hWnd);        // MainMenu <- -> Game Render
     MainSystem::GetInstance()->RegistUpdateCallbackFunction(GameUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
-    ShowButton();
+    HideButton();
 }
 
 void GameWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd)
@@ -80,6 +80,7 @@ void GameWindow::SendDiceTriggerMsg()
 {
     SocketTransfer::GetInstance()->SendRollDiceSign();
     GameManager::GetInstance()->SetGameState(GameState::WAIT);
+    HideButton();
 }
 
 GameWindow* GameWindow::GetInstance()
@@ -141,6 +142,8 @@ void GameWindow::GameUpdate()
                 (*instance->bitmapManager->GetHwnd(State::GAME))[i].size);
         }
     }
+
+    instance->renderManager->DrawGameMessage(GameManager::GetInstance()->GetGameMessage());
 
     instance->renderManager->Render();
 }

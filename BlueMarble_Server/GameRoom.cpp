@@ -1,13 +1,17 @@
 #pragma once
 #include "GameRoom.h"
 #include "GameServer.h"
-#include "MapManager.h"
 #include <stdio.h>
 
 GameRoom::GameRoom(SOCKET user1, SOCKET user2)
 {
 	userVector.emplace_back(user1);
 	userVector.emplace_back(user2);
+
+	userPositionVector.emplace_back(0);
+	userPositionVector.emplace_back(0);
+
+	board = *MapManager::GetInstance()->GetBoardData(ORIGINAL);
 
 	gameServer = GameServer::GetInstance();
 }
@@ -47,7 +51,7 @@ bool GameRoom::CheckSendDelay()
 
 void GameRoom::SendMapDataMethod(SOCKET& socekt)
 {
-	boardData* board = MapManager::GetInstance()->GetBoardData(ORIGINAL);	// 나중에 enum 값으로 변경하기
+	boardData* board = MapManager::GetInstance()->GetBoardData(ORIGINAL);
 
 	if (nullptr != board)
 	{
@@ -96,8 +100,13 @@ void GameRoom::SendRollTheDice(int value)
 	}
 }
 
-void GameRoom::UpdateMapData(int diceValue)
+void GameRoom::MoveUserPosition(int diceValue)
 {
+	userPositionVector[takeControlPlayer] += diceValue;
 
+	if (userPositionVector[takeControlPlayer] >= (int)board.mapSize * DIRECTION)
+	{
+		userPositionVector[takeControlPlayer] -= board.mapSize * DIRECTION;
+	}
 }
 

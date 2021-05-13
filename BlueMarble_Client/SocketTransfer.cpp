@@ -82,6 +82,8 @@ void SocketTransfer::GetMapData1(char* packet)
 
 	GameManager::GetInstance()->GetAddressBoardData()->mapSize = _mapPacket1.mapSize;
 	GameManager::GetInstance()->GetAddressBoardData()->code = _mapPacket1.code;
+
+	GameManager::GetInstance()->SetGameMessage("");	// 메시지 초기화
 	recvCBF = GetMapDataMethod2;
 }
 
@@ -120,6 +122,10 @@ void SocketTransfer::GetReadyMethod(char* packet)
 	memcpy(&rPacket.number, &packet[1 + sizeof(int)], sizeof(int));		// get number
 	memcpy(&rPacket.playerCount, &packet[1 + sizeof(int) + sizeof(int)], sizeof(int));		// get playerCount
 
+	for (int i = 0; i < rPacket.playerCount; i++)
+	{
+		GameManager::GetInstance()->GetUserPositionVector()->emplace_back(0);
+	}
 	GameManager::GetInstance()->SetPlayerCount(rPacket.playerCount);
 
 	MakePacket(READY);
@@ -136,6 +142,9 @@ void SocketTransfer::GetRollDiceSign(char* packet)
 {
 	GameManager::GetInstance()->SetIsMyTurn(true);
 	GameManager::GetInstance()->SetGameState(GameState::ROLL_DICE);
+	GameManager::GetInstance()->SetGameMessage("주사위를 돌려주세요");
+	
+	GameWindow::GetInstance()->ShowButton();
 }
 
 void SocketTransfer::GetRollDiceMethod(char* packet)
@@ -146,12 +155,14 @@ void SocketTransfer::GetRollDiceMethod(char* packet)
 void SocketTransfer::GetRollDice(char* packet)
 {
 	diceRollPacket dPacket;
-	memcpy(&dPacket.header, &packet[0], sizeof(char));					// get ready sign
-	memcpy(&dPacket.whosTurn, &packet[1], sizeof(int));				// get roomIndex
-	memcpy(&dPacket.diceValue, &packet[1 + sizeof(int)], sizeof(int));		// get number
+	memcpy(&dPacket.header, &packet[0], sizeof(char));					// get header
+	memcpy(&dPacket.whosTurn, &packet[1], sizeof(int));				// get turn
+	memcpy(&dPacket.diceValue, &packet[1 + sizeof(int)], sizeof(int));		// get diceValue
 
-	// 주사위 값으로 클라이언트 갱신하기
-	// 갱신갱신
+	GameManager::GetInstance()->SetGameMessage(to_string(dPacket.diceValue));	// 메시지 갱신
+	GameWindow::GetInstance()->HideButton();
+
+	GameManager::GetInstance()->MoveUserPosition(dPacket.whosTurn, dPacket.diceValue);
 }
 
 void SocketTransfer::PrintErrorCode(State state, const int errorCode)

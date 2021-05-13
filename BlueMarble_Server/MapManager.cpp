@@ -32,6 +32,10 @@ void MapManager::LoadMapData()
 	boardData board;
 	int mapSize = 0;
 
+	int code;
+	string name;
+	double landPrice = 0.0, villaPrice = 0.0, buildingPrice = 0.0, hotelPrice = 0.0, landMarkPrice = 0.0;
+
 	readFile.open(mapFilePath);
 	if (readFile.is_open())
 	{
@@ -43,13 +47,21 @@ void MapManager::LoadMapData()
 
 			for (int i = 0; i < mapSize * DIRECTION; i++)
 			{
-				int code;
-				string name;
-
 				readFile >> name;
 				readFile >> code;
+				readFile >> landPrice;
+				readFile >> villaPrice;
+				readFile >> buildingPrice;
+				readFile >> hotelPrice;
+				readFile >> landMarkPrice;
+
 				board.name.emplace_back(name);
 				board.code.emplace_back(code);
+				board.land.emplace_back(landPrice);
+				board.villa.emplace_back(villaPrice);
+				board.building.emplace_back(buildingPrice);
+				board.hotel.emplace_back(hotelPrice);
+				board.landMark.emplace_back(landMarkPrice);
 			}
 		}
 	}

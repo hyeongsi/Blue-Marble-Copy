@@ -31,8 +31,12 @@ private:
 	boardData board;
 	GameState state = GameState::WAIT;
 
+	vector<int> userPositionVector;	// 유저 위치
+
 	bool isMyTurn = false;
 	int playerCount = 0;	// 총 플레이 유저 수
+
+	string gameMessage = "매칭중";
 
 	GameManager();
 	~GameManager();
@@ -41,16 +45,24 @@ public:
 	static void ReleaseInstance();
 
 	void Init();
+
 	void SetGameState(GameState state);
 	GameState GetGameState();
 
-	void SetPlayerCount(int count);
-	int GetPlayerCount();
+	vector<int>* GetUserPositionVector();
 
 	void SetIsMyTurn(bool turn);
 	bool GetIsMyTurn();
 
+	void SetPlayerCount(int count);
+	int GetPlayerCount();
+
+	void SetGameMessage(string msg);
+	string GetGameMessage();
+
 	boardData* GetAddressBoardData();
 	boardData GetBoardData();
+
+	void MoveUserPosition(int userIndex, int diceValue);
 };
 
