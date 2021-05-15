@@ -75,10 +75,11 @@ void GameManager::RoomLogicThreadMethod(GameRoom* room)
 
 		switch (room->state)
 		{
-		case GameState::SYNC_MAPDATA:
-			break;
 		case GameState::ROLL_DICE_SIGN:
 			room->SendRollDiceSignMethod(room->GetUserVector()[room->GetTakeControlPlayer()]);	// 해당 차례 유저에게 주사위 굴리기 메시지 전송
+			break;
+		case GameState::NEXT_TURN:
+			room->SendFinishTurnSign();
 			break;
 		default:
 			break;
@@ -101,6 +102,8 @@ void GameManager::RollTheDice(GameRoom* room)
 
 	int diceValue = dis(gen);
 
-	room->SendRollTheDice(diceValue);
 	room->MoveUserPosition(diceValue);		// 유저 위치 갱신
+	room->SendRollTheDice(diceValue);
+
+	room->state = GameState::NEXT_TURN;
 }

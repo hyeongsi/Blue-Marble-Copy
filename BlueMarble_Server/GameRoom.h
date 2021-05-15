@@ -9,9 +9,8 @@ constexpr const int MAX_PLAYER = 2;
 enum class GameState
 {
 	WAIT = 0,
-	SYNC_MAPDATA = 1,
-	ROLL_DICE_SIGN = 2,
-	ROLL_DICE = 3,
+	ROLL_DICE_SIGN = 1,
+	NEXT_TURN = 2,
 };
 
 class GameServer;
@@ -24,6 +23,7 @@ private:
 	vector<int> userPositionVector;	// 유저 위치
 	int takeControlPlayer = 0;	// 누구 차례인지 구분 변수
 
+	vector<bool> isFinishTurnProcessVector;	// 해당 차례 처리 유무 
 	boardData board;
 
 	char sendPacket[MAX_PACKET_SIZE] = {};
@@ -47,5 +47,8 @@ public:
 
 	void SendRollTheDice(int value);
 	void MoveUserPosition(int diceValue);
+
+	void SendFinishTurnSign();
+	void CheckEndProcess(SOCKET clientSocket);
 };
 

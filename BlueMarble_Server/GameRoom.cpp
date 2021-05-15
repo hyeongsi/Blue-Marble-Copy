@@ -11,6 +11,9 @@ GameRoom::GameRoom(SOCKET user1, SOCKET user2)
 	userPositionVector.emplace_back(0);
 	userPositionVector.emplace_back(0);
 
+	isFinishTurnProcessVector.emplace_back(false);
+	isFinishTurnProcessVector.emplace_back(false);
+
 	board = *MapManager::GetInstance()->GetBoardData(ORIGINAL);
 
 	gameServer = GameServer::GetInstance();
@@ -24,9 +27,16 @@ vector<SOCKET> GameRoom::GetUserVector()
 void GameRoom::NextTurn()
 {
 	takeControlPlayer++;
-	if ((int)userVector.size() >= takeControlPlayer)
+	if ((int)userVector.size() <= takeControlPlayer)
 	{
 		takeControlPlayer = 0;
+	}
+
+	state = GameState::ROLL_DICE_SIGN;
+
+	for (int i = 0; i < (int)isFinishTurnProcessVector.size(); i++)	// ÃÊ±âÈ­
+	{
+		isFinishTurnProcessVector[i] = false;
 	}
 }
 
@@ -110,3 +120,33 @@ void GameRoom::MoveUserPosition(int diceValue)
 	}
 }
 
+void GameRoom::SendFinishTurnSign()
+{
+	for (int i = 0; i < (int)userVector.size(); i++)
+	{
+		gameServer->MakePacket(sendPacket, &packetLastIndex, FINISH_THIS_TURN_PROCESS);
+		gameServer->PacektSendMethod(sendPacket, userVector[i]);
+	}
+}
+
+void GameRoom::CheckEndProcess(SOCKET clientSocket)
+{
+	int boolCount = 0;
+	for (int i = 0; i < (int)userVector.size(); i++)
+	{
+		if (userVector[i] == clientSocket)
+		{
+			isFinishTurnProcessVector[i] = true;
+		}
+
+		if (true == isFinishTurnProcessVector[i])
+		{
+			boolCount++;
+		}
+	}
+
+	if (boolCount == (int)isFinishTurnProcessVector.size())
+	{
+		NextTurn();
+	}
+}

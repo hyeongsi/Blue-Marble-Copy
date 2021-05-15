@@ -100,6 +100,9 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case ROLL_DICE_SIGN:
 				GameManager::GetInstance()->RollTheDiceMethod(myRoom);
 				break;
+			case FINISH_THIS_TURN_PROCESS:
+				myRoom->CheckEndProcess(clientSocket);
+				break;
 			default:
 				break;
 			}

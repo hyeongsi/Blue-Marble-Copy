@@ -41,6 +41,9 @@ private:
 	static void GetRollDiceMethod(char* packet);
 	void GetRollDice(char* packet);
 
+	static void SendNextTurnSignMethod();
+	void SendNextTurnSign();
+
 public:
 	void PrintErrorCode(State state, const int errorCode);
 

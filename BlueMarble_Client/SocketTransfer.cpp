@@ -48,6 +48,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case ROLL_DICE:
 				GetRollDiceMethod(cBuffer);
 				break;
+			case FINISH_THIS_TURN_PROCESS:
+				SendNextTurnSignMethod();
+				break;
 			default:
 				break;
 			}
@@ -150,6 +153,7 @@ void SocketTransfer::GetRollDiceSign(char* packet)
 void SocketTransfer::GetRollDiceMethod(char* packet)
 {
 	instance->GetRollDice(packet);
+	instance->recvCBF = nullptr;
 }
 
 void SocketTransfer::GetRollDice(char* packet)
@@ -163,6 +167,18 @@ void SocketTransfer::GetRollDice(char* packet)
 	GameWindow::GetInstance()->HideButton();
 
 	GameManager::GetInstance()->MoveUserPosition(dPacket.whosTurn, dPacket.diceValue);
+
+}
+
+void SocketTransfer::SendNextTurnSignMethod()
+{
+	instance->SendNextTurnSign();
+}
+
+void SocketTransfer::SendNextTurnSign()
+{
+	MakePacket(FINISH_THIS_TURN_PROCESS);
+	SendMessageToGameServer();
 }
 
 void SocketTransfer::PrintErrorCode(State state, const int errorCode)

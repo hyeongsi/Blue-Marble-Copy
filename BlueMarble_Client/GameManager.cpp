@@ -54,9 +54,9 @@ void GameManager::MoveUserPosition(int userIndex, int diceValue)
 {
 	userPositionVector[userIndex] += diceValue;
 
-	if (userPositionVector[userIndex] >= (int)board.mapSize * DIRECTION)
+	if (userPositionVector[userIndex] > (int)board.mapSize * DIRECTION)
 	{
-		userPositionVector[userIndex] -= diceValue;
+		userPositionVector[userIndex] -= ((int)board.mapSize * DIRECTION);
 	}
 
 	RenderManager::GetInstance()->SetPlayerBitmapLocation(userIndex, userPositionVector[userIndex]);
