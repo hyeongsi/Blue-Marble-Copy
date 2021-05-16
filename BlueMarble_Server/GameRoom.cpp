@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "GameRoom.h"
 #include "GameServer.h"
 #include <stdio.h>
@@ -34,7 +34,7 @@ void GameRoom::NextTurn()
 
 	state = GameState::ROLL_DICE_SIGN;
 
-	for (int i = 0; i < (int)isFinishTurnProcessVector.size(); i++)	// �ʱ�ȭ
+	for (int i = 0; i < (int)isFinishTurnProcessVector.size(); i++)	// 초기화
 	{
 		isFinishTurnProcessVector[i] = false;
 	}
@@ -108,6 +108,12 @@ void GameRoom::SendRollTheDice(int value)
 		gameServer->AppendPacketData(sendPacket, &packetLastIndex, value, sizeof(value));
 		gameServer->PacektSendMethod(sendPacket, userVector[i]);
 	}
+
+	// 같은 눈이 나올 경우, 더블로 한번더 주사위 굴려야 하기 때문에
+	// 나중에 랜덤 사용해서 2개의 눈 정보를 전송하고, 더블 처리 하도록 변경하기
+	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 }
 
 void GameRoom::MoveUserPosition(int diceValue)

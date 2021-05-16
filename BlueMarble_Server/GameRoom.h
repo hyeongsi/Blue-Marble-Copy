@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "TransferResource.h"
 #include "MapManager.h"
 #include <vector>
@@ -20,10 +20,10 @@ private:
 	GameServer* gameServer = nullptr;
 	vector<SOCKET> userVector;
 
-	vector<int> userPositionVector;	// À¯Àú À§Ä¡
-	int takeControlPlayer = 0;	// ´©±¸ Â÷·ÊÀÎÁö ±¸ºĞ º¯¼ö
+	vector<int> userPositionVector;	// ìœ ì € ìœ„ì¹˜
+	int takeControlPlayer = 0;	// ëˆ„êµ¬ ì°¨ë¡€ì¸ì§€ êµ¬ë¶„ ë³€ìˆ˜
 
-	vector<bool> isFinishTurnProcessVector;	// ÇØ´ç Â÷·Ê Ã³¸® À¯¹« 
+	vector<bool> isFinishTurnProcessVector;	// í•´ë‹¹ ì°¨ë¡€ ì²˜ë¦¬ ìœ ë¬´ 
 	boardData board;
 
 	char sendPacket[MAX_PACKET_SIZE] = {};
@@ -38,17 +38,17 @@ public:
 	GameRoom(SOCKET user1, SOCKET user2);
 
 	vector<SOCKET> GetUserVector();
-	void NextTurn();	// Â÷·Ê ³Ñ°ÜÁÖ±â
-	int GetTakeControlPlayer();	// ´©±¸ Â÷·ÊÀÎÁö °ª Àü¼Û
+	void NextTurn();	// ì°¨ë¡€ ë„˜ê²¨ì£¼ê¸°
+	int GetTakeControlPlayer();	// ëˆ„êµ¬ ì°¨ë¡€ì¸ì§€ ê°’ ì „ì†¡
 
-	bool CheckSendDelay();
-	void SendMapDataMethod(SOCKET& socekt);
-	void SendRollDiceSignMethod(SOCKET& socket);
+	bool CheckSendDelay();	// ë”œë ˆì´ ì²´í¬ í•¨ìˆ˜
+	void SendMapDataMethod(SOCKET& socekt);	// ë§µ ì •ë³´ ì „ì†¡ í•¨ìˆ˜
+	void SendRollDiceSignMethod(SOCKET& socket);	// ì£¼ì‚¬ìœ„ ì‹ í˜¸ ì „ì†¡ í•¨ìˆ˜
 
-	void SendRollTheDice(int value);
-	void MoveUserPosition(int diceValue);
+	void SendRollTheDice(int value);	// ì£¼ì‚¬ìœ„ ëˆˆ ì „ì†¡
+	void MoveUserPosition(int diceValue);	// ìºë¦­í„° ë³´ë“œíŒ ìœ„ì¹˜ ì´ë™
 
-	void SendFinishTurnSign();
-	void CheckEndProcess(SOCKET clientSocket);
+	void SendFinishTurnSign();	// ëª¨ë“  ì²˜ë¦¬ ëë‚˜ê³ , ë‹¤ìŒí„´ìœ¼ë¡œ ë„˜ì–´ê°€ë„ ë˜ëŠ”ì§€ í™•ì¸ ë©”ì‹œì§€ ì „ì†¡
+	void CheckEndProcess(SOCKET clientSocket);	// ë‹¤ìŒí„´ìœ¼ë¡œ ì´ë™
 };
 
