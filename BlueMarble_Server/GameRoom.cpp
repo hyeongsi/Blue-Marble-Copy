@@ -14,7 +14,19 @@ GameRoom::GameRoom(SOCKET user1, SOCKET user2)
 	isFinishTurnProcessVector.emplace_back(false);
 	isFinishTurnProcessVector.emplace_back(false);
 
+	userMoneyVector.emplace_back(200.0f);
+	userMoneyVector.emplace_back(200.0f);
+
 	board = *MapManager::GetInstance()->GetBoardData(ORIGINAL);
+
+	for (int i = 0; i < (int)(board.mapSize * DIRECTION); i++)
+	{
+		landBoardData.land[0] = NULL;
+		landBoardData.villa[0] = NULL;
+		landBoardData.building[0] = NULL;
+		landBoardData.hotel[0] = NULL;
+		landBoardData.landMark[0] = NULL;
+	}
 
 	gameServer = GameServer::GetInstance();
 }
@@ -45,6 +57,11 @@ int GameRoom::GetTakeControlPlayer()
 	return takeControlPlayer;
 }
 
+boardData GameRoom::GetMapData()
+{
+	return board;
+}
+
 int GameRoom::GetDiceDoubleCount()
 {
 	return diceDoubleCount;
@@ -59,7 +76,7 @@ bool GameRoom::CheckSendDelay()
 {
 	double duration = (finishTime - startTime) / CLOCKS_PER_SEC;
 
-	if (duration >= 1.0)
+	if (duration >= 2.0)
 	{
 		startTime = clock();
 		return true;
@@ -82,7 +99,7 @@ void GameRoom::SendMapDataMethod(SOCKET& socekt)
 			gameServer->AppendPacketData(sendPacket, &packetLastIndex, board->code[i], sizeof(board->code[i]));
 		}
 		gameServer->PacektSendMethod(sendPacket, socekt);
-		printf("%s\n", "send MapData1");
+		printf("%s %d\n", "send MapData1 - ", socekt);
 
 		gameServer->MakePacket(sendPacket, &packetLastIndex, NULL);
 		for (int i = 0; i < (int)board->code.size(); i++)
@@ -92,7 +109,7 @@ void GameRoom::SendMapDataMethod(SOCKET& socekt)
 			gameServer->AppendPacketData(sendPacket, &packetLastIndex, '\0', sizeof(char));
 		}
 		gameServer->PacektSendMethod(sendPacket, socekt);
-		printf("%s\n", "send MapData2");
+		printf("%s %d\n", "send MapData2 - ", socekt);
 	}
 	else
 	{
@@ -128,6 +145,26 @@ void GameRoom::MoveUserPosition(int diceValue)
 	if (userPositionVector[takeControlPlayer] >= (int)board.mapSize * DIRECTION)
 	{
 		userPositionVector[takeControlPlayer] -= board.mapSize * DIRECTION;
+		userMoneyVector[takeControlPlayer] += 30.0f;	// START 지점 통과, 30만원 지급
+	}
+}
+
+void GameRoom::BuyLandMethod(bool isTour)
+{
+	if (isTour)
+	{
+		if (landBoardData.land[takeControlPlayer] != NULL)	// 통행료 지불 및 구입여부 처리
+		{
+
+		}
+		else    // 구입 여부 처리
+		{
+			state = GameState::BUY_TOUR_SIGN;
+		}
+	}
+	else
+	{
+		state = GameState::BUY_LAND_SIGN;
 	}
 }
 

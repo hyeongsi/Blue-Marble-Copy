@@ -72,6 +72,7 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 	char cBuffer[MAX_PACKET_SIZE] = {};
 	char header = NULL;
 	GameRoom* myRoom = nullptr;
+	int tempRoomIndex = -1;
 
 	clientSocketMutex.lock();
 	clientSocketList.emplace_back(clientSocket);
@@ -95,7 +96,11 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			switch (header)
 			{
 			case READY:
-				myRoom = GameManager::GetInstance()->GetRoom(GetReadySignMethod(myRoom));
+				tempRoomIndex = GetReadySignMethod(myRoom, clientSocket);
+				if (tempRoomIndex != -1)
+				{
+					myRoom = GameManager::GetInstance()->GetRoom(tempRoomIndex);
+				}
 				break;
 			case ROLL_DICE_SIGN:
 				GameManager::GetInstance()->RollTheDiceMethod(myRoom);
@@ -128,13 +133,16 @@ string GameServer::GetClientIp(SOCKADDR_IN clientAddress)
 	return inet_ntop(AF_INET, &clientAddress.sin_addr, buf, sizeof(buf));
 }
 
-int GameServer::GetReadySignMethod(GameRoom* myRoom)
+int GameServer::GetReadySignMethod(GameRoom* myRoom, SOCKET& socket)
 {
-	readyPacket rPacket;
-	char cBuffer[MAX_PACKET_SIZE] = {};
+	int roomIndex = 0;
 
-	memcpy(&rPacket.roomIndex, &cBuffer[1], sizeof(int));
-	myRoom = GameManager::GetInstance()->GetRoom(rPacket.roomIndex);	// 방 수신 후 
+	roomIndex = GameManager::GetInstance()->FindBelongRoom(socket);
+	if (roomIndex == -1)
+	{
+		return -1;
+	}
+	myRoom = GameManager::GetInstance()->GetRoom(roomIndex);	// 방 수신 후 
 	myRoom->connectPlayer++;
 
 	if (myRoom->connectPlayer >= MAX_PLAYER)
@@ -142,7 +150,7 @@ int GameServer::GetReadySignMethod(GameRoom* myRoom)
 		_beginthreadex(NULL, 0, GameManager::GetInstance()->RoomLogicThread, myRoom, 0, NULL);	// recv thread 실행
 	}
 
-	return rPacket.roomIndex;
+	return roomIndex;
 }
 
 GameServer* GameServer::GetInstance()

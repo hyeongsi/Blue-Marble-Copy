@@ -33,9 +33,3 @@ enum MessageCode
 	FINISH_THIS_TURN_PROCESS = 5,
 	SET_MATCHING_USER_PACKET = 100,
 };
-
-typedef struct ReadyPacket
-{
-	char header;
-	int roomIndex;
-}readyPacket;

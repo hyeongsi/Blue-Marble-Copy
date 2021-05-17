@@ -17,6 +17,7 @@ public:
 
 	void CreateRoom(SOCKET& user1, SOCKET& user2);
 	GameRoom* GetRoom(int index);
+	int FindBelongRoom(SOCKET& socket);	// 속한 게임방 찾기
 
 	static UINT WINAPI RoomLogicThread(void* arg);
 	void RoomLogicThreadMethod(GameRoom* room);

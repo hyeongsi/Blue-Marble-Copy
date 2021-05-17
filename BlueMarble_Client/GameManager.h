@@ -32,9 +32,11 @@ private:
 	GameState state = GameState::WAIT;
 
 	vector<int> userPositionVector;	// 유저 위치
+	vector<float> userMoneyVector;	// 유저 돈 텍스트
 
 	bool isMyTurn = false;
 	int playerCount = 0;	// 총 플레이 유저 수
+	int myCharacterIndex = 0;	// 본인 캐릭터 인덱스
 
 	string gameMessage = "매칭중";
 
@@ -50,12 +52,16 @@ public:
 	GameState GetGameState();
 
 	vector<int>* GetUserPositionVector();
+	vector<float>* GetUserMoneyVector();
 
 	void SetIsMyTurn(bool turn);
 	bool GetIsMyTurn();
 
 	void SetPlayerCount(int count);
 	int GetPlayerCount();
+
+	void SetCharacterIndex(int index);
+	int GetCharacterIndex();
 
 	void SetGameMessage(string msg);
 	string GetGameMessage();

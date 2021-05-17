@@ -10,7 +10,14 @@ enum class GameState
 {
 	WAIT = 0,
 	ROLL_DICE_SIGN = 1,
-	NEXT_TURN = 2,
+	BUY_LAND_SIGN = 2,
+	BUY_TOUR_SIGN = 3,
+	CARD_SIGN = 4,
+	DESERT_ISLAND_SIGN = 5,
+	OLYMPIC_SIGN = 6,
+	WORLD_TRABLE_SIGN = 7,
+	REVENUE_SIGN = 8,
+	NEXT_TURN = 9,
 };
 
 class GameServer;
@@ -20,12 +27,16 @@ private:
 	GameServer* gameServer = nullptr;
 	vector<SOCKET> userVector;
 
+	int roomId = 0;
+
 	vector<int> userPositionVector;	// 유저 위치
+	vector<float> userMoneyVector;	// 유저 소지 자금
 	int takeControlPlayer = 0;	// 누구 차례인지 구분 변수
 	int diceDoubleCount = 0;	// 주사위 더블 카운트 변수,
 
 	vector<bool> isFinishTurnProcessVector;	// 해당 차례 처리 유무 
-	boardData board;
+	landData landBoardData;	// 건축물 데이터
+	boardData board;		// 지역 정보 및 건물 가격 데이터
 
 	char sendPacket[MAX_PACKET_SIZE] = {};
 	unsigned int packetLastIndex = 0;
@@ -42,6 +53,8 @@ public:
 	void NextTurn();	// 차례 넘겨주기
 	int GetTakeControlPlayer();	// 누구 차례인지 값 전송
 
+	boardData GetMapData();	// 맵의 정보 전송
+
 	int GetDiceDoubleCount();		// 더블 카운트 전송
 	void SetDiceDoubleCount(int count);	// 더블 카운트 변경
 
@@ -51,6 +64,8 @@ public:
 
 	void SendRollTheDice(int value1, int value2);	// 주사위 눈 전송
 	void MoveUserPosition(int diceValue);	// 캐릭터 보드판 위치 이동
+
+	void BuyLandMethod(bool isTour);	// 구입 시 처리
 
 	void SendFinishTurnSign();	// 모든 처리 끝나고, 다음턴으로 넘어가도 되는지 확인 메시지 전송
 	void CheckEndProcess(SOCKET clientSocket);	// 다음턴으로 이동

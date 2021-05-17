@@ -24,7 +24,7 @@ enum MessageCode
 
 typedef struct MapPacket1
 {
-	char header;
+	char header = -1;
 	unsigned int mapSize = NULL;
 	vector<int> code;
 }mapPacket1;
@@ -38,9 +38,9 @@ typedef struct MapPacket2
 typedef struct ReadyPacket
 {
 	char header;
-	int roomIndex;
 	int number;	// 몇번째 캐릭터인지 구분하기 위해 사용
 	int playerCount;	// 총 플레이 유저 수
+	float initMoney;	// 초기 자금
 }readyPacket;
 
 typedef struct DiceRollPacket

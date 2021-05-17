@@ -23,6 +23,9 @@ private:
 
 	vector<RECT> rectVector;
 	RECT messageRect = { 550,350,750,450 };
+	RECT moneyRect[4] = { {30,10,90,70} , {1190,10,1250,70},
+		{30,640,90,710}, {1190,640,1250,710} };
+
 	int tileWidth = 0, tileHeight = 0;
 
 	RenderManager();

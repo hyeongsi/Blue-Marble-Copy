@@ -1,5 +1,6 @@
 ﻿#include "RenderManager.h"
 #include "BitmapManager.h"
+#include <string>
 
 RenderManager* RenderManager::instance = nullptr;
 
@@ -165,7 +166,6 @@ void RenderManager::InitDrawBoardMap()
             POINT(PRINT_PLAYER_PIVOT_POINT[3].x,
                 PRINT_PLAYER_PIVOT_POINT[3].y + (i * tileHeight)));
     }
-    
 }
 
 void RenderManager::DrawBoardMap()
@@ -255,6 +255,21 @@ void RenderManager::DrawBitmap(const HBITMAP bitmap, const POINT printPoint, boo
 void RenderManager::DrawGameMessage(string message)
 {
     DrawText(memDC, message.c_str(), -1, &messageRect, DT_NOCLIP | DT_CENTER);
+
+    if (GameManager::GetInstance()->GetPlayerCount() == 0)
+        return;
+
+    for (int i = 0; i < (int)GameManager::GetInstance()->GetUserMoneyVector()->size(); i++)
+    {
+        if (GameManager::GetInstance()->GetCharacterIndex() == i+1)
+        {
+            DrawText(memDC, ("나 - " + to_string((*GameManager::GetInstance()->GetUserMoneyVector())[i])).c_str(), -1, &moneyRect[i], DT_NOCLIP | DT_CENTER);
+        }
+        else
+        {
+            DrawText(memDC, to_string((*GameManager::GetInstance()->GetUserMoneyVector())[i]).c_str(), -1, &moneyRect[i], DT_NOCLIP | DT_CENTER);
+        }
+    }
 }
 
 void RenderManager::Render()

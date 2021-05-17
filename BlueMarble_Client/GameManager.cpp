@@ -25,7 +25,10 @@ void GameManager::ReleaseInstance()
 void GameManager::Init()
 {
 	boardData board;
-
+	state = GameState::WAIT;
+	gameMessage = "매칭중";
+	userPositionVector.clear();
+	userMoneyVector.clear();
 	this->board = board;
 	playerCount = 0;
 }
@@ -35,14 +38,19 @@ void GameManager::SetPlayerCount(int count)
 	playerCount = count;
 }
 
+int GameManager::GetPlayerCount()
+{
+	return playerCount;
+}
+
 vector<int>* GameManager::GetUserPositionVector()
 {
 	return &userPositionVector;
 }
 
-int GameManager::GetPlayerCount()
+vector<float>* GameManager::GetUserMoneyVector()
 {
-	return playerCount;
+	return &userMoneyVector;
 }
 
 void GameManager::SetGameMessage(string msg)
@@ -86,6 +94,17 @@ bool GameManager::GetIsMyTurn()
 {
 	return isMyTurn;
 }
+
+void GameManager::SetCharacterIndex(int index)
+{
+	myCharacterIndex = index;
+}
+
+int GameManager::GetCharacterIndex()
+{
+	return myCharacterIndex;
+}
+
 
 boardData* GameManager::GetAddressBoardData()
 {

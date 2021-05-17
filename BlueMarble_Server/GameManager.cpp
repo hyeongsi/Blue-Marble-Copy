@@ -31,15 +31,15 @@ void GameManager::CreateRoom(SOCKET& user1, SOCKET& user2)
 	char sendPacket[MAX_PACKET_SIZE] = {};
 	unsigned int packetLastIndex = 0;
 	GameServer::GetInstance()->MakePacket(sendPacket, &packetLastIndex, READY);
-	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, roomVector.size() - 1, sizeof(int));
 	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 1, sizeof(int));
 	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2, sizeof(int));
+	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 200.0f, sizeof(float));
 	GameServer::GetInstance()->PacektSendMethod(sendPacket, user1);
 
 	GameServer::GetInstance()->MakePacket(sendPacket, &packetLastIndex, READY);
-	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, roomVector.size() - 1, sizeof(int));
 	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2, sizeof(int));
 	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2, sizeof(int));
+	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 200.0f, sizeof(float));
 	GameServer::GetInstance()->PacektSendMethod(sendPacket, user2);
 }
 
@@ -49,6 +49,22 @@ GameRoom* GameManager::GetRoom(int index)
 		return nullptr;
 	else
 		return roomVector[index];
+}
+
+int GameManager::FindBelongRoom(SOCKET& socket)
+{
+	for (int i = 0; i < (int)roomVector.size(); i++)	// 게임방 속
+	{
+		for (int j = 0; j < (int)roomVector[i]->GetUserVector().size(); j++)	// 유저들
+		{
+			if (socket == roomVector[i]->GetUserVector()[j])
+			{
+				return i;
+			}
+		}
+	}
+
+	return -1;
 }
 
 UINT WINAPI GameManager::RoomLogicThread(void* arg)
@@ -116,4 +132,30 @@ void GameManager::RollTheDice(GameRoom* room)
 		room->state = GameState::NEXT_TURN;
 		room->SetDiceDoubleCount(0);
 	}
+
+	// 도착한 지역에서의 처리
+	/*switch (room->GetMapData().code[room->GetTakeControlPlayer()])
+	{
+	case LAND_TILE:
+		room->BuyLandMethod(false);
+		break;
+	case TOUR_TILE:
+		room->BuyLandMethod(true);
+		break;
+	case CARD_TILE:
+		room->state = GameState::CARD_SIGN;
+		break;
+	case DESERT_ISLAND_TILE:
+		room->state = GameState::DESERT_ISLAND_SIGN;
+		break;
+	case OLYMPIC_TILE:
+		room->state = GameState::OLYMPIC_SIGN;
+		break;
+	case WORLD_TRABLE_TILE:
+		room->state = GameState::WORLD_TRABLE_SIGN;
+		break;
+	case REVENUE_TILE:
+		room->state = GameState::REVENUE_SIGN;
+		break;
+	}*/
 }

@@ -121,18 +121,19 @@ void SocketTransfer::GetReadyMethod(char* packet)
 {
 	readyPacket rPacket;
 	memcpy(&rPacket.header, &packet[0], sizeof(char));					// get ready sign
-	memcpy(&rPacket.roomIndex, &packet[1], sizeof(int));				// get roomIndex
-	memcpy(&rPacket.number, &packet[1 + sizeof(int)], sizeof(int));		// get number
-	memcpy(&rPacket.playerCount, &packet[1 + sizeof(int) + sizeof(int)], sizeof(int));		// get playerCount
+	memcpy(&rPacket.number, &packet[1], sizeof(int));		// get number
+	memcpy(&rPacket.playerCount, &packet[1 + sizeof(int)], sizeof(int));		// get playerCount
+	memcpy(&rPacket.initMoney, &packet[1 + sizeof(int) + sizeof(int)], sizeof(float));		// get initMoney
 
 	for (int i = 0; i < rPacket.playerCount; i++)
 	{
 		GameManager::GetInstance()->GetUserPositionVector()->emplace_back(0);
+		GameManager::GetInstance()->GetUserMoneyVector()->emplace_back(rPacket.initMoney);
 	}
+	GameManager::GetInstance()->SetCharacterIndex(rPacket.number);
 	GameManager::GetInstance()->SetPlayerCount(rPacket.playerCount);
 
 	MakePacket(READY);
-	AppendPacketData(rPacket.roomIndex, sizeof(int));
 	SendMessageToGameServer();
 }
 
@@ -164,7 +165,14 @@ void SocketTransfer::GetRollDice(char* packet)
 	memcpy(&dPacket.diceValue1, &packet[1 + sizeof(int)], sizeof(int));		// get diceValue1
 	memcpy(&dPacket.diceValue2, &packet[1 + sizeof(int) + sizeof(int)], sizeof(int));		// get diceValue2
 
-	GameManager::GetInstance()->SetGameMessage(to_string(dPacket.diceValue1) + " , " + to_string(dPacket.diceValue2));	// 메시지 갱신
+	if (dPacket.diceValue1 == dPacket.diceValue2)
+	{
+		GameManager::GetInstance()->SetGameMessage("더블!! " + to_string(dPacket.diceValue1) + " , " + to_string(dPacket.diceValue2));	// 메시지 갱신
+	}
+	else
+	{
+		GameManager::GetInstance()->SetGameMessage(to_string(dPacket.diceValue1) + " , " + to_string(dPacket.diceValue2));	// 메시지 갱신
+	}
 	GameWindow::GetInstance()->HideButton();
 
 	GameManager::GetInstance()->MoveUserPosition(dPacket.whosTurn, dPacket.diceValue1 + dPacket.diceValue2);
@@ -177,6 +185,7 @@ void SocketTransfer::SendNextTurnSignMethod()
 
 void SocketTransfer::SendNextTurnSign()
 {
+	GameManager::GetInstance()->SetIsMyTurn(false);
 	MakePacket(FINISH_THIS_TURN_PROCESS);
 	SendMessageToGameServer();
 }

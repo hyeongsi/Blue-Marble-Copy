@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <string>
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -19,6 +20,15 @@ typedef struct BoardData
 	vector<double> landMark;
 } boardData;
 
+typedef struct LandData
+{
+	map<int, int> land;
+	map<int, int> villa;
+	map<int, int> building;
+	map<int, int> hotel;
+	map<int, int> landMark;
+} landData;
+
 enum MapData
 {
 	ORIGINAL = 0,
@@ -27,13 +37,13 @@ enum MapData
 enum TileCode
 {
 	START_TILE = 0,
-	LAND_TILE = 1,
-	TOUR_TILE = 2,
-	CARD_TILE = 3,
-	DESERT_ISLAND_TILE = 4,
-	OLYMPIC_TILE = 5,
-	WORLD_TRABLE_TILE = 6,
-	REVENUE_TILE = 7,
+	LAND_TILE = 1,			// 지역
+	TOUR_TILE = 2,			// 휴양지
+	CARD_TILE = 3,			// 카드
+	DESERT_ISLAND_TILE = 4,	// 무인도
+	OLYMPIC_TILE = 5,		// 올림픽
+	WORLD_TRABLE_TILE = 6,	// 세계여행
+	REVENUE_TILE = 7,		// 국세청
 };
 
 class MapManager
