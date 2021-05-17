@@ -98,12 +98,22 @@ void GameManager::RollTheDice(GameRoom* room)
 {
 	random_device rd;
 	mt19937 gen(rd());		// random_device 를 통해 난수 생성 엔진을 초기화 한다.
-	uniform_int_distribution<int> dis(2, 12);		// 2 부터 12 까지 균등하게 나타나는 난수열을 생성하기 위해 균등 분포 정의.
+	uniform_int_distribution<int> dis(1, 6);		// 1 부터 6 까지 균등하게 나타나는 난수열을 생성하기 위해 균등 분포 정의.
 
-	int diceValue = dis(gen);
+	int diceValue1 = dis(gen);
+	int diceValue2 = dis(gen);
 
-	room->MoveUserPosition(diceValue);		// 유저 위치 갱신
-	room->SendRollTheDice(diceValue);
+	room->SendRollTheDice(diceValue1, diceValue2);
+	room->MoveUserPosition(diceValue1 + diceValue2);		// 유저 위치 갱신
 
-	room->state = GameState::NEXT_TURN;
+	if ( (diceValue1 == diceValue2) && (!(room->GetDiceDoubleCount() >= 3)) )	// 주사위 더블 처리
+	{
+		room->state = GameState::ROLL_DICE_SIGN;
+		room->SetDiceDoubleCount(room->GetDiceDoubleCount()+1);
+	}
+	else
+	{
+		room->state = GameState::NEXT_TURN;
+		room->SetDiceDoubleCount(0);
+	}
 }

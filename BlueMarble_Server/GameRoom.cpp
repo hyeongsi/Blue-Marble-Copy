@@ -45,6 +45,16 @@ int GameRoom::GetTakeControlPlayer()
 	return takeControlPlayer;
 }
 
+int GameRoom::GetDiceDoubleCount()
+{
+	return diceDoubleCount;
+}
+
+void GameRoom::SetDiceDoubleCount(int count)
+{
+	diceDoubleCount = count;
+}
+
 bool GameRoom::CheckSendDelay()
 {
 	double duration = (finishTime - startTime) / CLOCKS_PER_SEC;
@@ -99,21 +109,16 @@ void GameRoom::SendRollDiceSignMethod(SOCKET& socket)
 	state = GameState::WAIT;
 }
 
-void GameRoom::SendRollTheDice(int value)
+void GameRoom::SendRollTheDice(int value1, int value2)
 {
 	for (int i = 0; i < (int)userVector.size(); i++)
 	{
 		gameServer->MakePacket(sendPacket, &packetLastIndex, ROLL_DICE);
 		gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(int));
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, value, sizeof(value));
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex, value1, sizeof(value1));
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex, value2, sizeof(value2));
 		gameServer->PacektSendMethod(sendPacket, userVector[i]);
 	}
-
-	// 같은 눈이 나올 경우, 더블로 한번더 주사위 굴려야 하기 때문에
-	// 나중에 랜덤 사용해서 2개의 눈 정보를 전송하고, 더블 처리 하도록 변경하기
-	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 }
 
 void GameRoom::MoveUserPosition(int diceValue)

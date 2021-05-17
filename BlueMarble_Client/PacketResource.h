@@ -47,5 +47,6 @@ typedef struct DiceRollPacket
 {
 	char header;
 	int whosTurn;	// 누구차례인지
-	int diceValue;	// 주사위 값
+	int diceValue1;	// 주사위1 값
+	int diceValue2;	// 주사위2 값
 }diceRollPacket;

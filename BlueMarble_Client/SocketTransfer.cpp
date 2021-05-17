@@ -159,15 +159,15 @@ void SocketTransfer::GetRollDiceMethod(char* packet)
 void SocketTransfer::GetRollDice(char* packet)
 {
 	diceRollPacket dPacket;
-	memcpy(&dPacket.header, &packet[0], sizeof(char));					// get header
-	memcpy(&dPacket.whosTurn, &packet[1], sizeof(int));				// get turn
-	memcpy(&dPacket.diceValue, &packet[1 + sizeof(int)], sizeof(int));		// get diceValue
+	memcpy(&dPacket.header, &packet[0], sizeof(char));						// get header
+	memcpy(&dPacket.whosTurn, &packet[1], sizeof(int));						// get turn
+	memcpy(&dPacket.diceValue1, &packet[1 + sizeof(int)], sizeof(int));		// get diceValue1
+	memcpy(&dPacket.diceValue2, &packet[1 + sizeof(int) + sizeof(int)], sizeof(int));		// get diceValue2
 
-	GameManager::GetInstance()->SetGameMessage(to_string(dPacket.diceValue));	// 메시지 갱신
+	GameManager::GetInstance()->SetGameMessage(to_string(dPacket.diceValue1) + " , " + to_string(dPacket.diceValue2));	// 메시지 갱신
 	GameWindow::GetInstance()->HideButton();
 
-	GameManager::GetInstance()->MoveUserPosition(dPacket.whosTurn, dPacket.diceValue);
-
+	GameManager::GetInstance()->MoveUserPosition(dPacket.whosTurn, dPacket.diceValue1 + dPacket.diceValue2);
 }
 
 void SocketTransfer::SendNextTurnSignMethod()
