@@ -23,6 +23,8 @@ private:
 	static void SendDiceTriggerMsgMethod();
 	void SendDiceTriggerMsg();
 public:
+	HWND hWnd = nullptr;
+
 	static GameWindow* GetInstance();
 	static void ReleaseInstance();
 

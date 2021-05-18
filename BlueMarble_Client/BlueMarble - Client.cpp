@@ -111,6 +111,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    MainSystem::GetInstance()->SetWindowHwnd(State::MAIN_MENU, mainWindowHwnd);
    MainSystem::GetInstance()->SetWindowHwnd(State::GAME, gameWindowHwnd);
+   MainSystem::GetInstance()->SetHinstance(hInstance);
 
    return TRUE;
 }

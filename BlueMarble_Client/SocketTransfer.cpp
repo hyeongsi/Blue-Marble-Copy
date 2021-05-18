@@ -5,6 +5,8 @@
 #include "MainSystem.h"
 #include "GameManager.h"
 #include "GameWindow.h"
+#include "UiDialog.h"
+#include "resource.h"
 
 SocketTransfer* SocketTransfer::instance = nullptr;
 
@@ -47,6 +49,11 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 				break;
 			case ROLL_DICE:
 				GetRollDiceMethod(cBuffer);
+				break;
+			case BUY_LAND_SIGN:
+				BuyLandSignMethod(cBuffer);
+				break;
+			case BUY_TOUR_SIGN:
 				break;
 			case FINISH_THIS_TURN_PROCESS:
 				SendNextTurnSignMethod();
@@ -176,6 +183,17 @@ void SocketTransfer::GetRollDice(char* packet)
 	GameWindow::GetInstance()->HideButton();
 
 	GameManager::GetInstance()->MoveUserPosition(dPacket.whosTurn, dPacket.diceValue1 + dPacket.diceValue2);
+}
+
+void SocketTransfer::BuyLandSignMethod(char* packet)
+{
+	instance->BuyLandSign(packet);
+}
+
+void SocketTransfer::BuyLandSign(char* packet)
+{
+	int msgboxID = MessageBox(NULL, "이 지역을 구입하시겠습니까?",
+		"지역 구입", MB_YESNO);
 }
 
 void SocketTransfer::SendNextTurnSignMethod()

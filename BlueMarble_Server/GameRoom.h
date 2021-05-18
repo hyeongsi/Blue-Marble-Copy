@@ -10,13 +10,6 @@ enum class GameState
 {
 	WAIT = 0,
 	ROLL_DICE_SIGN = 1,
-	BUY_LAND_SIGN = 2,
-	BUY_TOUR_SIGN = 3,
-	CARD_SIGN = 4,
-	DESERT_ISLAND_SIGN = 5,
-	OLYMPIC_SIGN = 6,
-	WORLD_TRABLE_SIGN = 7,
-	REVENUE_SIGN = 8,
 	NEXT_TURN = 9,
 };
 
@@ -45,11 +38,16 @@ public:
 	int connectPlayer = 0;
 	clock_t startTime = 0;
 	clock_t finishTime = 0;
+
+	bool isDouble = false;	// 더블 유무
+
 	GameState state = GameState::ROLL_DICE_SIGN;
 
 	GameRoom(SOCKET user1, SOCKET user2);
 
 	vector<SOCKET> GetUserVector();
+	vector<int> GetUserPositionVector();
+
 	void NextTurn();	// 차례 넘겨주기
 	int GetTakeControlPlayer();	// 누구 차례인지 값 전송
 
@@ -65,7 +63,7 @@ public:
 	void SendRollTheDice(int value1, int value2);	// 주사위 눈 전송
 	void MoveUserPosition(int diceValue);	// 캐릭터 보드판 위치 이동
 
-	void BuyLandMethod(bool isTour);	// 구입 시 처리
+	void SendBuyLandSign(bool isTour);	// 구입 시 처리
 
 	void SendFinishTurnSign();	// 모든 처리 끝나고, 다음턴으로 넘어가도 되는지 확인 메시지 전송
 	void CheckEndProcess(SOCKET clientSocket);	// 다음턴으로 이동

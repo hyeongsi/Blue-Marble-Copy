@@ -17,6 +17,8 @@ GameRoom::GameRoom(SOCKET user1, SOCKET user2)
 	userMoneyVector.emplace_back(200.0f);
 	userMoneyVector.emplace_back(200.0f);
 
+	isDouble = false;
+
 	board = *MapManager::GetInstance()->GetBoardData(ORIGINAL);
 
 	for (int i = 0; i < (int)(board.mapSize * DIRECTION); i++)
@@ -34,6 +36,11 @@ GameRoom::GameRoom(SOCKET user1, SOCKET user2)
 vector<SOCKET> GameRoom::GetUserVector()
 {
 	return userVector;
+}
+
+vector<int> GameRoom::GetUserPositionVector()
+{
+	return userPositionVector;
 }
 
 void GameRoom::NextTurn()
@@ -121,7 +128,7 @@ void GameRoom::SendRollDiceSignMethod(SOCKET& socket)
 {
 	gameServer->MakePacket(sendPacket, &packetLastIndex, ROLL_DICE_SIGN);
 	gameServer->PacektSendMethod(sendPacket, socket);
-	printf("%s\n", "send Roll Dice Msg");
+	printf("%s %d\n", "send Roll Dice Msg - ", socket);
 
 	state = GameState::WAIT;
 }
@@ -149,22 +156,19 @@ void GameRoom::MoveUserPosition(int diceValue)
 	}
 }
 
-void GameRoom::BuyLandMethod(bool isTour)
+void GameRoom::SendBuyLandSign(bool isTour)
 {
 	if (isTour)
 	{
-		if (landBoardData.land[takeControlPlayer] != NULL)	// 통행료 지불 및 구입여부 처리
-		{
-
-		}
-		else    // 구입 여부 처리
-		{
-			state = GameState::BUY_TOUR_SIGN;
-		}
+		gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_TOUR_SIGN);
+		gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+		printf("%s %d\n", "send Buy_Tour_Sign - ", userVector[takeControlPlayer]);
 	}
 	else
 	{
-		state = GameState::BUY_LAND_SIGN;
+		gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_LAND_SIGN);
+		gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+		printf("%s %d\n", "send Buy_Land_Sign - ", userVector[takeControlPlayer]);
 	}
 }
 

@@ -122,40 +122,40 @@ void GameManager::RollTheDice(GameRoom* room)
 	room->SendRollTheDice(diceValue1, diceValue2);
 	room->MoveUserPosition(diceValue1 + diceValue2);		// 유저 위치 갱신
 
-	if ( (diceValue1 == diceValue2) && (!(room->GetDiceDoubleCount() >= 3)) )	// 주사위 더블 처리
+	// 도착한 지역에서의 처리
+	switch (room->GetMapData().code[room->GetUserPositionVector()[room->GetTakeControlPlayer()]])
 	{
-		room->state = GameState::ROLL_DICE_SIGN;
+	case LAND_TILE:
+		room->SendBuyLandSign(false);
+		break;
+	case TOUR_TILE:
+		room->SendBuyLandSign(true);
+		break;
+	//case CARD_TILE:
+	//	room->state = GameState::CARD_SIGN;
+	//	break;
+	//case DESERT_ISLAND_TILE:
+	//	room->state = GameState::DESERT_ISLAND_SIGN;
+	//	break;
+	//case OLYMPIC_TILE:
+	//	room->state = GameState::OLYMPIC_SIGN;
+	//	break;
+	//case WORLD_TRABLE_TILE:
+	//	room->state = GameState::WORLD_TRABLE_SIGN;
+	//	break;
+	//case REVENUE_TILE:
+	//	room->state = GameState::REVENUE_SIGN;
+	//	break;
+	}
+
+	if ((diceValue1 == diceValue2) && (!(room->GetDiceDoubleCount() >= 3)))
+	{
+		room->isDouble = true;
 		room->SetDiceDoubleCount(room->GetDiceDoubleCount()+1);
 	}
 	else
 	{
-		room->state = GameState::NEXT_TURN;
+		room->isDouble = false;
 		room->SetDiceDoubleCount(0);
 	}
-
-	// 도착한 지역에서의 처리
-	/*switch (room->GetMapData().code[room->GetTakeControlPlayer()])
-	{
-	case LAND_TILE:
-		room->BuyLandMethod(false);
-		break;
-	case TOUR_TILE:
-		room->BuyLandMethod(true);
-		break;
-	case CARD_TILE:
-		room->state = GameState::CARD_SIGN;
-		break;
-	case DESERT_ISLAND_TILE:
-		room->state = GameState::DESERT_ISLAND_SIGN;
-		break;
-	case OLYMPIC_TILE:
-		room->state = GameState::OLYMPIC_SIGN;
-		break;
-	case WORLD_TRABLE_TILE:
-		room->state = GameState::WORLD_TRABLE_SIGN;
-		break;
-	case REVENUE_TILE:
-		room->state = GameState::REVENUE_SIGN;
-		break;
-	}*/
 }
