@@ -105,6 +105,12 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case ROLL_DICE_SIGN:
 				GameManager::GetInstance()->RollTheDiceMethod(myRoom);
 				break;
+			case BUY_TOUR_SIGN:
+				GameManager::GetInstance()->BuyLandMethod(myRoom, cBuffer, true);
+				break;
+			case BUY_LAND_SIGN:
+				GameManager::GetInstance()->BuyLandMethod(myRoom, cBuffer, false);
+				break;
 			case FINISH_THIS_TURN_PROCESS:
 				myRoom->CheckEndProcess(clientSocket);
 				break;

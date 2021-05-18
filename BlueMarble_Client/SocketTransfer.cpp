@@ -51,9 +51,20 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 				GetRollDiceMethod(cBuffer);
 				break;
 			case BUY_LAND_SIGN:
-				BuyLandSignMethod(cBuffer);
+				BuyLandSignMethod(cBuffer, false);
+				break;
+			case BUY_LAND:
+				GetBuyLandMethod(cBuffer);
+				// 땅 구매 처리 및 추가 건축 건물 선택 + 유저 돈 설정
 				break;
 			case BUY_TOUR_SIGN:
+				BuyLandSignMethod(cBuffer, true);
+				break;
+			case BUY_TOUR:
+				GetBuyTourMethod(cBuffer);
+				// 땅 구매 처리 + 유저 돈 설정
+				break;
+			case PAY_TOLL_SIGN:
 				break;
 			case FINISH_THIS_TURN_PROCESS:
 				SendNextTurnSignMethod();
@@ -121,6 +132,7 @@ void SocketTransfer::GetMapData2(char* packet)
 
 	GameManager::GetInstance()->GetAddressBoardData()->name = _mapPacket2.name;
 	RenderManager::GetInstance()->InitDrawBoardMap();
+
 	recvCBF = nullptr;
 }
 
@@ -185,15 +197,108 @@ void SocketTransfer::GetRollDice(char* packet)
 	GameManager::GetInstance()->MoveUserPosition(dPacket.whosTurn, dPacket.diceValue1 + dPacket.diceValue2);
 }
 
-void SocketTransfer::BuyLandSignMethod(char* packet)
+void SocketTransfer::BuyLandSignMethod(char* packet, bool isTour)
 {
-	instance->BuyLandSign(packet);
+	instance->BuyLandSign(packet, isTour);
 }
 
-void SocketTransfer::BuyLandSign(char* packet)
+void SocketTransfer::BuyLandSign(char* packet, bool isTour)
 {
-	int msgboxID = MessageBox(NULL, "이 지역을 구입하시겠습니까?",
+	buyLandPacket bPacket;				
+	memcpy(&bPacket.whosTurn, &packet[1], sizeof(int));						// get turn
+	memcpy(&bPacket.passPrice, &packet[1 + sizeof(int)], sizeof(float));		// get passPrice
+
+	int msgboxID = MessageBox(NULL, string("이 지역을 구입하시겠습니까?\n" + to_string(bPacket.passPrice)).c_str(),
 		"지역 구입", MB_YESNO);
+
+	if (msgboxID == IDYES)
+	{
+		if (isTour)
+		{
+			MakePacket(BUY_TOUR_SIGN);
+		}
+		else
+		{
+			MakePacket(BUY_LAND_SIGN);
+		}	
+		AppendPacketData(bPacket.whosTurn, sizeof(int));	// 누가 지불하는지,
+		AppendPacketData(true, sizeof(bool));	// 구매 유무
+		SendMessageToGameServer();
+	}
+	else
+	{
+		if (isTour)
+		{
+			MakePacket(BUY_TOUR_SIGN);
+		}
+		else
+		{
+			MakePacket(BUY_LAND_SIGN);
+		}
+		AppendPacketData(bPacket.whosTurn, sizeof(int));	// 누가 지불하는지,
+		AppendPacketData(false, sizeof(bool));	// 구매 유무
+		SendMessageToGameServer();
+	}
+}
+
+void SocketTransfer::GetBuyLandMethod(char* packet)
+{
+	instance->GetBuyLand(packet);
+}
+
+void SocketTransfer::GetBuyLand(char* packet)
+{
+	buyLandSyncPacket bPacket;
+	int accumDataSize = 1;
+
+	memcpy(&bPacket.isBuy, &packet[accumDataSize], sizeof(bool));			// get isbuy
+	accumDataSize += sizeof(bool);
+	memcpy(&bPacket.whosTurn, &packet[accumDataSize], sizeof(int));		    // get turn
+	accumDataSize += sizeof(int);
+	memcpy(&bPacket.userMoney, &packet[accumDataSize], sizeof(float));		// get usermoney
+	accumDataSize += sizeof(float);
+
+	(*GameManager::GetInstance()->GetUserMoneyVector())[bPacket.whosTurn] = bPacket.userMoney;	// 유저 돈 설정
+	// 구매 유무 처리
+	if (bPacket.isBuy == false)
+	{
+		// send exit
+		return;
+	}
+
+	memcpy(&bPacket.villaPrice, &packet[accumDataSize], sizeof(float));
+	accumDataSize += sizeof(float);
+	memcpy(&bPacket.buildingPrice, &packet[accumDataSize], sizeof(float));
+	accumDataSize += sizeof(float);
+	memcpy(&bPacket.hotelPrice, &packet[accumDataSize], sizeof(float));
+	accumDataSize += sizeof(float);
+	memcpy(&bPacket.landMarkPrice, &packet[accumDataSize], sizeof(float));
+	accumDataSize += sizeof(float);
+
+	memcpy(&bPacket.isBuildVilla, &packet[accumDataSize], sizeof(bool));
+	accumDataSize += sizeof(bool);
+	memcpy(&bPacket.isBuildBuilding, &packet[accumDataSize], sizeof(bool));
+	accumDataSize += sizeof(bool);
+	memcpy(&bPacket.isBuildHotel, &packet[accumDataSize], sizeof(bool));
+	accumDataSize += sizeof(bool);
+
+	// 건축 윈도우 출력하기
+}
+
+void SocketTransfer::GetBuyTourMethod(char* packet)
+{
+	instance->GetBuyTour(packet);
+}
+
+void SocketTransfer::GetBuyTour(char* packet)
+{
+	buyTourSyncPacket bPacket;			
+	memcpy(&bPacket.isBuy, &packet[1], sizeof(bool));						// get isBuy
+	memcpy(&bPacket.whosTurn, &packet[1 + sizeof(bool)], sizeof(int));		// get turn
+	memcpy(&bPacket.userMoney, &packet[1 + sizeof(bool) + sizeof(int)], sizeof(float));		// get usermoney
+
+	(*GameManager::GetInstance()->GetUserMoneyVector())[bPacket.whosTurn] = bPacket.userMoney;	// 유저 돈 설정
+	// 구매 유무 처리
 }
 
 void SocketTransfer::SendNextTurnSignMethod()
@@ -297,13 +402,6 @@ void SocketTransfer::MakePacket(char header)
 		memset(sendPacket, 0, MAX_PACKET_SIZE);		// 패킷 초기화
 		packetLastIndex = 0;
 	}
-}
-
-template<class T>
-void SocketTransfer::AppendPacketData(T data, unsigned int dataSize)
-{
-	memcpy(&sendPacket[packetLastIndex], &data, dataSize);
-	packetLastIndex += dataSize;
 }
 
 void SocketTransfer::AppendPacketPointerData(char* data, unsigned int dataSize)

@@ -19,10 +19,15 @@ public:
 	GameRoom* GetRoom(int index);
 	int FindBelongRoom(SOCKET& socket);	// 속한 게임방 찾기
 
+	void ArriveLandTileMethod(GameRoom* room, bool isTour);
+
 	static UINT WINAPI RoomLogicThread(void* arg);
 	void RoomLogicThreadMethod(GameRoom* room);
 
 	static void RollTheDiceMethod(GameRoom* room);
 	void RollTheDice(GameRoom* room);
+
+	static void BuyLandMethod(GameRoom* room, char* data, bool isTour);
+	void BuyLand(GameRoom* room, char* data, bool isTour);
 };
 

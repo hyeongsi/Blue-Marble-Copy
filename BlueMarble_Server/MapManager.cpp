@@ -34,7 +34,7 @@ void MapManager::LoadMapData()
 
 	int code;
 	string name;
-	double landPrice = 0.0, villaPrice = 0.0, buildingPrice = 0.0, hotelPrice = 0.0, landMarkPrice = 0.0;
+	float landPrice = 0.0f, villaPrice = 0.0f, buildingPrice = 0.0f, hotelPrice = 0.0f, landMarkPrice = 0.0f;
 
 	readFile.open(mapFilePath);
 	if (readFile.is_open())

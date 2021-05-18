@@ -67,6 +67,25 @@ int GameManager::FindBelongRoom(SOCKET& socket)
 	return -1;
 }
 
+void GameManager::ArriveLandTileMethod(GameRoom* room, bool isTour)
+{
+	if (room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == NULL)
+	{
+		room->SendBuyLandSign(isTour);	// 구입여부 확인
+	}
+	else   // 이미 땅을 소유한 사람이 있는 경우
+	{
+		if (room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer())	// 내 땅이면
+		{
+			room->SendBuyLand(isTour, true);
+		}
+		else   // 남의 땅이면
+		{
+			room->SendPayTollSign();	// 통행료 지불 요청
+		}
+	}
+}
+
 UINT WINAPI GameManager::RoomLogicThread(void* arg)
 {
 	instance->RoomLogicThreadMethod((GameRoom*)arg);
@@ -126,10 +145,10 @@ void GameManager::RollTheDice(GameRoom* room)
 	switch (room->GetMapData().code[room->GetUserPositionVector()[room->GetTakeControlPlayer()]])
 	{
 	case LAND_TILE:
-		room->SendBuyLandSign(false);
+		ArriveLandTileMethod(room, false);
 		break;
 	case TOUR_TILE:
-		room->SendBuyLandSign(true);
+		ArriveLandTileMethod(room, true);
 		break;
 	//case CARD_TILE:
 	//	room->state = GameState::CARD_SIGN;
@@ -157,5 +176,43 @@ void GameManager::RollTheDice(GameRoom* room)
 	{
 		room->isDouble = false;
 		room->SetDiceDoubleCount(0);
+	}
+}
+
+void GameManager::BuyLandMethod(GameRoom* room, char* data, bool isTour)
+{
+	instance->BuyLand(room, data, isTour);
+}
+
+void GameManager::BuyLand(GameRoom* room, char* data, bool isTour)
+{
+	buyLandPacket bPacket;					
+	memcpy(&bPacket.whosTurn, &data[1], sizeof(int));						// get turn
+	memcpy(&bPacket.isBuy, &data[1 + sizeof(int)], sizeof(bool));			// get isBuy
+
+	if (bPacket.isBuy)	// 구매 시
+	{
+		if ((*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] >= 
+			room->GetMapData().land[
+				(room->GetUserPositionVector())[room->GetTakeControlPlayer()]
+			])	// 돈 비교
+		{
+			(*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] -= 
+				room->GetMapData().land[(room->GetUserPositionVector())[room->GetTakeControlPlayer()]];		// 돈 차감
+
+			room->GetPLandBoardData()->land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] = room->GetTakeControlPlayer();	// 구매 처리
+
+			room->SendBuyLand(isTour, true);	// 구입 여부 전송
+		}
+		else   // 땅 팔거나, 땅 다 팔아도 파산이면 게임오버 처리
+		{
+			//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+			//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+		}
+	}
+	else   // 미 구매 시
+	{
+		room->SendBuyLand(isTour, false);	// 구입 여부 전송
+		room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
 	}
 }

@@ -46,12 +46,15 @@ public:
 	GameRoom(SOCKET user1, SOCKET user2);
 
 	vector<SOCKET> GetUserVector();
+	vector<float>* GetPUserMoneyVector();
 	vector<int> GetUserPositionVector();
 
 	void NextTurn();	// 차례 넘겨주기
 	int GetTakeControlPlayer();	// 누구 차례인지 값 전송
 
-	boardData GetMapData();	// 맵의 정보 전송
+	landData GetLandBoardData();	// 건축물 정보 전송
+	landData* GetPLandBoardData();	// 건축물 정보 전송(포인터)
+	boardData GetMapData();			// 맵의 정보 전송
 
 	int GetDiceDoubleCount();		// 더블 카운트 전송
 	void SetDiceDoubleCount(int count);	// 더블 카운트 변경
@@ -63,9 +66,14 @@ public:
 	void SendRollTheDice(int value1, int value2);	// 주사위 눈 전송
 	void MoveUserPosition(int diceValue);	// 캐릭터 보드판 위치 이동
 
+	void SendPayTollSign();	// 통행료 지불
 	void SendBuyLandSign(bool isTour);	// 구입 시 처리
+
+	void SendBuyLand(bool isTour, bool isBuy); // 땅 구입 처리 전송
 
 	void SendFinishTurnSign();	// 모든 처리 끝나고, 다음턴으로 넘어가도 되는지 확인 메시지 전송
 	void CheckEndProcess(SOCKET clientSocket);	// 다음턴으로 이동
+
+
 };
 

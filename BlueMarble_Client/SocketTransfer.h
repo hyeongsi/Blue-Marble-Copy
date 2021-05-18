@@ -41,8 +41,14 @@ private:
 	static void GetRollDiceMethod(char* packet);
 	void GetRollDice(char* packet);
 
-	static void BuyLandSignMethod(char* packet);
-	void BuyLandSign(char* packet);
+	static void BuyLandSignMethod(char* packet, bool isTour);
+	void BuyLandSign(char* packet, bool isTour);
+
+	static void GetBuyLandMethod(char* packet);
+	void GetBuyLand(char* packet);
+
+	static void GetBuyTourMethod(char* packet);
+	void GetBuyTour(char* packet);
 
 	static void SendNextTurnSignMethod();
 	void SendNextTurnSign();
@@ -66,3 +72,10 @@ public:
 
 	void SendRollDiceSign();
 };
+
+template<class T>
+void SocketTransfer::AppendPacketData(T data, unsigned int dataSize)
+{
+	memcpy(&sendPacket[packetLastIndex], &data, dataSize);
+	packetLastIndex += dataSize;
+}

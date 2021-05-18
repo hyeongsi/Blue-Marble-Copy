@@ -41,6 +41,14 @@ enum MessageCode
 	WORLD_TRABLE_SIGN = 13,
 	WORLD_TRABLE = 14,
 	REVENUE_SIGN = 15,
+	PAY_TOLL_SIGN = 16,
 	FINISH_THIS_TURN_PROCESS = 20,
 	SET_MATCHING_USER_PACKET = 100,
 };
+
+typedef struct BuyLandPacket
+{
+	char header;
+	int whosTurn;	// 누구의 요구인지
+	bool isBuy;		// 구매여부
+}buyLandPacket;
