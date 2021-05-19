@@ -48,7 +48,7 @@ vector<int>* GameManager::GetUserPositionVector()
 	return &userPositionVector;
 }
 
-vector<float>* GameManager::GetUserMoneyVector()
+vector<int>* GameManager::GetUserMoneyVector()
 {
 	return &userMoneyVector;
 }

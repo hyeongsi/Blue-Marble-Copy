@@ -41,14 +41,17 @@ private:
 	static void GetRollDiceMethod(char* packet);
 	void GetRollDice(char* packet);
 
-	static void BuyLandSignMethod(char* packet, bool isTour);
-	void BuyLandSign(char* packet, bool isTour);
+	static void BuyLandSignMethod(char* packet);
+	void BuyLandSign(char* packet);
 
 	static void GetBuyLandMethod(char* packet);
 	void GetBuyLand(char* packet);
 
 	static void GetBuyTourMethod(char* packet);
 	void GetBuyTour(char* packet);
+
+	static void GetBuyLandSyncMethod(char* packet);
+	void GetBuyLandSync(char* packet);
 
 	static void SendNextTurnSignMethod();
 	void SendNextTurnSign();

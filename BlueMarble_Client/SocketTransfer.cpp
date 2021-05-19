@@ -51,20 +51,15 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 				GetRollDiceMethod(cBuffer);
 				break;
 			case BUY_LAND_SIGN:
-				BuyLandSignMethod(cBuffer, false);
+				BuyLandSignMethod(cBuffer);
 				break;
 			case BUY_LAND:
 				GetBuyLandMethod(cBuffer);
-				// 땅 구매 처리 및 추가 건축 건물 선택 + 유저 돈 설정
-				break;
-			case BUY_TOUR_SIGN:
-				BuyLandSignMethod(cBuffer, true);
-				break;
-			case BUY_TOUR:
-				GetBuyTourMethod(cBuffer);
-				// 땅 구매 처리 + 유저 돈 설정
 				break;
 			case PAY_TOLL_SIGN:
+				break;
+			case BUY_LAND_SYNC:
+				GetBuyLandSyncMethod(cBuffer);
 				break;
 			case FINISH_THIS_TURN_PROCESS:
 				SendNextTurnSignMethod();
@@ -128,6 +123,7 @@ void SocketTransfer::GetMapData2(char* packet)
 		stackMemorySize += _mapPacket2.charSize;
 
 		_mapPacket2.name.emplace_back(str);
+		GameManager::GetInstance()->GetAddressBoardData()->owner.emplace_back(0);	// 땅 소유자 추가
 	}
 
 	GameManager::GetInstance()->GetAddressBoardData()->name = _mapPacket2.name;
@@ -142,7 +138,7 @@ void SocketTransfer::GetReadyMethod(char* packet)
 	memcpy(&rPacket.header, &packet[0], sizeof(char));					// get ready sign
 	memcpy(&rPacket.number, &packet[1], sizeof(int));		// get number
 	memcpy(&rPacket.playerCount, &packet[1 + sizeof(int)], sizeof(int));		// get playerCount
-	memcpy(&rPacket.initMoney, &packet[1 + sizeof(int) + sizeof(int)], sizeof(float));		// get initMoney
+	memcpy(&rPacket.initMoney, &packet[1 + sizeof(int) + sizeof(int)], sizeof(int));		// get initMoney
 
 	for (int i = 0; i < rPacket.playerCount; i++)
 	{
@@ -197,44 +193,30 @@ void SocketTransfer::GetRollDice(char* packet)
 	GameManager::GetInstance()->MoveUserPosition(dPacket.whosTurn, dPacket.diceValue1 + dPacket.diceValue2);
 }
 
-void SocketTransfer::BuyLandSignMethod(char* packet, bool isTour)
+void SocketTransfer::BuyLandSignMethod(char* packet)
 {
-	instance->BuyLandSign(packet, isTour);
+	instance->BuyLandSign(packet);
 }
 
-void SocketTransfer::BuyLandSign(char* packet, bool isTour)
+void SocketTransfer::BuyLandSign(char* packet)
 {
 	buyLandPacket bPacket;				
 	memcpy(&bPacket.whosTurn, &packet[1], sizeof(int));						// get turn
-	memcpy(&bPacket.passPrice, &packet[1 + sizeof(int)], sizeof(float));		// get passPrice
+	memcpy(&bPacket.passPrice, &packet[1 + sizeof(int)], sizeof(int));	// get passPrice
 
 	int msgboxID = MessageBox(NULL, string("이 지역을 구입하시겠습니까?\n" + to_string(bPacket.passPrice)).c_str(),
 		"지역 구입", MB_YESNO);
 
 	if (msgboxID == IDYES)
 	{
-		if (isTour)
-		{
-			MakePacket(BUY_TOUR_SIGN);
-		}
-		else
-		{
-			MakePacket(BUY_LAND_SIGN);
-		}	
+		MakePacket(BUY_LAND_SIGN);
 		AppendPacketData(bPacket.whosTurn, sizeof(int));	// 누가 지불하는지,
 		AppendPacketData(true, sizeof(bool));	// 구매 유무
 		SendMessageToGameServer();
 	}
 	else
 	{
-		if (isTour)
-		{
-			MakePacket(BUY_TOUR_SIGN);
-		}
-		else
-		{
-			MakePacket(BUY_LAND_SIGN);
-		}
+		MakePacket(BUY_LAND_SIGN);
 		AppendPacketData(bPacket.whosTurn, sizeof(int));	// 누가 지불하는지,
 		AppendPacketData(false, sizeof(bool));	// 구매 유무
 		SendMessageToGameServer();
@@ -250,39 +232,41 @@ void SocketTransfer::GetBuyLand(char* packet)
 {
 	buyLandSyncPacket bPacket;
 	int accumDataSize = 1;
+	int landPrice = 0;
 
 	memcpy(&bPacket.isBuy, &packet[accumDataSize], sizeof(bool));			// get isbuy
 	accumDataSize += sizeof(bool);
 	memcpy(&bPacket.whosTurn, &packet[accumDataSize], sizeof(int));		    // get turn
 	accumDataSize += sizeof(int);
-	memcpy(&bPacket.userMoney, &packet[accumDataSize], sizeof(float));		// get usermoney
-	accumDataSize += sizeof(float);
+	memcpy(&bPacket.userMoney, &packet[accumDataSize], sizeof(int));		// get usermoney
+	accumDataSize += sizeof(int);
 
-	(*GameManager::GetInstance()->GetUserMoneyVector())[bPacket.whosTurn] = bPacket.userMoney;	// 유저 돈 설정
 	// 구매 유무 처리
 	if (bPacket.isBuy == false)
 	{
 		// send exit
 		return;
 	}
+	else
+	{
+		/*memcpy(&bPacket.villaPrice, &packet[accumDataSize], sizeof(float));
+		accumDataSize += sizeof(float);
+		memcpy(&bPacket.buildingPrice, &packet[accumDataSize], sizeof(float));
+		accumDataSize += sizeof(float);
+		memcpy(&bPacket.hotelPrice, &packet[accumDataSize], sizeof(float));
+		accumDataSize += sizeof(float);
+		memcpy(&bPacket.landMarkPrice, &packet[accumDataSize], sizeof(float));
+		accumDataSize += sizeof(float);
 
-	memcpy(&bPacket.villaPrice, &packet[accumDataSize], sizeof(float));
-	accumDataSize += sizeof(float);
-	memcpy(&bPacket.buildingPrice, &packet[accumDataSize], sizeof(float));
-	accumDataSize += sizeof(float);
-	memcpy(&bPacket.hotelPrice, &packet[accumDataSize], sizeof(float));
-	accumDataSize += sizeof(float);
-	memcpy(&bPacket.landMarkPrice, &packet[accumDataSize], sizeof(float));
-	accumDataSize += sizeof(float);
+		memcpy(&bPacket.isBuildVilla, &packet[accumDataSize], sizeof(bool));
+		accumDataSize += sizeof(bool);
+		memcpy(&bPacket.isBuildBuilding, &packet[accumDataSize], sizeof(bool));
+		accumDataSize += sizeof(bool);
+		memcpy(&bPacket.isBuildHotel, &packet[accumDataSize], sizeof(bool));
+		accumDataSize += sizeof(bool);*/
 
-	memcpy(&bPacket.isBuildVilla, &packet[accumDataSize], sizeof(bool));
-	accumDataSize += sizeof(bool);
-	memcpy(&bPacket.isBuildBuilding, &packet[accumDataSize], sizeof(bool));
-	accumDataSize += sizeof(bool);
-	memcpy(&bPacket.isBuildHotel, &packet[accumDataSize], sizeof(bool));
-	accumDataSize += sizeof(bool);
-
-	// 건축 윈도우 출력하기
+		// 건축 윈도우 출력하기
+	}
 }
 
 void SocketTransfer::GetBuyTourMethod(char* packet)
@@ -292,13 +276,48 @@ void SocketTransfer::GetBuyTourMethod(char* packet)
 
 void SocketTransfer::GetBuyTour(char* packet)
 {
-	buyTourSyncPacket bPacket;			
-	memcpy(&bPacket.isBuy, &packet[1], sizeof(bool));						// get isBuy
-	memcpy(&bPacket.whosTurn, &packet[1 + sizeof(bool)], sizeof(int));		// get turn
-	memcpy(&bPacket.userMoney, &packet[1 + sizeof(bool) + sizeof(int)], sizeof(float));		// get usermoney
+	//buyTourSyncPacket bPacket;			
+	//memcpy(&bPacket.isBuy, &packet[1], sizeof(bool));						// get isBuy
+	//memcpy(&bPacket.whosTurn, &packet[1 + sizeof(bool)], sizeof(int));		// get turn
+	//memcpy(&bPacket.userMoney, &packet[1 + sizeof(bool) + sizeof(int)], sizeof(float));		// get usermoney
 
-	(*GameManager::GetInstance()->GetUserMoneyVector())[bPacket.whosTurn] = bPacket.userMoney;	// 유저 돈 설정
-	// 구매 유무 처리
+	//(*GameManager::GetInstance()->GetUserMoneyVector())[bPacket.whosTurn] = bPacket.userMoney;	// 유저 돈 설정
+	//// 구매 유무 처리
+}
+
+void SocketTransfer::GetBuyLandSyncMethod(char* packet)
+{
+	instance->GetBuyLandSync(packet);
+}
+
+void SocketTransfer::GetBuyLandSync(char* packet)
+{
+	buyLandSyncPacket buyLandSyncPkt;
+	int accumDataSize = 1;
+
+	memcpy(&buyLandSyncPkt.isBuy, &packet[accumDataSize], sizeof(bool));			// get isbuy
+	accumDataSize += sizeof(bool);
+	memcpy(&buyLandSyncPkt.whosTurn, &packet[accumDataSize], sizeof(int));		    // get turn
+	accumDataSize += sizeof(int);
+	memcpy(&buyLandSyncPkt.landPrice, &packet[accumDataSize], sizeof(int));		// get landPrice
+	accumDataSize += sizeof(int);
+	memcpy(&buyLandSyncPkt.userMoney, &packet[accumDataSize], sizeof(int));		// get usermoney
+	accumDataSize += sizeof(int);
+
+	GameManager::GetInstance()->SetGameMessage("구입 - " + to_string(buyLandSyncPkt.landPrice));	// 메시지 갱신
+	(*GameManager::GetInstance()->GetUserMoneyVector())[buyLandSyncPkt.whosTurn] = buyLandSyncPkt.userMoney;
+
+	if (buyLandSyncPkt.isBuy)
+	{
+		GameManager::GetInstance()->GetAddressBoardData()->owner[
+			(*GameManager::GetInstance()->GetUserPositionVector())[buyLandSyncPkt.whosTurn]] = buyLandSyncPkt.whosTurn+1;
+	}
+	
+	if(buyLandSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex()-1)
+	{ 
+		MakePacket(BUY_LAND_SYNC);
+		SendMessageToGameServer();
+	}
 }
 
 void SocketTransfer::SendNextTurnSignMethod()

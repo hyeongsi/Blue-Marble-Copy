@@ -13,11 +13,11 @@ typedef struct BoardData
 	unsigned int mapSize = 0;
 	vector<int> code;
 	vector<string> name;
-	vector<float> land;
-	vector<float> villa;
-	vector<float> building;
-	vector<float> hotel;
-	vector<float> landMark;
+	vector<int> land;
+	vector<int> villa;
+	vector<int> building;
+	vector<int> hotel;
+	vector<int> landMark;
 } boardData;
 
 typedef struct LandData

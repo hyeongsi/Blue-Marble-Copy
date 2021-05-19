@@ -23,7 +23,7 @@ private:
 	int roomId = 0;
 
 	vector<int> userPositionVector;	// 유저 위치
-	vector<float> userMoneyVector;	// 유저 소지 자금
+	vector<int> userMoneyVector;	// 유저 소지 자금
 	int takeControlPlayer = 0;	// 누구 차례인지 구분 변수
 	int diceDoubleCount = 0;	// 주사위 더블 카운트 변수,
 
@@ -46,7 +46,7 @@ public:
 	GameRoom(SOCKET user1, SOCKET user2);
 
 	vector<SOCKET> GetUserVector();
-	vector<float>* GetPUserMoneyVector();
+	vector<int>* GetPUserMoneyVector();
 	vector<int> GetUserPositionVector();
 
 	void NextTurn();	// 차례 넘겨주기
@@ -67,9 +67,12 @@ public:
 	void MoveUserPosition(int diceValue);	// 캐릭터 보드판 위치 이동
 
 	void SendPayTollSign();	// 통행료 지불
-	void SendBuyLandSign(bool isTour);	// 구입 시 처리
+	void SendBuyLandSign();	// 구입 시 처리
 
-	void SendBuyLand(bool isTour, bool isBuy); // 땅 구입 처리 전송
+	void SendLandSyncSign(int turn, bool isBuy);
+	void SendBuyLand(bool isBuy); // 땅 구입 처리 전송
+
+	void CheckLandKindNSendMessage();
 
 	void SendFinishTurnSign();	// 모든 처리 끝나고, 다음턴으로 넘어가도 되는지 확인 메시지 전송
 	void CheckEndProcess(SOCKET clientSocket);	// 다음턴으로 이동

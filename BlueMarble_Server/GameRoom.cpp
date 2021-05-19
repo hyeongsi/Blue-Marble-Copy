@@ -14,8 +14,8 @@ GameRoom::GameRoom(SOCKET user1, SOCKET user2)
 	isFinishTurnProcessVector.emplace_back(false);
 	isFinishTurnProcessVector.emplace_back(false);
 
-	userMoneyVector.emplace_back(200.0f);
-	userMoneyVector.emplace_back(200.0f);
+	userMoneyVector.emplace_back(2000);
+	userMoneyVector.emplace_back(2000);
 
 	isDouble = false;
 
@@ -38,7 +38,7 @@ vector<SOCKET> GameRoom::GetUserVector()
 	return userVector;
 }
 
-vector<float>* GameRoom::GetPUserMoneyVector()
+vector<int>* GameRoom::GetPUserMoneyVector()
 {
 	return &userMoneyVector;
 }
@@ -188,69 +188,84 @@ void GameRoom::SendPayTollSign()
 	// 통행료 기준으로 계산하도록 변경하기, 위의 코드는 건설 비용 기준으로 계산하도록 되어있음
 
 	gameServer->MakePacket(sendPacket, &packetLastIndex, PAY_TOLL_SIGN);
-	gameServer->AppendPacketData(sendPacket, &packetLastIndex, toll, sizeof(float));	// 통행료 가격
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, toll, sizeof(int));	// 통행료 가격
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
 	printf("%s %d\n", "send Pay_Toll_Sign - ", userVector[takeControlPlayer]);
 }
 
-void GameRoom::SendBuyLandSign(bool isTour)
+void GameRoom::SendBuyLandSign()
 {
-	if (isTour)
+	gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_LAND_SIGN);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(int));	// 유저
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex,
+		board.land[userPositionVector[takeControlPlayer]], sizeof(int));	// 땅 가격
+	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+	printf("%s %d\n", "send Buy_Land_Sign - ", userVector[takeControlPlayer]);
+}
+
+void GameRoom::SendLandSyncSign(int turn, bool isBuy)
+{
+	gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_LAND_SYNC);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isBuy, sizeof(bool));		// 구매 유무
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, turn, sizeof(int));		// 유저
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, board.land[userPositionVector[turn]], sizeof(int));	// 땅 가격
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[turn], sizeof(int));	// 해당 유저 돈
+	
+	for (auto& socketIterator : userVector)
 	{
-		gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_TOUR_SIGN);
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(int));	// 유저
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, 
-			board.landMark[userPositionVector[takeControlPlayer]], sizeof(float));	// 땅 가격
-		gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
-		printf("%s %d\n", "send Buy_Tour_Sign - ", userVector[takeControlPlayer]);
-	}
-	else
-	{
-		gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_LAND_SIGN);
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(int));	// 유저
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, 
-			board.landMark[userPositionVector[takeControlPlayer]], sizeof(float));	// 땅 가격
-		gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
-		printf("%s %d\n", "send Buy_Land_Sign - ", userVector[takeControlPlayer]);
+		gameServer->PacektSendMethod(sendPacket, socketIterator);
+		printf("%s %d\n", "send Buy_Tour - ", socketIterator);
 	}
 }
 
-void GameRoom::SendBuyLand(bool isTour, bool isBuy)
+void GameRoom::SendBuyLand(bool isBuy)
 {
-	// 해당 클라 말고도 구매 정보를 보내서 동기화 할 수 있도록 하기,
-	if (isTour)
+	//// 해당 클라 말고도 구매 정보를 보내서 동기화 할 수 있도록 하기,
+	//if (isTour)
+	//{
+	//	gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_TOUR);
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isBuy, sizeof(bool));				// 구매 유무
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(int));		// 유저
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[takeControlPlayer], sizeof(float));	// 해당 유저 돈
+	//	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+	//	printf("%s %d\n", "send Buy_Tour - ", userVector[takeControlPlayer]);
+	//}
+	//else
+	//{
+	//	if (landBoardData.landMark[userPositionVector[takeControlPlayer]] != takeControlPlayer)	// 랜드마크가 건설되어 있다면
+	//	{
+	//		state = GameState::NEXT_TURN;
+	//		return;
+	//	}
+
+	//	gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_LAND);
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isBuy, sizeof(bool));				// 구매 유무
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(int));		// 유저
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[takeControlPlayer], sizeof(float));	// 해당 유저 돈
+
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, board.villa[userPositionVector[takeControlPlayer]], sizeof(float));	// 빌라 가격
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, board.building[userPositionVector[takeControlPlayer]], sizeof(float));	// 빌딩 가격
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, board.hotel[userPositionVector[takeControlPlayer]], sizeof(float));	// 호텔 가격
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, board.landMark[userPositionVector[takeControlPlayer]], sizeof(float));	// 랜드마크 가격
+
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, landBoardData.villa[userPositionVector[takeControlPlayer]], sizeof(bool));	// 빌라 건축 유무
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, landBoardData.building[userPositionVector[takeControlPlayer]], sizeof(bool));	// 빌딩 건축 유무
+	//	gameServer->AppendPacketData(sendPacket, &packetLastIndex, landBoardData.hotel[userPositionVector[takeControlPlayer]], sizeof(bool));	// 호텔 건축 유무
+
+	//	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+	//	printf("%s %d\n", "send Buy_Land - ", userVector[takeControlPlayer]);
+	//}
+}
+
+void GameRoom::CheckLandKindNSendMessage()
+{
+	if (board.code[userPositionVector[takeControlPlayer]] == LAND_TILE) // Land
 	{
-		gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_TOUR);
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, isBuy, sizeof(bool));				// 구매 유무
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(int));		// 유저
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[takeControlPlayer], sizeof(float));	// 해당 유저 돈
-		gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
-		printf("%s %d\n", "send Buy_Tour - ", userVector[takeControlPlayer]);
+		state = GameState::NEXT_TURN;	// 임시로 턴 넘기도록 설정
 	}
-	else
+	else  // Tour
 	{
-		if (landBoardData.landMark[userPositionVector[takeControlPlayer]] != takeControlPlayer)	// 랜드마크가 건설되어 있다면
-		{
-			state = GameState::NEXT_TURN;
-			return;
-		}
-
-		gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_LAND);
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, isBuy, sizeof(bool));				// 구매 유무
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(int));		// 유저
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[takeControlPlayer], sizeof(float));	// 해당 유저 돈
-
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, board.villa[userPositionVector[takeControlPlayer]], sizeof(float));	// 빌라 가격
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, board.building[userPositionVector[takeControlPlayer]], sizeof(float));	// 빌딩 가격
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, board.hotel[userPositionVector[takeControlPlayer]], sizeof(float));	// 호텔 가격
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, board.landMark[userPositionVector[takeControlPlayer]], sizeof(float));	// 랜드마크 가격
-
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, landBoardData.villa[userPositionVector[takeControlPlayer]], sizeof(bool));	// 빌라 건축 유무
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, landBoardData.building[userPositionVector[takeControlPlayer]], sizeof(bool));	// 빌딩 건축 유무
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, landBoardData.hotel[userPositionVector[takeControlPlayer]], sizeof(bool));	// 호텔 건축 유무
-
-		gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
-		printf("%s %d\n", "send Buy_Land - ", userVector[takeControlPlayer]);
+		state = GameState::NEXT_TURN;
 	}
 }
 

@@ -13,6 +13,7 @@ typedef struct BoardData
 	int mapSize = 0;
 	vector<int> code;
 	vector<string> name;
+	vector<int> owner;
 } boardData;
 
 enum class GameState
@@ -32,11 +33,11 @@ private:
 	GameState state = GameState::WAIT;
 
 	vector<int> userPositionVector;	// 유저 위치
-	vector<float> userMoneyVector;	// 유저 돈 텍스트
+	vector<int> userMoneyVector;	// 유저 돈 텍스트
 
 	bool isMyTurn = false;
 	int playerCount = 0;	// 총 플레이 유저 수
-	int myCharacterIndex = 0;	// 본인 캐릭터 인덱스
+	int myCharacterIndex = 0;	// 본인 캐릭터 인덱스 (1부터 시작)
 
 	string gameMessage = "매칭중";
 
@@ -52,7 +53,7 @@ public:
 	GameState GetGameState();
 
 	vector<int>* GetUserPositionVector();
-	vector<float>* GetUserMoneyVector();
+	vector<int>* GetUserMoneyVector();
 
 	void SetIsMyTurn(bool turn);
 	bool GetIsMyTurn();

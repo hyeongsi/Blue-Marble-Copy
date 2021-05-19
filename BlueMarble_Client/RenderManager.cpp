@@ -198,9 +198,27 @@ void RenderManager::DrawBoardMap()
         LineTo(memDC, RIGHT_BOTTOM_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y + (tileHeight * (i+1)));
     }
     
+    SetTextColor(hdc, RGB(255, 0, 0));
     for (int i = 0; i < (int)board.name.size(); i++)
     {
+        switch ( GameManager::GetInstance()->GetBoardData().owner[i] )
+        {
+        case 1:     // 1p
+            SetTextColor(memDC, RGB(237, 28, 36));      // 빨간색
+            break;
+        case 2:     // 2p
+            SetTextColor(memDC, RGB(63, 72, 204));     // 파란색
+            break;
+        case 3:     // 3p
+            break;
+        case 4:     // 4p
+            break;
+        default:    // 소유주 없음
+            SetTextColor(memDC, RGB(0, 0, 0));     // 검은색
+            break;
+        }
         DrawText(memDC, board.name[i].c_str(), -1, &rectVector[i], DT_NOCLIP | DT_CENTER);
+        SetTextColor(memDC, RGB(0, 0, 0));     // 검은색
     }
 }
 

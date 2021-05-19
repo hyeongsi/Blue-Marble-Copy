@@ -33,13 +33,13 @@ void GameManager::CreateRoom(SOCKET& user1, SOCKET& user2)
 	GameServer::GetInstance()->MakePacket(sendPacket, &packetLastIndex, READY);
 	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 1, sizeof(int));
 	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2, sizeof(int));
-	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 200.0f, sizeof(float));
+	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2000, sizeof(int));
 	GameServer::GetInstance()->PacektSendMethod(sendPacket, user1);
 
 	GameServer::GetInstance()->MakePacket(sendPacket, &packetLastIndex, READY);
 	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2, sizeof(int));
 	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2, sizeof(int));
-	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 200.0f, sizeof(float));
+	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2000, sizeof(int));
 	GameServer::GetInstance()->PacektSendMethod(sendPacket, user2);
 }
 
@@ -67,22 +67,19 @@ int GameManager::FindBelongRoom(SOCKET& socket)
 	return -1;
 }
 
-void GameManager::ArriveLandTileMethod(GameRoom* room, bool isTour)
+void GameManager::ArriveLandTileMethod(GameRoom* room)
 {
 	if (room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == NULL)
 	{
-		room->SendBuyLandSign(isTour);	// 구입여부 확인
+		room->SendBuyLandSign();	// 구입여부 확인 메시지 전송
 	}
-	else   // 이미 땅을 소유한 사람이 있는 경우
+	else if(room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer()) // 내 땅이면
 	{
-		if (room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer())	// 내 땅이면
-		{
-			room->SendBuyLand(isTour, true);
-		}
-		else   // 남의 땅이면
-		{
-			room->SendPayTollSign();	// 통행료 지불 요청
-		}
+		//room->SendBuyLand(isTour, true);
+	}
+	else  // 남의 땅이면
+	{
+		//room->SendPayTollSign();	// 통행료 지불 요청
 	}
 }
 
@@ -145,30 +142,29 @@ void GameManager::RollTheDice(GameRoom* room)
 	switch (room->GetMapData().code[room->GetUserPositionVector()[room->GetTakeControlPlayer()]])
 	{
 	case LAND_TILE:
-		ArriveLandTileMethod(room, false);
-		break;
 	case TOUR_TILE:
-		ArriveLandTileMethod(room, true);
+		ArriveLandTileMethod(room);
 		break;
-	//case CARD_TILE:
-	//	room->state = GameState::CARD_SIGN;
-	//	break;
-	//case DESERT_ISLAND_TILE:
-	//	room->state = GameState::DESERT_ISLAND_SIGN;
-	//	break;
-	//case OLYMPIC_TILE:
-	//	room->state = GameState::OLYMPIC_SIGN;
-	//	break;
-	//case WORLD_TRABLE_TILE:
-	//	room->state = GameState::WORLD_TRABLE_SIGN;
-	//	break;
-	//case REVENUE_TILE:
-	//	room->state = GameState::REVENUE_SIGN;
-	//	break;
+	case CARD_TILE:
+		room->state = GameState::NEXT_TURN;
+		break;
+	case DESERT_ISLAND_TILE:
+		room->state = GameState::NEXT_TURN;
+		break;
+	case OLYMPIC_TILE:
+		room->state = GameState::NEXT_TURN;
+		break;
+	case WORLD_TRABLE_TILE:
+		room->state = GameState::NEXT_TURN;
+		break;
+	case REVENUE_TILE:
+		room->state = GameState::NEXT_TURN;
+		break;
 	}
 
 	if ((diceValue1 == diceValue2) && (!(room->GetDiceDoubleCount() >= 3)))
 	{
+		room->state = GameState::ROLL_DICE_SIGN;
 		room->isDouble = true;
 		room->SetDiceDoubleCount(room->GetDiceDoubleCount()+1);
 	}
@@ -179,12 +175,12 @@ void GameManager::RollTheDice(GameRoom* room)
 	}
 }
 
-void GameManager::BuyLandMethod(GameRoom* room, char* data, bool isTour)
+void GameManager::BuyLandMethod(GameRoom* room, char* data)
 {
-	instance->BuyLand(room, data, isTour);
+	instance->BuyLand(room, data);
 }
 
-void GameManager::BuyLand(GameRoom* room, char* data, bool isTour)
+void GameManager::BuyLand(GameRoom* room, char* data)
 {
 	buyLandPacket bPacket;					
 	memcpy(&bPacket.whosTurn, &data[1], sizeof(int));						// get turn
@@ -192,17 +188,17 @@ void GameManager::BuyLand(GameRoom* room, char* data, bool isTour)
 
 	if (bPacket.isBuy)	// 구매 시
 	{
-		if ((*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] >= 
-			room->GetMapData().land[
-				(room->GetUserPositionVector())[room->GetTakeControlPlayer()]
+		if ((*room->GetPUserMoneyVector())[bPacket.whosTurn] >= room->GetMapData().land[
+				(room->GetUserPositionVector())[bPacket.whosTurn]
 			])	// 돈 비교
 		{
-			(*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] -= 
-				room->GetMapData().land[(room->GetUserPositionVector())[room->GetTakeControlPlayer()]];		// 돈 차감
+			(*room->GetPUserMoneyVector())[bPacket.whosTurn] -=
+				room->GetMapData().land[(room->GetUserPositionVector())[bPacket.whosTurn]];		// 돈 차감
 
-			room->GetPLandBoardData()->land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] = room->GetTakeControlPlayer();	// 구매 처리
+			room->GetPLandBoardData()->land[room->GetUserPositionVector()[bPacket.whosTurn]] = bPacket.whosTurn;	// 구매 처리
 
-			room->SendBuyLand(isTour, true);	// 구입 여부 전송
+			room->SendLandSyncSign(bPacket.whosTurn, bPacket.isBuy);
+			//room->SendBuyLand(isTour, true);	// 구입 여부 전송
 		}
 		else   // 땅 팔거나, 땅 다 팔아도 파산이면 게임오버 처리
 		{
@@ -212,7 +208,7 @@ void GameManager::BuyLand(GameRoom* room, char* data, bool isTour)
 	}
 	else   // 미 구매 시
 	{
-		room->SendBuyLand(isTour, false);	// 구입 여부 전송
+		//room->SendBuyLand(isTour, false);	// 구입 여부 전송
 		room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
 	}
 }
