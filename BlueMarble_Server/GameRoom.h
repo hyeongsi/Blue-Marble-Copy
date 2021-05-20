@@ -70,7 +70,6 @@ public:
 	void SendBuyLandSign();	// 구입 시 처리
 
 	void SendLandSyncSign(int turn, bool isBuy);
-	void SendBuyLand(bool isBuy); // 땅 구입 처리 전송
 
 	void CheckLandKindNSendMessage();
 

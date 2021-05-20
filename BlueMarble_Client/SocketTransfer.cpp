@@ -53,8 +53,8 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case BUY_LAND_SIGN:
 				BuyLandSignMethod(cBuffer);
 				break;
-			case BUY_LAND:
-				GetBuyLandMethod(cBuffer);
+			case BUY_BUILDING_SIGN:
+				BuyBuildingMethod(cBuffer);
 				break;
 			case PAY_TOLL_SIGN:
 				break;
@@ -224,66 +224,38 @@ void SocketTransfer::BuyLandSign(char* packet)
 	}
 }
 
-void SocketTransfer::GetBuyLandMethod(char* packet)
+void SocketTransfer::BuyBuildingMethod(char* packet)
 {
-	instance->GetBuyLand(packet);
+	instance->BuyBuilding(packet);
 }
 
-void SocketTransfer::GetBuyLand(char* packet)
+void SocketTransfer::BuyBuilding(char* packet)
 {
-	buyLandSyncPacket bPacket;
+	buyBuildingPacket buyBuildingPkt;
 	int accumDataSize = 1;
-	int landPrice = 0;
+	memcpy(&buyBuildingPkt.whosTurn, &packet[accumDataSize], sizeof(buyBuildingPkt.whosTurn));			// get turn
+	accumDataSize += sizeof(buyBuildingPkt.whosTurn);
 
-	memcpy(&bPacket.isBuy, &packet[accumDataSize], sizeof(bool));			// get isbuy
-	accumDataSize += sizeof(bool);
-	memcpy(&bPacket.whosTurn, &packet[accumDataSize], sizeof(int));		    // get turn
-	accumDataSize += sizeof(int);
-	memcpy(&bPacket.userMoney, &packet[accumDataSize], sizeof(int));		// get usermoney
-	accumDataSize += sizeof(int);
+	memcpy(&buyBuildingPkt.villaPrice, &packet[accumDataSize], sizeof(buyBuildingPkt.villaPrice));		// get villaPrice
+	accumDataSize += sizeof(buyBuildingPkt.villaPrice);
+	memcpy(&buyBuildingPkt.buildingPrice, &packet[accumDataSize], sizeof(buyBuildingPkt.buildingPrice));	// get buildingPrice
+	accumDataSize += sizeof(buyBuildingPkt.buildingPrice);
+	memcpy(&buyBuildingPkt.hotelPrice, &packet[accumDataSize], sizeof(buyBuildingPkt.hotelPrice));		// get hotelPrice
+	accumDataSize += sizeof(buyBuildingPkt.hotelPrice);
 
-	// 구매 유무 처리
-	if (bPacket.isBuy == false)
-	{
-		// send exit
-		return;
-	}
-	else
-	{
-		/*memcpy(&bPacket.villaPrice, &packet[accumDataSize], sizeof(float));
-		accumDataSize += sizeof(float);
-		memcpy(&bPacket.buildingPrice, &packet[accumDataSize], sizeof(float));
-		accumDataSize += sizeof(float);
-		memcpy(&bPacket.hotelPrice, &packet[accumDataSize], sizeof(float));
-		accumDataSize += sizeof(float);
-		memcpy(&bPacket.landMarkPrice, &packet[accumDataSize], sizeof(float));
-		accumDataSize += sizeof(float);
+	memcpy(&buyBuildingPkt.isBuildVilla, &packet[accumDataSize], sizeof(buyBuildingPkt.isBuildVilla));	// get isBuyVilla
+	accumDataSize += sizeof(buyBuildingPkt.isBuildVilla);
+	memcpy(&buyBuildingPkt.isBuildBuilding, &packet[accumDataSize], sizeof(buyBuildingPkt.isBuildBuilding));	// get isBuyBuilding
+	accumDataSize += sizeof(buyBuildingPkt.isBuildBuilding);
+	memcpy(&buyBuildingPkt.isBuildHotel, &packet[accumDataSize], sizeof(buyBuildingPkt.isBuildHotel));	// get isBuyHotel
+	accumDataSize += sizeof(buyBuildingPkt.isBuildHotel);
 
-		memcpy(&bPacket.isBuildVilla, &packet[accumDataSize], sizeof(bool));
-		accumDataSize += sizeof(bool);
-		memcpy(&bPacket.isBuildBuilding, &packet[accumDataSize], sizeof(bool));
-		accumDataSize += sizeof(bool);
-		memcpy(&bPacket.isBuildHotel, &packet[accumDataSize], sizeof(bool));
-		accumDataSize += sizeof(bool);*/
+	memcpy(&buyBuildingPkt.userMoney, &packet[accumDataSize], sizeof(buyBuildingPkt.userMoney));	// get userMoney
 
-		// 건축 윈도우 출력하기
-	}
-}
-
-void SocketTransfer::GetBuyTourMethod(char* packet)
-{
-	instance->GetBuyTour(packet);
-}
-
-void SocketTransfer::GetBuyTour(char* packet)
-{
-	//buyTourSyncPacket bPacket;			
-	//memcpy(&bPacket.isBuy, &packet[1], sizeof(bool));						// get isBuy
-	//memcpy(&bPacket.whosTurn, &packet[1 + sizeof(bool)], sizeof(int));		// get turn
-	//memcpy(&bPacket.userMoney, &packet[1 + sizeof(bool) + sizeof(int)], sizeof(float));		// get usermoney
-
-	//(*GameManager::GetInstance()->GetUserMoneyVector())[bPacket.whosTurn] = bPacket.userMoney;	// 유저 돈 설정
-	//// 구매 유무 처리
+	UiDialog::GetInstance()->SettingBuildPrice(&buyBuildingPkt.villaPrice, &buyBuildingPkt.buildingPrice, &buyBuildingPkt.hotelPrice,
+		&buyBuildingPkt.isBuildVilla, &buyBuildingPkt.isBuildBuilding, &buyBuildingPkt.isBuildHotel);
+	DialogBox(MainSystem::GetInstance()->GetHinstance(), MAKEINTRESOURCE(IDD_BUY_MENU2),
+		GameWindow::GetInstance()->g_hWnd, UiDialog::GetInstance()->BuyBuildDlgProc);
 }
 
 void SocketTransfer::GetBuyLandSyncMethod(char* packet)

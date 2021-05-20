@@ -69,7 +69,7 @@ int GameManager::FindBelongRoom(SOCKET& socket)
 
 void GameManager::ArriveLandTileMethod(GameRoom* room)
 {
-	if (room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == NULL)
+	if (room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == -1)
 	{
 		room->SendBuyLandSign();	// 구입여부 확인 메시지 전송
 	}

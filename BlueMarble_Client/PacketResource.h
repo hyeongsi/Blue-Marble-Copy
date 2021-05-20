@@ -20,7 +20,7 @@ enum MessageCode
 	ROLL_DICE_SIGN = 3,
 	ROLL_DICE = 4,
 	BUY_LAND_SIGN = 5,
-	BUY_LAND = 6,
+	BUY_BUILDING_SIGN = 6,
 	CARD_SIGN = 9,
 	DESERT_ISLAND_SIGN = 10,
 	OLYMPIC_SIGN = 11,
@@ -78,19 +78,18 @@ typedef struct BuyLandSyncPacket	//BUY_Land_Sync
 	int userMoney;	// 해당 유저 돈
 }buyLandSyncPacket;
 
-typedef struct BuyLandSyncPacke2t	//BUY_LAND
+typedef struct BuyBuildingPacket	//BUY_BUILDING
 {
 	char header;
-	bool isBuy;		// 구입 여부
-	int whosTurn;	// 누구 턴인지
-	float userMoney;	// 해당 유저 돈
+	int whosTurn;			// 누구 턴인지
 
-	float villaPrice;	// 빌라 가격
-	float buildingPrice;// 빌딩 가격
-	float hotelPrice;	// 호텔 가격
-	float landMarkPrice;// 랜드마크 가격
+	int villaPrice;			// 빌라 가격
+	int buildingPrice;		// 빌딩 가격
+	int hotelPrice;			// 호텔 가격
 
 	bool isBuildVilla;		// 빌라 건축 유무
 	bool isBuildBuilding;	// 빌딩 건축 유무
 	bool isBuildHotel;		// 호텔 건축 유무
-}buyLandSyncPacket2;
+
+	int userMoney;	// 해당 유저 돈
+}buyBuildingPacket;

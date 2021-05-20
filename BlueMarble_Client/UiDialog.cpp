@@ -7,6 +7,39 @@ UiDialog* UiDialog::instance = nullptr;
 UiDialog::UiDialog() {}
 UiDialog::~UiDialog(){}
 
+void UiDialog::AccumNSetText(HWND hDlg, int state)
+{
+	UINT check;
+	switch (state)
+	{
+	case IDC_CHECK_VILLA:
+		check = SendDlgItemMessage(hDlg, IDC_CHECK_VILLA, BM_GETCHECK, 0, 0);
+		if (check == BST_UNCHECKED)
+			instance->accumBuildPrice -= *instance->buildInfoData.villaPrice;
+		else if(check == BST_CHECKED)
+			instance->accumBuildPrice += *instance->buildInfoData.villaPrice;
+		break;
+	case IDC_CHECK_BUILDING:
+		check = SendDlgItemMessage(hDlg, IDC_CHECK_BUILDING, BM_GETCHECK, 0, 0);
+		if (check == BST_UNCHECKED)
+			instance->accumBuildPrice -= *instance->buildInfoData.buildingPrice;
+		else if (check == BST_CHECKED)
+			instance->accumBuildPrice += *instance->buildInfoData.buildingPrice;
+		break;
+	case IDC_CHECK_HOTEL:
+		check = SendDlgItemMessage(hDlg, IDC_CHECK_HOTEL, BM_GETCHECK, 0, 0);
+		if (check == BST_UNCHECKED)
+			instance->accumBuildPrice -= *instance->buildInfoData.hotelPrice;
+		else if (check == BST_CHECKED)
+			instance->accumBuildPrice += *instance->buildInfoData.hotelPrice;
+		break;
+	default:
+		break;
+	}
+
+	SetDlgItemText(hDlg, IDC_STATIC_BUILD_PRICE, string("АЁАн : " + to_string(instance->accumBuildPrice)).c_str());
+}
+
 UiDialog* UiDialog::GetInstance()
 {
 	if (instance == nullptr)
@@ -55,4 +88,76 @@ BOOL UiDialog::BuyLandDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lP
 int UiDialog::GetBuyLandDlgState()
 {
 	return BuyLandDlgState;
+}
+
+BOOL UiDialog::BuyBuildDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
+{
+	switch (iMessage)
+	{
+	case WM_INITDIALOG:
+		GetWindowRect(GameWindow::GetInstance()->g_hWnd, &instance->rect);
+		SetWindowPos(hDlg, HWND_TOP, instance->rect.left + 500, instance->rect.top + 300, 0, 0, SWP_NOSIZE);
+
+		if(*instance->buildInfoData.villa)
+			EnableWindow(GetDlgItem(hDlg, IDC_CHECK_VILLA), false);
+		if (*instance->buildInfoData.building)
+			EnableWindow(GetDlgItem(hDlg, IDC_CHECK_BUILDING), false);
+		if (*instance->buildInfoData.hotel)
+			EnableWindow(GetDlgItem(hDlg, IDC_CHECK_HOTEL), false);
+		instance->accumBuildPrice = 0;
+		break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDC_CHECK_VILLA:
+			switch (HIWORD(wParam))
+			{
+			case BN_CLICKED:
+				instance->AccumNSetText(hDlg, IDC_CHECK_VILLA);
+				break;
+			}
+			break;
+		case IDC_CHECK_BUILDING:
+			switch (HIWORD(wParam))
+			{
+			case BN_CLICKED:
+				instance->AccumNSetText(hDlg, IDC_CHECK_BUILDING);
+				break;
+			}
+			break;
+		case IDC_CHECK_HOTEL:
+			switch (HIWORD(wParam))
+			{
+			case BN_CLICKED:
+				instance->AccumNSetText(hDlg, IDC_CHECK_HOTEL);
+				break;
+			}
+			break;
+		case IDOK:
+			instance->BuyLandDlgState = IDOK;
+			EndDialog(hDlg, wParam);
+			return true;
+		case IDCANCEL:
+			instance->BuyLandDlgState = IDCANCEL;
+			EndDialog(hDlg, wParam);
+			return true;
+		}
+		return false;
+	case WM_CLOSE:
+		PostQuitMessage(0);
+		return true;
+	}
+
+	return false;
+}
+
+void UiDialog::SettingBuildPrice(int* villaPrice, int* buildingPrice, int* hotelPrice, bool* villa, bool* building, bool* hotel)
+{
+	buildInfoData.villaPrice = villaPrice;
+	buildInfoData.buildingPrice = buildingPrice;
+	buildInfoData.hotelPrice = hotelPrice;
+
+	buildInfoData.villa = villa;
+	buildInfoData.building = building;
+	buildInfoData.hotel = hotel;
 }

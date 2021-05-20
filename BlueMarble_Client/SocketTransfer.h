@@ -44,11 +44,8 @@ private:
 	static void BuyLandSignMethod(char* packet);
 	void BuyLandSign(char* packet);
 
-	static void GetBuyLandMethod(char* packet);
-	void GetBuyLand(char* packet);
-
-	static void GetBuyTourMethod(char* packet);
-	void GetBuyTour(char* packet);
+	static void BuyBuildingMethod(char* packet);
+	void BuyBuilding(char* packet);
 
 	static void GetBuyLandSyncMethod(char* packet);
 	void GetBuyLandSync(char* packet);
