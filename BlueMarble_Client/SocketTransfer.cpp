@@ -6,7 +6,7 @@
 #include "GameManager.h"
 #include "GameWindow.h"
 #include "UiDialog.h"
-#include "resource.h"
+#include "resource1.h"
 
 SocketTransfer* SocketTransfer::instance = nullptr;
 
@@ -204,10 +204,11 @@ void SocketTransfer::BuyLandSign(char* packet)
 	memcpy(&bPacket.whosTurn, &packet[1], sizeof(int));						// get turn
 	memcpy(&bPacket.passPrice, &packet[1 + sizeof(int)], sizeof(int));	// get passPrice
 
-	int msgboxID = MessageBox(NULL, string("이 지역을 구입하시겠습니까?\n" + to_string(bPacket.passPrice)).c_str(),
-		"지역 구입", MB_YESNO);
+	UiDialog::GetInstance()->landPrice = bPacket.passPrice;
+	DialogBox(MainSystem::GetInstance()->GetHinstance(), MAKEINTRESOURCE(IDD_BUY_MENU1),
+		GameWindow::GetInstance()->g_hWnd, UiDialog::GetInstance()->BuyLandDlgProc);
 
-	if (msgboxID == IDYES)
+	if (UiDialog::GetInstance()->GetBuyLandDlgState() == IDOK)
 	{
 		MakePacket(BUY_LAND_SIGN);
 		AppendPacketData(bPacket.whosTurn, sizeof(int));	// 누가 지불하는지,

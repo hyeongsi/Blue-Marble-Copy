@@ -57,12 +57,12 @@ HWND MainSystem::GetWindowHwnd(const State state)
 
 void MainSystem::SetHinstance(HINSTANCE hInst)
 {
-	this->hInst = hInst;
+	this->g_hInst = hInst;
 }
 
 HINSTANCE MainSystem::GetHinstance()
 {
-	return hInst;
+	return g_hInst;
 }
 
 void MainSystem::RegistUpdateCallbackFunction(CALLBACK_FUNC cbf)

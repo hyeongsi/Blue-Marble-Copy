@@ -1,4 +1,6 @@
 #include "UiDialog.h"
+#include "GameWindow.h"
+#include "resource1.h"
 
 UiDialog* UiDialog::instance = nullptr;
 
@@ -25,14 +27,20 @@ BOOL UiDialog::BuyLandDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lP
 	switch (iMessage)
 	{
 	case WM_INITDIALOG:
-		//SetWindowPos(hDlg, HWND_TOP, 100, 100, 0,0,SWP_NOSIZE);
+		GetWindowRect(GameWindow::GetInstance()->g_hWnd, &instance->rect);
+		SetWindowPos(hDlg, HWND_TOP, instance->rect.left + 500, instance->rect.top + 300, 0,0, SWP_NOSIZE);
+		SetDlgItemText(hDlg, IDC_PRICE, string("АЁАн : " + to_string(instance->landPrice)).c_str());
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
 		case IDOK:
+			instance->BuyLandDlgState = IDOK;
+			EndDialog(hDlg, wParam);
+			return true;
 		case IDCANCEL:
-			//EndDialog(hDlgMain, 0);
+			instance->BuyLandDlgState = IDCANCEL;
+			EndDialog(hDlg, wParam);
 			return true;
 		}
 		return false;
@@ -42,4 +50,9 @@ BOOL UiDialog::BuyLandDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lP
 	}
 
 	return false;
+}
+
+int UiDialog::GetBuyLandDlgState()
+{
+	return BuyLandDlgState;
 }

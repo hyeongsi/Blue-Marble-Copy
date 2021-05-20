@@ -13,7 +13,7 @@ private:
 	HWND mainWindowHwnd = nullptr;
 	HWND gameWindowHwnd = nullptr;
 
-	HINSTANCE hInst;
+	HINSTANCE g_hInst = nullptr;
 
 	float dwElapsedTicks = 0; //루프 순회간 경과된 시간
 	ULONGLONG dwLastTicks = 0;	//이전 루프 순회가 끝난 시간

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "resource.h"
+#include "resource1.h"
 #include "MainSystem.h"
 #include "MainWindow.h"
 #include "GameWindow.h"

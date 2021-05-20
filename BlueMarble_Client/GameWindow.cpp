@@ -10,7 +10,7 @@ GameWindow::~GameWindow() {}
 
 void GameWindow::InitClass(HWND hWnd)
 {
-    instance->hWnd = hWnd;
+    instance->g_hWnd = hWnd;
 
     instance->renderManager = RenderManager::GetInstance();
     instance->bitmapManager = BitmapManager::GetInstance();

@@ -1,5 +1,5 @@
 ﻿#include "MainWindow.h"
-#include "Resource.h"
+#include "Resource1.h"
 #include "MainSystem.h"
 #include "RenderManager.h"
 #include "BitmapManager.h"
