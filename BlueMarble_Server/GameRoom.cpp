@@ -218,6 +218,26 @@ void GameRoom::SendLandSyncSign(int turn, bool isBuy)
 	}
 }
 
+void GameRoom::SendBuildingSyncSign(int turn, bool isBuy, bool isBuyVilla, bool isBuyBuilding, bool isBuyHotel, int accumPrice)
+{
+	gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_BUILDING_SYNC);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isBuy, sizeof(isBuy));	// 구매 유무
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, turn, sizeof(turn));		// 유저
+
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isBuyVilla, sizeof(isBuyVilla));	// 빌라 구매유무
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isBuyBuilding, sizeof(isBuyBuilding));	// 빌딩 구매유무
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isBuyHotel, sizeof(isBuyHotel));	// 호텔 구매유무
+
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, accumPrice, sizeof(accumPrice));	// 총 가격
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[turn], sizeof(userMoneyVector[turn]));	// 해당 유저 돈
+
+	for (auto& socketIterator : userVector)
+	{
+		gameServer->PacektSendMethod(sendPacket, socketIterator);
+		printf("%s %d\n", "send Buy_BuildSync - ", socketIterator);
+	}
+}
+
 void GameRoom::CheckLandKindNSendMessage()
 {
 	bool isBuyVilla;
@@ -245,7 +265,10 @@ void GameRoom::CheckLandKindNSendMessage()
 	}
 	else  // Tour
 	{
-		state = GameState::NEXT_TURN;
+		if (isDouble)
+			state = GameState::ROLL_DICE_SIGN;
+		else
+			state = GameState::NEXT_TURN;
 	}
 }
 

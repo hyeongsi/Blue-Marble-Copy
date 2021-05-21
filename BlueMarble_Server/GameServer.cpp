@@ -108,8 +108,20 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case BUY_LAND_SIGN:
 				GameManager::GetInstance()->BuyLandMethod(myRoom, cBuffer);
 				break;
+			case BUY_BUILDING_SIGN:
+				GameManager::GetInstance()->BuyBuildingMethod(myRoom, cBuffer);
+				break;
 			case BUY_LAND_SYNC:
 				myRoom->CheckLandKindNSendMessage();
+				break;
+			case BUY_BUILDING_SYNC:
+				if (myRoom != nullptr)
+				{
+					if (myRoom->isDouble)
+						myRoom->state = GameState::ROLL_DICE_SIGN;
+					else
+						myRoom->state = GameState::NEXT_TURN;
+				}
 				break;
 			case FINISH_THIS_TURN_PROCESS:
 				myRoom->CheckEndProcess(clientSocket);

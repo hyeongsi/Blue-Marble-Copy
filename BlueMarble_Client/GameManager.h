@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <string>
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -16,6 +17,14 @@ typedef struct BoardData
 	vector<int> owner;
 } boardData;
 
+typedef struct BuildData
+{
+	map<int, bool> villa;
+	map<int, bool> building;
+	map<int, bool> hotel;
+	map<int, bool> landMark;
+} buildData;
+
 enum class GameState
 {
 	WAIT = 0,
@@ -30,12 +39,13 @@ private:
 	static GameManager* instance;
 
 	boardData board;
+	buildData boardBuildData;
 	GameState state = GameState::WAIT;
 
 	vector<int> userPositionVector;	// 유저 위치
 	vector<int> userMoneyVector;	// 유저 돈 텍스트
 
-	bool isMyTurn = false;
+	bool isMyDiceTurn = false;
 	int playerCount = 0;	// 총 플레이 유저 수
 	int myCharacterIndex = 0;	// 본인 캐릭터 인덱스 (1부터 시작)
 
@@ -55,8 +65,8 @@ public:
 	vector<int>* GetUserPositionVector();
 	vector<int>* GetUserMoneyVector();
 
-	void SetIsMyTurn(bool turn);
-	bool GetIsMyTurn();
+	void SetIsMyDiceTurn(bool turn);
+	bool GetIsMyDiceTurn();
 
 	void SetPlayerCount(int count);
 	int GetPlayerCount();
@@ -69,6 +79,9 @@ public:
 
 	boardData* GetAddressBoardData();
 	boardData GetBoardData();
+
+	buildData* GetAddressBoardBuildData();
+	buildData GetBoarBuilddData();
 
 	void MoveUserPosition(int userIndex, int diceValue);
 };

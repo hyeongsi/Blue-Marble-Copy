@@ -10,28 +10,70 @@ UiDialog::~UiDialog(){}
 void UiDialog::AccumNSetText(HWND hDlg, int state)
 {
 	UINT check;
+	int userMoney = 0;
+
+	userMoney = (*GameManager::GetInstance()->GetUserMoneyVector())[buildInfoData.whosTurn];
 	switch (state)
 	{
 	case IDC_CHECK_VILLA:
 		check = SendDlgItemMessage(hDlg, IDC_CHECK_VILLA, BM_GETCHECK, 0, 0);
 		if (check == BST_UNCHECKED)
+		{
 			instance->accumBuildPrice -= *instance->buildInfoData.villaPrice;
-		else if(check == BST_CHECKED)
+			buildInfoData.isBuyVilla = false;
+		}
+		else if (check == BST_CHECKED)
+		{
 			instance->accumBuildPrice += *instance->buildInfoData.villaPrice;
+			buildInfoData.isBuyVilla = true;
+
+			if ((userMoney - accumBuildPrice) < 0)
+			{
+				SendDlgItemMessage(hDlg, IDC_CHECK_VILLA, BM_SETCHECK, BST_UNCHECKED, 0);
+				instance->accumBuildPrice -= *instance->buildInfoData.villaPrice;
+				buildInfoData.isBuyVilla = false;
+			}
+		}
 		break;
 	case IDC_CHECK_BUILDING:
 		check = SendDlgItemMessage(hDlg, IDC_CHECK_BUILDING, BM_GETCHECK, 0, 0);
 		if (check == BST_UNCHECKED)
+		{
 			instance->accumBuildPrice -= *instance->buildInfoData.buildingPrice;
+			buildInfoData.isBuyBuilding = false;
+		}
 		else if (check == BST_CHECKED)
+		{
 			instance->accumBuildPrice += *instance->buildInfoData.buildingPrice;
+			buildInfoData.isBuyBuilding = true;
+
+			if ((userMoney - accumBuildPrice) < 0)
+			{
+				SendDlgItemMessage(hDlg, IDC_CHECK_BUILDING, BM_SETCHECK, BST_UNCHECKED, 0);
+				instance->accumBuildPrice -= *instance->buildInfoData.villaPrice;
+				buildInfoData.isBuyVilla = false;
+			}
+		}
 		break;
 	case IDC_CHECK_HOTEL:
 		check = SendDlgItemMessage(hDlg, IDC_CHECK_HOTEL, BM_GETCHECK, 0, 0);
 		if (check == BST_UNCHECKED)
+		{
 			instance->accumBuildPrice -= *instance->buildInfoData.hotelPrice;
+			buildInfoData.isBuyHotel = false;
+		}
 		else if (check == BST_CHECKED)
+		{
 			instance->accumBuildPrice += *instance->buildInfoData.hotelPrice;
+			buildInfoData.isBuyHotel = true;
+
+			if ((userMoney - accumBuildPrice) < 0)
+			{
+				SendDlgItemMessage(hDlg, IDC_CHECK_HOTEL, BM_SETCHECK, BST_UNCHECKED, 0);
+				instance->accumBuildPrice -= *instance->buildInfoData.villaPrice;
+				buildInfoData.isBuyVilla = false;
+			}
+		}
 		break;
 	default:
 		break;
@@ -151,8 +193,10 @@ BOOL UiDialog::BuyBuildDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM l
 	return false;
 }
 
-void UiDialog::SettingBuildPrice(int* villaPrice, int* buildingPrice, int* hotelPrice, bool* villa, bool* building, bool* hotel)
+void UiDialog::SettingBuildPrice(int whosTurn, int* villaPrice, int* buildingPrice, int* hotelPrice, bool* villa, bool* building, bool* hotel)
 {
+	buildInfoData.whosTurn = whosTurn;
+	
 	buildInfoData.villaPrice = villaPrice;
 	buildInfoData.buildingPrice = buildingPrice;
 	buildInfoData.hotelPrice = hotelPrice;
@@ -160,4 +204,13 @@ void UiDialog::SettingBuildPrice(int* villaPrice, int* buildingPrice, int* hotel
 	buildInfoData.villa = villa;
 	buildInfoData.building = building;
 	buildInfoData.hotel = hotel;
+
+	buildInfoData.isBuyVilla = false;
+	buildInfoData.isBuyBuilding = false;
+	buildInfoData.isBuyHotel = false;
+}
+
+buildInfo UiDialog::GetBuildInfoData()
+{
+	return buildInfoData;
 }

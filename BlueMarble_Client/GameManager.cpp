@@ -85,14 +85,14 @@ GameState GameManager::GetGameState()
 	return state;
 }
 
-void GameManager::SetIsMyTurn(bool turn)
+void GameManager::SetIsMyDiceTurn(bool turn)
 {
-	isMyTurn = turn;
+	isMyDiceTurn = turn;
 }
 
-bool GameManager::GetIsMyTurn()
+bool GameManager::GetIsMyDiceTurn()
 {
-	return isMyTurn;
+	return isMyDiceTurn;
 }
 
 void GameManager::SetCharacterIndex(int index)
@@ -105,7 +105,6 @@ int GameManager::GetCharacterIndex()
 	return myCharacterIndex;
 }
 
-
 boardData* GameManager::GetAddressBoardData()
 {
 	return &board;
@@ -114,4 +113,14 @@ boardData* GameManager::GetAddressBoardData()
 boardData GameManager::GetBoardData()
 {
 	return board;
+}
+
+buildData* GameManager::GetAddressBoardBuildData()
+{
+	return &boardBuildData;
+}
+
+buildData GameManager::GetBoarBuilddData()
+{
+	return boardBuildData;
 }

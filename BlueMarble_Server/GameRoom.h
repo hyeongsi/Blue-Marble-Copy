@@ -10,6 +10,12 @@ enum class GameState
 {
 	WAIT = 0,
 	ROLL_DICE_SIGN = 1,
+	LAND_TILE = 2,
+	CARD_TILE = 3,
+	DESERT_ISLAND_TILE = 4,
+	OLYMPIC_TILE = 5,
+	WORLD_TRABLE_TILE = 6,
+	REVENUE_TILE = 7,
 	NEXT_TURN = 9,
 };
 
@@ -70,12 +76,11 @@ public:
 	void SendBuyLandSign();	// 구입 시 처리
 
 	void SendLandSyncSign(int turn, bool isBuy);
+	void SendBuildingSyncSign(int turn, bool isBuy, bool isBuyVilla, bool isBuyBuilding, bool isBuyHotel, int accumPrice);
 
 	void CheckLandKindNSendMessage();
 
 	void SendFinishTurnSign();	// 모든 처리 끝나고, 다음턴으로 넘어가도 되는지 확인 메시지 전송
 	void CheckEndProcess(SOCKET clientSocket);	// 다음턴으로 이동
-
-
 };
 

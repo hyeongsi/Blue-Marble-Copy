@@ -50,6 +50,9 @@ private:
 	static void GetBuyLandSyncMethod(char* packet);
 	void GetBuyLandSync(char* packet);
 
+	static void GetBuyBuildSyncMethod(char* packet);
+	void GetBuyBuildSync(char* packet);
+
 	static void SendNextTurnSignMethod();
 	void SendNextTurnSign();
 

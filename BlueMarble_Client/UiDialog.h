@@ -3,6 +3,8 @@
 
 typedef struct BuildInfo
 {
+	int whosTurn = 0;
+
 	int* villaPrice = nullptr;
 	int* buildingPrice = nullptr;
 	int* hotelPrice = nullptr;
@@ -10,6 +12,10 @@ typedef struct BuildInfo
 	bool* villa = nullptr;
 	bool* building = nullptr;
 	bool* hotel = nullptr;
+
+	bool isBuyVilla = false;
+	bool isBuyBuilding = false;
+	bool isBuyHotel = false;
 }buildInfo;
 
 class UiDialog
@@ -36,6 +42,7 @@ public:
 	int GetBuyLandDlgState();
 
 	static BOOL CALLBACK BuyBuildDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
-	void SettingBuildPrice(int* villaPrice, int* buildingPrice, int* hotelPrice, bool* villa, bool* building, bool* hotel);
+	void SettingBuildPrice(int whosTurn, int* villaPrice, int* buildingPrice, int* hotelPrice, bool* villa, bool* building, bool* hotel);
+	buildInfo GetBuildInfoData();
 };
 

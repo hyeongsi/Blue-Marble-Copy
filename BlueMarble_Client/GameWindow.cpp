@@ -135,7 +135,7 @@ void GameWindow::GameUpdate()
     instance->renderManager->DrawBoardMap();
     instance->renderManager->DrawWindow(State::GAME);
 
-    if (GameManager::GetInstance()->GetIsMyTurn() || GameManager::GetInstance()->GetGameState() == GameState::ROLL_DICE)
+    if (GameManager::GetInstance()->GetIsMyDiceTurn() || GameManager::GetInstance()->GetGameState() == GameState::ROLL_DICE)
     {
         for (int i = 0; i < (int)instance->hwndWindow.size(); i++)
         {

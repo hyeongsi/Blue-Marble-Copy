@@ -198,6 +198,30 @@ void RenderManager::DrawBoardMap()
         LineTo(memDC, RIGHT_BOTTOM_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y + (tileHeight * (i+1)));
     }
     
+    // 건물 출력
+    for (int i = 0; i < (int)board.name.size(); i++)
+    {
+        if (GameManager::GetInstance()->GetBoarBuilddData().villa[i])
+        {
+            Rectangle(memDC, rectVector[i].left, rectVector[i].top + (int)(tileHeight / 3),
+                rectVector[i].left + (int)(tileWidth/4), rectVector[i].top + ((int)(tileHeight / 3) * 2));
+        }
+        if (GameManager::GetInstance()->GetBoarBuilddData().building[i])
+        {
+            Ellipse(memDC, rectVector[i].left + (int)(tileWidth / 4) + (int)(tileWidth / 6), rectVector[i].top + (int)(tileHeight / 3),
+                rectVector[i].left + ((int)(tileWidth / 4) * 2) + (int)(tileWidth / 6), rectVector[i].top + ((int)(tileHeight / 3) * 2));
+        }
+        if (GameManager::GetInstance()->GetBoarBuilddData().hotel[i])
+        {
+            MoveToEx(memDC, (int)(rectVector[i].left + ((tileWidth / 4) * 2) + (tileWidth / 6)) + (int)(tileWidth / 8),
+                rectVector[i].top + (int)(tileHeight / 3), NULL);
+            LineTo(memDC, rectVector[i].left + ((int)(tileWidth / 4) * 2) + (int)(tileWidth / 6), rectVector[i].top + ((int)(tileHeight / 3) * 2));
+            LineTo(memDC, rectVector[i].left + ((int)(tileWidth / 4) * 3) + (int)(tileWidth / 6), rectVector[i].top + ((int)(tileHeight / 3) * 2));
+            LineTo(memDC, (int)(rectVector[i].left + ((tileWidth / 4) * 2) + (tileWidth / 6)) + (int)(tileWidth / 8), rectVector[i].top + (int)(tileHeight / 3));
+        }
+    }
+
+    // 맵 이름 출력
     SetTextColor(hdc, RGB(255, 0, 0));
     for (int i = 0; i < (int)board.name.size(); i++)
     {

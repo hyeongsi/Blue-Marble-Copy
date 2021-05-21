@@ -110,6 +110,24 @@ void GameManager::RoomLogicThreadMethod(GameRoom* room)
 		case GameState::ROLL_DICE_SIGN:
 			room->SendRollDiceSignMethod(room->GetUserVector()[room->GetTakeControlPlayer()]);	// 해당 차례 유저에게 주사위 굴리기 메시지 전송
 			break;
+		case GameState::LAND_TILE:
+			ArriveLandTileMethod(room);
+			break;
+		case GameState::CARD_TILE:
+			room->state = GameState::NEXT_TURN;
+			break;
+		case GameState::DESERT_ISLAND_TILE:
+			room->state = GameState::NEXT_TURN;
+			break;
+		case GameState::OLYMPIC_TILE:
+			room->state = GameState::NEXT_TURN;
+			break;
+		case GameState::WORLD_TRABLE_TILE:
+			room->state = GameState::NEXT_TURN;
+			break;
+		case GameState::REVENUE_TILE:
+			room->state = GameState::NEXT_TURN;
+			break;
 		case GameState::NEXT_TURN:
 			room->SendFinishTurnSign();
 			break;
@@ -143,28 +161,27 @@ void GameManager::RollTheDice(GameRoom* room)
 	{
 	case LAND_TILE:
 	case TOUR_TILE:
-		ArriveLandTileMethod(room);
+		room->state = GameState::LAND_TILE;
 		break;
 	case CARD_TILE:
-		room->state = GameState::NEXT_TURN;
+		room->state = GameState::CARD_TILE;
 		break;
 	case DESERT_ISLAND_TILE:
-		room->state = GameState::NEXT_TURN;
+		room->state = GameState::DESERT_ISLAND_TILE;
 		break;
 	case OLYMPIC_TILE:
-		room->state = GameState::NEXT_TURN;
+		room->state = GameState::OLYMPIC_TILE;
 		break;
 	case WORLD_TRABLE_TILE:
-		room->state = GameState::NEXT_TURN;
+		room->state = GameState::WORLD_TRABLE_TILE;
 		break;
 	case REVENUE_TILE:
-		room->state = GameState::NEXT_TURN;
+		room->state = GameState::REVENUE_TILE;
 		break;
 	}
 
 	if ((diceValue1 == diceValue2) && (!(room->GetDiceDoubleCount() >= 3)))
 	{
-		room->state = GameState::ROLL_DICE_SIGN;
 		room->isDouble = true;
 		room->SetDiceDoubleCount(room->GetDiceDoubleCount()+1);
 	}
@@ -196,9 +213,7 @@ void GameManager::BuyLand(GameRoom* room, char* data)
 				room->GetMapData().land[(room->GetUserPositionVector())[bPacket.whosTurn]];		// 돈 차감
 
 			room->GetPLandBoardData()->land[room->GetUserPositionVector()[bPacket.whosTurn]] = bPacket.whosTurn;	// 구매 처리
-
 			room->SendLandSyncSign(bPacket.whosTurn, bPacket.isBuy);
-			//room->SendBuyLand(isTour, true);	// 구입 여부 전송
 		}
 		else   // 땅 팔거나, 땅 다 팔아도 파산이면 게임오버 처리
 		{
@@ -208,7 +223,71 @@ void GameManager::BuyLand(GameRoom* room, char* data)
 	}
 	else   // 미 구매 시
 	{
-		//room->SendBuyLand(isTour, false);	// 구입 여부 전송
+		room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
+	}
+}
+
+void GameManager::BuyBuildingMethod(GameRoom* room, char* data)
+{
+	instance->BuyBuilding(room, data);
+}
+
+void GameManager::BuyBuilding(GameRoom* room, char* data)
+{
+	buyBuildingPacket buyBuildingPkt;
+	int accumDataSize = 1;
+	int accumBuildPrice = 0;
+
+	memcpy(&buyBuildingPkt.whosTurn, &data[accumDataSize], sizeof(buyBuildingPkt.whosTurn));	// get turn
+	accumDataSize += sizeof(buyBuildingPkt.whosTurn);
+	memcpy(&buyBuildingPkt.isBuy, &data[accumDataSize], sizeof(buyBuildingPkt.isBuy));		// get isBuy
+	accumDataSize += sizeof(buyBuildingPkt.isBuy);
+
+	if (buyBuildingPkt.isBuy)	// 구입 시
+	{
+		memcpy(&buyBuildingPkt.isBuyVilla, &data[accumDataSize], sizeof(buyBuildingPkt.isBuyVilla));		// get usBuyVilla
+		accumDataSize += sizeof(buyBuildingPkt.isBuyVilla);
+		memcpy(&buyBuildingPkt.isBuyBuilding, &data[accumDataSize], sizeof(buyBuildingPkt.isBuyBuilding));	// get isBuyBuilding
+		accumDataSize += sizeof(buyBuildingPkt.isBuyBuilding);
+		memcpy(&buyBuildingPkt.isBuyHotel, &data[accumDataSize], sizeof(buyBuildingPkt.isBuyHotel));		// get isBuyHotel
+
+		if ((!buyBuildingPkt.isBuyVilla) && (!buyBuildingPkt.isBuyBuilding) && (!buyBuildingPkt.isBuyHotel))	// 구입 버튼 눌렀으나 아무것도 구매하지 않았을 경우
+		{
+			room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
+		}
+		else
+		{
+			if (buyBuildingPkt.isBuyVilla)
+			{
+				(*room->GetPUserMoneyVector())[buyBuildingPkt.whosTurn] -=
+					room->GetMapData().villa[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];		// 돈 차감
+
+				room->GetPLandBoardData()->villa[room->GetUserPositionVector()[buyBuildingPkt.whosTurn]] = buyBuildingPkt.whosTurn;	// 구매 처리
+				accumBuildPrice += room->GetMapData().villa[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];
+			}
+			if (buyBuildingPkt.isBuyBuilding)
+			{
+				(*room->GetPUserMoneyVector())[buyBuildingPkt.whosTurn] -=
+					room->GetMapData().building[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];		// 돈 차감
+
+				room->GetPLandBoardData()->building[room->GetUserPositionVector()[buyBuildingPkt.whosTurn]] = buyBuildingPkt.whosTurn;	// 구매 처리
+				accumBuildPrice += room->GetMapData().building[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];
+			}
+			if (buyBuildingPkt.isBuyHotel)
+			{
+				(*room->GetPUserMoneyVector())[buyBuildingPkt.whosTurn] -=
+					room->GetMapData().hotel[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];		// 돈 차감
+
+				room->GetPLandBoardData()->hotel[room->GetUserPositionVector()[buyBuildingPkt.whosTurn]] = buyBuildingPkt.whosTurn;	// 구매 처리
+				accumBuildPrice += room->GetMapData().hotel[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];
+			}
+
+			room->SendBuildingSyncSign(buyBuildingPkt.whosTurn, buyBuildingPkt.isBuy,
+				buyBuildingPkt.isBuyVilla, buyBuildingPkt.isBuyBuilding, buyBuildingPkt.isBuyHotel, accumBuildPrice);
+		}
+	}
+	else    // 미 구입 시
+	{
 		room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
 	}
 }

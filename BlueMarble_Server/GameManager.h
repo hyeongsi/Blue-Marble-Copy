@@ -29,5 +29,8 @@ public:
 
 	static void BuyLandMethod(GameRoom* room, char* data);
 	void BuyLand(GameRoom* room, char* data);
+
+	static void BuyBuildingMethod(GameRoom* room, char* data);
+	void BuyBuilding(GameRoom* room, char* data);
 };
 

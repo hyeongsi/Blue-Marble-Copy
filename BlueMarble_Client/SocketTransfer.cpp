@@ -61,6 +61,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case BUY_LAND_SYNC:
 				GetBuyLandSyncMethod(cBuffer);
 				break;
+			case BUY_BUILDING_SYNC:
+				GetBuyBuildSyncMethod(cBuffer);
+				break;
 			case FINISH_THIS_TURN_PROCESS:
 				SendNextTurnSignMethod();
 				break;
@@ -159,7 +162,7 @@ void SocketTransfer::GetRollDiceSignMethod(char* packet)
 
 void SocketTransfer::GetRollDiceSign(char* packet)
 {
-	GameManager::GetInstance()->SetIsMyTurn(true);
+	GameManager::GetInstance()->SetIsMyDiceTurn(true);
 	GameManager::GetInstance()->SetGameState(GameState::ROLL_DICE);
 	GameManager::GetInstance()->SetGameMessage("주사위를 돌려주세요");
 	
@@ -251,11 +254,30 @@ void SocketTransfer::BuyBuilding(char* packet)
 	accumDataSize += sizeof(buyBuildingPkt.isBuildHotel);
 
 	memcpy(&buyBuildingPkt.userMoney, &packet[accumDataSize], sizeof(buyBuildingPkt.userMoney));	// get userMoney
+	(*GameManager::GetInstance()->GetUserMoneyVector())[buyBuildingPkt.whosTurn] = buyBuildingPkt.userMoney;
 
-	UiDialog::GetInstance()->SettingBuildPrice(&buyBuildingPkt.villaPrice, &buyBuildingPkt.buildingPrice, &buyBuildingPkt.hotelPrice,
+	UiDialog::GetInstance()->SettingBuildPrice(buyBuildingPkt.whosTurn,&buyBuildingPkt.villaPrice, &buyBuildingPkt.buildingPrice, &buyBuildingPkt.hotelPrice,
 		&buyBuildingPkt.isBuildVilla, &buyBuildingPkt.isBuildBuilding, &buyBuildingPkt.isBuildHotel);
 	DialogBox(MainSystem::GetInstance()->GetHinstance(), MAKEINTRESOURCE(IDD_BUY_MENU2),
 		GameWindow::GetInstance()->g_hWnd, UiDialog::GetInstance()->BuyBuildDlgProc);
+
+	if (UiDialog::GetInstance()->GetBuyLandDlgState() == IDOK)
+	{
+		MakePacket(BUY_BUILDING_SIGN);
+		AppendPacketData(buyBuildingPkt.whosTurn, sizeof(int));	// 누가 지불하는지,
+		AppendPacketData(true, sizeof(bool));	// 구매 유무
+		AppendPacketData(UiDialog::GetInstance()->GetBuildInfoData().isBuyVilla, sizeof(bool));		// 빌라 구매 유무
+		AppendPacketData(UiDialog::GetInstance()->GetBuildInfoData().isBuyBuilding, sizeof(bool));	// 빌딩 구매 유무
+		AppendPacketData(UiDialog::GetInstance()->GetBuildInfoData().isBuyHotel, sizeof(bool));		// 호텔 구매 유무
+		SendMessageToGameServer();
+	}
+	else
+	{
+		MakePacket(BUY_BUILDING_SIGN);
+		AppendPacketData(buyBuildingPkt.whosTurn, sizeof(int));	// 누가 지불하는지,
+		AppendPacketData(false, sizeof(bool));	// 구매 유무
+		SendMessageToGameServer();
+	}
 }
 
 void SocketTransfer::GetBuyLandSyncMethod(char* packet)
@@ -293,6 +315,75 @@ void SocketTransfer::GetBuyLandSync(char* packet)
 	}
 }
 
+void SocketTransfer::GetBuyBuildSyncMethod(char* packet)
+{
+	instance->GetBuyBuildSync(packet);
+}
+
+void SocketTransfer::GetBuyBuildSync(char* packet)
+{
+	buyBuildingSyncPacket buyBuildingSyncPkt;
+	int accumDataSize = 1;
+	string buyMessageString = "구입 - ";
+
+	memcpy(&buyBuildingSyncPkt.isBuy, &packet[accumDataSize], sizeof(buyBuildingSyncPkt.isBuy));	// get isbuy
+	accumDataSize += sizeof(buyBuildingSyncPkt.isBuy);
+	memcpy(&buyBuildingSyncPkt.whosTurn, &packet[accumDataSize], sizeof(buyBuildingSyncPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(buyBuildingSyncPkt.whosTurn);
+
+	memcpy(&buyBuildingSyncPkt.isBuyVilla, &packet[accumDataSize], sizeof(buyBuildingSyncPkt.isBuyVilla));	// get isBuyVilla
+	accumDataSize += sizeof(buyBuildingSyncPkt.isBuyVilla);
+	memcpy(&buyBuildingSyncPkt.isBuyBuilding, &packet[accumDataSize], sizeof(buyBuildingSyncPkt.isBuyBuilding));// get isBuyBuilding
+	accumDataSize += sizeof(buyBuildingSyncPkt.isBuyBuilding);
+	memcpy(&buyBuildingSyncPkt.isBuyHotel, &packet[accumDataSize], sizeof(buyBuildingSyncPkt.isBuyHotel));	// get isBuyHotel
+	accumDataSize += sizeof(buyBuildingSyncPkt.isBuyHotel);
+
+	memcpy(&buyBuildingSyncPkt.accumPrice, &packet[accumDataSize], sizeof(buyBuildingSyncPkt.accumPrice));	// get accumPrice
+	accumDataSize += sizeof(buyBuildingSyncPkt.accumPrice);
+	memcpy(&buyBuildingSyncPkt.userMoney, &packet[accumDataSize], sizeof(buyBuildingSyncPkt.userMoney));	// get usermoney
+
+	if (buyBuildingSyncPkt.isBuy)
+	{
+		if (buyBuildingSyncPkt.isBuyVilla)
+		{
+			GameManager::GetInstance()->GetAddressBoardBuildData()->villa[
+				(*GameManager::GetInstance()->GetUserPositionVector())[buyBuildingSyncPkt.whosTurn]
+			] = buyBuildingSyncPkt.isBuyVilla;
+
+			buyMessageString += "빌라 ";
+		}
+			
+		if (buyBuildingSyncPkt.isBuyBuilding)
+		{
+			GameManager::GetInstance()->GetAddressBoardBuildData()->building[
+				(*GameManager::GetInstance()->GetUserPositionVector())[buyBuildingSyncPkt.whosTurn]
+			] = buyBuildingSyncPkt.isBuyBuilding;
+
+			buyMessageString += " 빌딩 ";
+		}
+			
+		if (buyBuildingSyncPkt.isBuyHotel)
+		{
+			GameManager::GetInstance()->GetAddressBoardBuildData()->hotel[
+				(*GameManager::GetInstance()->GetUserPositionVector())[buyBuildingSyncPkt.whosTurn]
+			] = buyBuildingSyncPkt.isBuyHotel;
+
+			buyMessageString += " 호텔 ";
+		}
+
+		buyMessageString += (" " + to_string(buyBuildingSyncPkt.accumPrice));
+		GameManager::GetInstance()->SetGameMessage(buyMessageString);	// 메시지 갱신
+	}
+
+	(*GameManager::GetInstance()->GetUserMoneyVector())[buyBuildingSyncPkt.whosTurn] = buyBuildingSyncPkt.userMoney;	// 돈 갱신
+
+	if (buyBuildingSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
+	{
+		MakePacket(BUY_BUILDING_SYNC);
+		SendMessageToGameServer();
+	}
+}
+
 void SocketTransfer::SendNextTurnSignMethod()
 {
 	instance->SendNextTurnSign();
@@ -300,7 +391,7 @@ void SocketTransfer::SendNextTurnSignMethod()
 
 void SocketTransfer::SendNextTurnSign()
 {
-	GameManager::GetInstance()->SetIsMyTurn(false);
+	GameManager::GetInstance()->SetIsMyDiceTurn(false);
 	MakePacket(FINISH_THIS_TURN_PROCESS);
 	SendMessageToGameServer();
 }

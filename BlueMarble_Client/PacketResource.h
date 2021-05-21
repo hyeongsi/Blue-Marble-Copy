@@ -30,6 +30,7 @@ enum MessageCode
 	REVENUE_SIGN = 15,
 	PAY_TOLL_SIGN = 16,
 	BUY_LAND_SYNC = 17,
+	BUY_BUILDING_SYNC = 18,
 	FINISH_THIS_TURN_PROCESS = 20,
 };
 
@@ -78,7 +79,7 @@ typedef struct BuyLandSyncPacket	//BUY_Land_Sync
 	int userMoney;	// 해당 유저 돈
 }buyLandSyncPacket;
 
-typedef struct BuyBuildingPacket	//BUY_BUILDING
+typedef struct BuyBuildingPacket	//BUY_BUILDING_SIGN
 {
 	char header;
 	int whosTurn;			// 누구 턴인지
@@ -93,3 +94,17 @@ typedef struct BuyBuildingPacket	//BUY_BUILDING
 
 	int userMoney;	// 해당 유저 돈
 }buyBuildingPacket;
+
+typedef struct BuyBuildSyncPacket	//BUY_BUILDING_SYNC
+{
+	char header;
+	bool isBuy;		// 구입 여부
+	int whosTurn;	// 누구 턴인지
+
+	bool isBuyVilla;	// 빌라 구매유무
+	bool isBuyBuilding;	// 빌딩 구매유무
+	bool isBuyHotel;	// 호텔 구매유무
+
+	int accumPrice;	// 총 가격
+	int userMoney;	// 해당 유저 돈
+}buyBuildingSyncPacket;
