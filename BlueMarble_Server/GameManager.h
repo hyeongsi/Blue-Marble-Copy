@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <vector>
 #include <WinSock2.h>
+#include "commonGameResource.h"
 
 class GameRoom;
 class GameManager
@@ -32,5 +33,8 @@ public:
 
 	static void BuyBuildingMethod(GameRoom* room, char* data);
 	void BuyBuilding(GameRoom* room, char* data);
+
+	static void PayTollMethod(GameRoom* room, char* data);
+	void PayToll(GameRoom* room, char* data);
 };
 

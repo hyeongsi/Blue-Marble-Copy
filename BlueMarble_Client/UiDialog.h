@@ -27,6 +27,7 @@ private:
 	int BuyLandDlgState = 0;
 	buildInfo buildInfoData;
 	int accumBuildPrice = 0;
+	int payToll = 0;
 
 	UiDialog();
 	~UiDialog();
@@ -44,5 +45,8 @@ public:
 	static BOOL CALLBACK BuyBuildDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 	void SettingBuildPrice(int whosTurn, int* villaPrice, int* buildingPrice, int* hotelPrice, bool* villa, bool* building, bool* hotel);
 	buildInfo GetBuildInfoData();
+
+	static BOOL CALLBACK PayTollDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
+	void SetPriceText(int price);
 };
 

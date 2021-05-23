@@ -21,6 +21,7 @@ enum MessageCode
 	ROLL_DICE = 4,
 	BUY_LAND_SIGN = 5,
 	BUY_BUILDING_SIGN = 6,
+	PAY_TOLL_SIGN = 7,
 	CARD_SIGN = 9,
 	DESERT_ISLAND_SIGN = 10,
 	OLYMPIC_SIGN = 11,
@@ -28,9 +29,9 @@ enum MessageCode
 	WORLD_TRABLE_SIGN = 13,
 	WORLD_TRABLE = 14,
 	REVENUE_SIGN = 15,
-	PAY_TOLL_SIGN = 16,
 	BUY_LAND_SYNC = 17,
 	BUY_BUILDING_SYNC = 18,
+	PAY_TOLL_SIGN_SYNC = 19,
 	FINISH_THIS_TURN_PROCESS = 20,
 };
 
@@ -61,13 +62,14 @@ typedef struct DiceRollPacket
 	int whosTurn;	// 누구차례인지
 	int diceValue1;	// 주사위1 값
 	int diceValue2;	// 주사위2 값
+	int plusMoney;  // 추가 자금
 }diceRollPacket;
 
 typedef struct BuyLandPacket	// BUY_LAND_SIGN, BUY_TOUR_SIGN
 {
 	char header;
 	int whosTurn;	// 누구 턴인지
-	int passPrice;	// 통행료
+	int passPrice;	// 땅 가격
 }buyLandPacket;
 
 typedef struct BuyLandSyncPacket	//BUY_Land_Sync
@@ -108,3 +110,21 @@ typedef struct BuyBuildSyncPacket	//BUY_BUILDING_SYNC
 	int accumPrice;	// 총 가격
 	int userMoney;	// 해당 유저 돈
 }buyBuildingSyncPacket;
+
+typedef struct PayTollPacket	// PAY_TOLL_SIGN
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int passPrice;	// 통행료
+}payTollPacket;
+
+typedef struct PayTollSyncPacket	//PAY_TOLL_SIGN_SYNC
+{
+	char header;
+	bool isPass;	// 통행료 지불 유무
+	int whosTurn;	// 누구 턴인지
+	int landOwner;	// 땅 주인 번호
+	int toll;		// 통행료
+	int userMoney;	// 해당 유저 돈
+	int landOwnerMoney; // 땅 주인 돈
+}payTollSyncPacket;

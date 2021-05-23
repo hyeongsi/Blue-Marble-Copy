@@ -32,6 +32,7 @@ enum MessageCode
 	ROLL_DICE = 4,
 	BUY_LAND_SIGN = 5,
 	BUY_BUILDING_SIGN = 6,
+	PAY_TOLL_SIGN = 7,
 	CARD_SIGN = 9,
 	DESERT_ISLAND_SIGN = 10,
 	OLYMPIC_SIGN = 11,
@@ -39,9 +40,9 @@ enum MessageCode
 	WORLD_TRABLE_SIGN = 13,
 	WORLD_TRABLE = 14,
 	REVENUE_SIGN = 15,
-	PAY_TOLL_SIGN = 16,
 	BUY_LAND_SYNC = 17,
 	BUY_BUILDING_SYNC = 18,
+	PAY_TOLL_SIGN_SYNC = 19,
 	FINISH_THIS_TURN_PROCESS = 20,
 	SET_MATCHING_USER_PACKET = 100,
 };
@@ -62,3 +63,9 @@ typedef struct BuyBuildingPacket
 	bool isBuyBuilding;	// 빌딩 구매유무
 	bool isBuyHotel;	// 호텔 구매유무
 }buyBuildingPacket;
+
+typedef struct PayTollSignPacket
+{
+	char header;
+	int whosTurn;	// 누구의 요구인지
+}payTollSignPacket;

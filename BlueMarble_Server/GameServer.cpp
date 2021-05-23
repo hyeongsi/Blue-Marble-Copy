@@ -111,6 +111,9 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case BUY_BUILDING_SIGN:
 				GameManager::GetInstance()->BuyBuildingMethod(myRoom, cBuffer);
 				break;
+			case PAY_TOLL_SIGN:
+				GameManager::GetInstance()->PayTollMethod(myRoom, cBuffer);
+				break;
 			case BUY_LAND_SYNC:
 				myRoom->CheckLandKindNSendMessage();
 				break;
@@ -122,6 +125,9 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 					else
 						myRoom->state = GameState::NEXT_TURN;
 				}
+				break;
+			case PAY_TOLL_SIGN_SYNC:
+				myRoom->CheckPassNCellMessage();
 				break;
 			case FINISH_THIS_TURN_PROCESS:
 				myRoom->CheckEndProcess(clientSocket);

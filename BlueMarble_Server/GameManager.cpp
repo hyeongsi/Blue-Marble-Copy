@@ -69,17 +69,20 @@ int GameManager::FindBelongRoom(SOCKET& socket)
 
 void GameManager::ArriveLandTileMethod(GameRoom* room)
 {
+	room->state = GameState::WAIT;
+
 	if (room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == -1)
 	{
 		room->SendBuyLandSign();	// 구입여부 확인 메시지 전송
 	}
 	else if(room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer()) // 내 땅이면
 	{
+		// 랜드마크 유무 확인작업 필요
 		//room->SendBuyLand(isTour, true);
 	}
 	else  // 남의 땅이면
 	{
-		//room->SendPayTollSign();	// 통행료 지불 요청
+		room->SendPayTollSign();	// 통행료 지불 요청
 	}
 }
 
@@ -114,19 +117,19 @@ void GameManager::RoomLogicThreadMethod(GameRoom* room)
 			ArriveLandTileMethod(room);
 			break;
 		case GameState::CARD_TILE:
-			room->state = GameState::NEXT_TURN;
+			room->TempCheckNextTurn();
 			break;
 		case GameState::DESERT_ISLAND_TILE:
-			room->state = GameState::NEXT_TURN;
+			room->TempCheckNextTurn();
 			break;
 		case GameState::OLYMPIC_TILE:
-			room->state = GameState::NEXT_TURN;
+			room->TempCheckNextTurn();
 			break;
 		case GameState::WORLD_TRABLE_TILE:
-			room->state = GameState::NEXT_TURN;
+			room->TempCheckNextTurn();
 			break;
 		case GameState::REVENUE_TILE:
-			room->state = GameState::NEXT_TURN;
+			room->TempCheckNextTurn();
 			break;
 		case GameState::NEXT_TURN:
 			room->SendFinishTurnSign();
@@ -150,8 +153,8 @@ void GameManager::RollTheDice(GameRoom* room)
 	mt19937 gen(rd());		// random_device 를 통해 난수 생성 엔진을 초기화 한다.
 	uniform_int_distribution<int> dis(1, 6);		// 1 부터 6 까지 균등하게 나타나는 난수열을 생성하기 위해 균등 분포 정의.
 
-	int diceValue1 = dis(gen);
-	int diceValue2 = dis(gen);
+	int diceValue1 = 1; //dis(gen);
+	int diceValue2 = 5; //dis(gen);
 
 	room->SendRollTheDice(diceValue1, diceValue2);
 	room->MoveUserPosition(diceValue1 + diceValue2);		// 유저 위치 갱신
@@ -290,4 +293,52 @@ void GameManager::BuyBuilding(GameRoom* room, char* data)
 	{
 		room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
 	}
+}
+
+void GameManager::PayTollMethod(GameRoom* room, char* data)
+{
+	instance->PayToll(room, data);
+}
+
+void GameManager::PayToll(GameRoom* room, char* data)
+{
+	payTollSignPacket payTollSignPkt;
+	int accumDataSize = 1;
+	int tollPrice = 0;
+
+	memcpy(&payTollSignPkt.whosTurn, &data[accumDataSize], sizeof(payTollSignPkt.whosTurn));	// get turn
+	accumDataSize += sizeof(payTollSignPkt.whosTurn);
+
+	int landOwner = room->GetLandBoardData().land[room->GetUserPositionVector()[payTollSignPkt.whosTurn]];
+
+	if (room->GetLandBoardData().landMark[room->GetUserPositionVector()[payTollSignPkt.whosTurn]] == landOwner)	// 랜드마크이면
+	{
+		tollPrice += room->GetMapData().tollLandMark[room->GetUserPositionVector()[payTollSignPkt.whosTurn]];
+	}
+	else   // 랜드마크 아니면
+	{
+		tollPrice += room->GetMapData().tollLand[room->GetUserPositionVector()[payTollSignPkt.whosTurn]];
+		if (room->GetLandBoardData().villa[room->GetUserPositionVector()[payTollSignPkt.whosTurn]] == landOwner)
+		{
+			tollPrice += room->GetMapData().tollVilla[room->GetUserPositionVector()[payTollSignPkt.whosTurn]];
+		}
+		if (room->GetLandBoardData().building[room->GetUserPositionVector()[payTollSignPkt.whosTurn]] == landOwner)
+		{
+			tollPrice += room->GetMapData().tollBuilding[room->GetUserPositionVector()[payTollSignPkt.whosTurn]];
+		}
+		if (room->GetLandBoardData().hotel[room->GetUserPositionVector()[payTollSignPkt.whosTurn]] == landOwner)
+		{
+			tollPrice += room->GetMapData().tollHotel[room->GetUserPositionVector()[payTollSignPkt.whosTurn]];
+		}
+	}
+
+	if (tollPrice <= (*room->GetPUserMoneyVector())[payTollSignPkt.whosTurn])
+	{
+		room->SendPayTollSyncSign(payTollSignPkt.whosTurn, tollPrice, true, landOwner);
+	}
+	else
+	{
+		room->SendPayTollSyncSign(payTollSignPkt.whosTurn, tollPrice, false, landOwner);
+	}
+		
 }

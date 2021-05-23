@@ -3,6 +3,7 @@
 #include "MapManager.h"
 #include <vector>
 #include <time.h>
+#include "commonGameResource.h"
 
 constexpr const int MAX_PLAYER = 2;
 
@@ -77,10 +78,15 @@ public:
 
 	void SendLandSyncSign(int turn, bool isBuy);
 	void SendBuildingSyncSign(int turn, bool isBuy, bool isBuyVilla, bool isBuyBuilding, bool isBuyHotel, int accumPrice);
+	void SendPayTollSyncSign(int turn, int tollPrice, bool isPass, int landOwner);
 
 	void CheckLandKindNSendMessage();
-
+	void CheckPassNCellMessage();
+		
 	void SendFinishTurnSign();	// 모든 처리 끝나고, 다음턴으로 넘어가도 되는지 확인 메시지 전송
 	void CheckEndProcess(SOCKET clientSocket);	// 다음턴으로 이동
+
+	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 임시로 만들어 둔거
+	void TempCheckNextTurn();	// @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ 임시로 만들어 둔거
 };
 

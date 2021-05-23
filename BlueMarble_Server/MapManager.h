@@ -18,6 +18,11 @@ typedef struct BoardData
 	vector<int> building;
 	vector<int> hotel;
 	vector<int> landMark;
+	vector<int> tollLand;
+	vector<int> tollVilla;
+	vector<int> tollBuilding;
+	vector<int> tollHotel;
+	vector<int> tollLandMark;
 } boardData;
 
 typedef struct LandData

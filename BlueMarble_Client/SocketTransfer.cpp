@@ -57,12 +57,16 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 				BuyBuildingMethod(cBuffer);
 				break;
 			case PAY_TOLL_SIGN:
+				PayTollSignMethod(cBuffer);
 				break;
 			case BUY_LAND_SYNC:
 				GetBuyLandSyncMethod(cBuffer);
 				break;
 			case BUY_BUILDING_SYNC:
 				GetBuyBuildSyncMethod(cBuffer);
+				break;
+			case PAY_TOLL_SIGN_SYNC:
+				GetPayTollSignSyncMethod(cBuffer);
 				break;
 			case FINISH_THIS_TURN_PROCESS:
 				SendNextTurnSignMethod();
@@ -178,14 +182,26 @@ void SocketTransfer::GetRollDiceMethod(char* packet)
 void SocketTransfer::GetRollDice(char* packet)
 {
 	diceRollPacket dPacket;
-	memcpy(&dPacket.header, &packet[0], sizeof(char));						// get header
-	memcpy(&dPacket.whosTurn, &packet[1], sizeof(int));						// get turn
-	memcpy(&dPacket.diceValue1, &packet[1 + sizeof(int)], sizeof(int));		// get diceValue1
-	memcpy(&dPacket.diceValue2, &packet[1 + sizeof(int) + sizeof(int)], sizeof(int));		// get diceValue2
+	int accumDataSize = 1;
+
+	memcpy(&dPacket.whosTurn, &packet[accumDataSize], sizeof(dPacket.whosTurn));	// get turn
+	accumDataSize += sizeof(dPacket.whosTurn);
+	memcpy(&dPacket.diceValue1, &packet[accumDataSize], sizeof(dPacket.diceValue1));	// get diceValue1
+	accumDataSize += sizeof(dPacket.diceValue1);
+	memcpy(&dPacket.diceValue2, &packet[accumDataSize], sizeof(dPacket.diceValue2));	// get diceValue2
+	accumDataSize += sizeof(dPacket.diceValue2);
+	memcpy(&dPacket.plusMoney, &packet[accumDataSize], sizeof(dPacket.plusMoney));		// get plusMoney
 
 	if (dPacket.diceValue1 == dPacket.diceValue2)
 	{
 		GameManager::GetInstance()->SetGameMessage("더블!! " + to_string(dPacket.diceValue1) + " , " + to_string(dPacket.diceValue2));	// 메시지 갱신
+	}
+	else if(dPacket.plusMoney != 0) // START 지점을 지나 추가 자금을 받았을 경우
+	{
+		GameManager::GetInstance()->SetGameMessage(to_string(dPacket.diceValue1) + " , " + to_string(dPacket.diceValue2) 
+			+ "출발지를 지나 "+ to_string(dPacket.plusMoney) + "을 획득했습니다.");	// 메시지 갱신
+
+		(*GameManager::GetInstance()->GetUserMoneyVector())[dPacket.whosTurn] += dPacket.plusMoney;
 	}
 	else
 	{
@@ -276,6 +292,33 @@ void SocketTransfer::BuyBuilding(char* packet)
 		MakePacket(BUY_BUILDING_SIGN);
 		AppendPacketData(buyBuildingPkt.whosTurn, sizeof(int));	// 누가 지불하는지,
 		AppendPacketData(false, sizeof(bool));	// 구매 유무
+		SendMessageToGameServer();
+	}
+}
+
+void SocketTransfer::PayTollSignMethod(char* packet)
+{
+	instance->PayTollSign(packet);
+}
+
+void SocketTransfer::PayTollSign(char* packet)
+{
+	payTollPacket payTollPkt;
+
+	int accumDataSize = 1;
+	memcpy(&payTollPkt.whosTurn, &packet[accumDataSize], sizeof(payTollPkt.whosTurn));		// get turn
+	accumDataSize += sizeof(payTollPkt.whosTurn);
+	memcpy(&payTollPkt.passPrice, &packet[accumDataSize], sizeof(payTollPkt.passPrice));	// get passPrice
+
+	UiDialog::GetInstance()->SetPriceText(payTollPkt.passPrice);
+
+	DialogBox(MainSystem::GetInstance()->GetHinstance(), MAKEINTRESOURCE(IDD_TOLL_MENU),
+		GameWindow::GetInstance()->g_hWnd, UiDialog::GetInstance()->PayTollDlgProc);
+
+	if (UiDialog::GetInstance()->GetBuyLandDlgState() == IDOK)
+	{
+		MakePacket(PAY_TOLL_SIGN);
+		AppendPacketData(payTollPkt.whosTurn, sizeof(int));	// 누가 지불하는지,
 		SendMessageToGameServer();
 	}
 }
@@ -380,6 +423,43 @@ void SocketTransfer::GetBuyBuildSync(char* packet)
 	if (buyBuildingSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
 	{
 		MakePacket(BUY_BUILDING_SYNC);
+		SendMessageToGameServer();
+	}
+}
+
+void SocketTransfer::GetPayTollSignSyncMethod(char* packet)
+{
+	instance->GetPayTollSignSync(packet);
+}
+
+void SocketTransfer::GetPayTollSignSync(char* packet)
+{
+	payTollSyncPacket payTollSyncPkt;
+	int accumDataSize = 1;
+
+	memcpy(&payTollSyncPkt.isPass, &packet[accumDataSize], sizeof(payTollSyncPkt.isPass));	// get isPass
+	accumDataSize += sizeof(payTollSyncPkt.isPass);
+	memcpy(&payTollSyncPkt.whosTurn, &packet[accumDataSize], sizeof(payTollSyncPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(payTollSyncPkt.whosTurn);
+	memcpy(&payTollSyncPkt.landOwner, &packet[accumDataSize], sizeof(payTollSyncPkt.landOwner));  // get landOwner
+	accumDataSize += sizeof(payTollSyncPkt.landOwner);
+	memcpy(&payTollSyncPkt.toll, &packet[accumDataSize], sizeof(payTollSyncPkt.toll));  // get toll
+	accumDataSize += sizeof(payTollSyncPkt.toll);
+	memcpy(&payTollSyncPkt.userMoney, &packet[accumDataSize], sizeof(payTollSyncPkt.userMoney));  // get userMoney
+	accumDataSize += sizeof(payTollSyncPkt.userMoney);
+	memcpy(&payTollSyncPkt.landOwnerMoney, &packet[accumDataSize], sizeof(payTollSyncPkt.landOwnerMoney));  // get landOwnerMoney
+
+	if (payTollSyncPkt.isPass)
+		GameManager::GetInstance()->SetGameMessage("통행료 지불 완료 - " + to_string(payTollSyncPkt.toll));	// 메시지 갱신
+	else
+		GameManager::GetInstance()->SetGameMessage("소지자금 부족, 통행료 미지급 - " + to_string(payTollSyncPkt.toll));	// 메시지 갱신
+
+	(*GameManager::GetInstance()->GetUserMoneyVector())[payTollSyncPkt.whosTurn] = payTollSyncPkt.userMoney;	// 돈 갱신
+	(*GameManager::GetInstance()->GetUserMoneyVector())[payTollSyncPkt.landOwner] = payTollSyncPkt.landOwnerMoney;	// 돈 갱신
+
+	if (payTollSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
+	{
+		MakePacket(PAY_TOLL_SIGN_SYNC);
 		SendMessageToGameServer();
 	}
 }

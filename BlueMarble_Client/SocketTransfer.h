@@ -47,11 +47,17 @@ private:
 	static void BuyBuildingMethod(char* packet);
 	void BuyBuilding(char* packet);
 
+	static void PayTollSignMethod(char* packet);
+	void PayTollSign(char* packet);
+
 	static void GetBuyLandSyncMethod(char* packet);
 	void GetBuyLandSync(char* packet);
 
 	static void GetBuyBuildSyncMethod(char* packet);
 	void GetBuyBuildSync(char* packet);
+
+	static void GetPayTollSignSyncMethod(char* packet);
+	void GetPayTollSignSync(char* packet);
 
 	static void SendNextTurnSignMethod();
 	void SendNextTurnSign();

@@ -214,3 +214,34 @@ buildInfo UiDialog::GetBuildInfoData()
 {
 	return buildInfoData;
 }
+
+BOOL UiDialog::PayTollDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
+{
+	switch (iMessage)
+	{
+	case WM_INITDIALOG:
+		GetWindowRect(GameWindow::GetInstance()->g_hWnd, &instance->rect);
+		SetWindowPos(hDlg, HWND_TOP, instance->rect.left + 500, instance->rect.top + 300, 0, 0, SWP_NOSIZE);
+		SetDlgItemText(hDlg, IDC_STATIC_PAYTOLL, string("ÅëÇà·á : " + to_string(instance->payToll)).c_str());
+		break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDOK:
+			instance->BuyLandDlgState = IDOK;
+			EndDialog(hDlg, wParam);
+			return true;
+		}
+		return false;
+	case WM_CLOSE:
+		PostQuitMessage(0);
+		return true;
+	}
+
+	return false;
+}
+
+void UiDialog::SetPriceText(int price)
+{
+	payToll = price;
+}
