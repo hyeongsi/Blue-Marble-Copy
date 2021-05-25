@@ -77,8 +77,20 @@ void GameManager::ArriveLandTileMethod(GameRoom* room)
 	}
 	else if(room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer()) // 내 땅이면
 	{
-		// 랜드마크 유무 확인작업 필요
-		//room->SendBuyLand(isTour, true);
+		if (room->GetLandBoardData().landMark[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer()) // 랜드마크 있으면
+		{
+			room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
+		}
+		else if (room->GetLandBoardData().villa[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer() &&
+			room->GetLandBoardData().building[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer() &&
+			room->GetLandBoardData().hotel[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer() )
+		{
+			// 랜드마크 구매 메시지
+		}
+		else // 건물이 모두 건설되어 있지 않다면,
+		{
+			room->CheckLandKindNSendMessage();
+		}
 	}
 	else  // 남의 땅이면
 	{
@@ -153,8 +165,8 @@ void GameManager::RollTheDice(GameRoom* room)
 	mt19937 gen(rd());		// random_device 를 통해 난수 생성 엔진을 초기화 한다.
 	uniform_int_distribution<int> dis(1, 6);		// 1 부터 6 까지 균등하게 나타나는 난수열을 생성하기 위해 균등 분포 정의.
 
-	int diceValue1 = 1; //dis(gen);
-	int diceValue2 = 5; //dis(gen);
+	int diceValue1 = dis(gen);
+	int diceValue2 = dis(gen);
 
 	room->SendRollTheDice(diceValue1, diceValue2);
 	room->MoveUserPosition(diceValue1 + diceValue2);		// 유저 위치 갱신
@@ -162,6 +174,9 @@ void GameManager::RollTheDice(GameRoom* room)
 	// 도착한 지역에서의 처리
 	switch (room->GetMapData().code[room->GetUserPositionVector()[room->GetTakeControlPlayer()]])
 	{
+	case START_TILE:
+		room->state = GameState::NEXT_TURN;
+		break;
 	case LAND_TILE:
 	case TOUR_TILE:
 		room->state = GameState::LAND_TILE;

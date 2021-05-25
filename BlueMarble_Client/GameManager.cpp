@@ -62,7 +62,7 @@ void GameManager::MoveUserPosition(int userIndex, int diceValue)
 {
 	userPositionVector[userIndex] += diceValue;
 
-	if (userPositionVector[userIndex] > (int)board.mapSize * DIRECTION)
+	if (userPositionVector[userIndex] >= (int)board.mapSize * DIRECTION)
 	{
 		userPositionVector[userIndex] -= ((int)board.mapSize * DIRECTION);
 	}

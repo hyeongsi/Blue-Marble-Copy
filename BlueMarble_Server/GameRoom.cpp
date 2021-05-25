@@ -194,11 +194,11 @@ void GameRoom::SendPayTollSign()
 	{
 		toll += board.tollLand[userPositionVector[takeControlPlayer]];	// 땅
 
-		if (board.villa[userPositionVector[takeControlPlayer]] != -1)	// 빌라
+		if (landBoardData.villa[userPositionVector[takeControlPlayer]] != -1)	// 빌라
 			toll += board.tollVilla[userPositionVector[takeControlPlayer]];
-		if (board.building[userPositionVector[takeControlPlayer]] != -1)	// 빌딜
+		if (landBoardData.building[userPositionVector[takeControlPlayer]] != -1)	// 빌딜
 			toll += board.tollBuilding[userPositionVector[takeControlPlayer]];
-		if (board.hotel[userPositionVector[takeControlPlayer]] != -1)	// 호텔
+		if (landBoardData.hotel[userPositionVector[takeControlPlayer]] != -1)	// 호텔
 			toll += board.tollHotel[userPositionVector[takeControlPlayer]];
 	}
 
@@ -230,7 +230,7 @@ void GameRoom::SendLandSyncSign(int turn, bool isBuy)
 	for (auto& socketIterator : userVector)
 	{
 		gameServer->PacektSendMethod(sendPacket, socketIterator);
-		printf("%s %d\n", "send Buy_Tour - ", socketIterator);
+		printf("%s %d\n", "send Buy_Land_Sync - ", socketIterator);
 	}
 }
 
@@ -250,7 +250,7 @@ void GameRoom::SendBuildingSyncSign(int turn, bool isBuy, bool isBuyVilla, bool 
 	for (auto& socketIterator : userVector)
 	{
 		gameServer->PacektSendMethod(sendPacket, socketIterator);
-		printf("%s %d\n", "send Buy_BuildSync - ", socketIterator);
+		printf("%s %d\n", "send Buy_Build_Sync - ", socketIterator);
 	}
 }
 
