@@ -191,6 +191,8 @@ void SocketTransfer::GetRollDice(char* packet)
 	memcpy(&dPacket.diceValue2, &packet[accumDataSize], sizeof(dPacket.diceValue2));	// get diceValue2
 	accumDataSize += sizeof(dPacket.diceValue2);
 	memcpy(&dPacket.plusMoney, &packet[accumDataSize], sizeof(dPacket.plusMoney));		// get plusMoney
+	accumDataSize += sizeof(dPacket.plusMoney);
+	memcpy(&dPacket.isDesertIsland, &packet[accumDataSize], sizeof(dPacket.isDesertIsland));		// get isDesertIsland
 
 	if (dPacket.diceValue1 == dPacket.diceValue2)
 	{
@@ -198,8 +200,8 @@ void SocketTransfer::GetRollDice(char* packet)
 	}
 	else if(dPacket.plusMoney != 0) // START 지점을 지나 추가 자금을 받았을 경우
 	{
-		GameManager::GetInstance()->SetGameMessage(to_string(dPacket.diceValue1) + " , " + to_string(dPacket.diceValue2) 
-			+ "출발지를 지나 "+ to_string(dPacket.plusMoney) + "을 획득했습니다.");	// 메시지 갱신
+		GameManager::GetInstance()->SetGameMessage(to_string(dPacket.diceValue1) + " , " + to_string(dPacket.diceValue2) + "\n"
+			+ " 출발지를 지나 "+ to_string(dPacket.plusMoney) + "을 획득했습니다.");	// 메시지 갱신
 
 		(*GameManager::GetInstance()->GetUserMoneyVector())[dPacket.whosTurn] += dPacket.plusMoney;
 	}
@@ -209,7 +211,10 @@ void SocketTransfer::GetRollDice(char* packet)
 	}
 	GameWindow::GetInstance()->HideButton();
 
-	GameManager::GetInstance()->MoveUserPosition(dPacket.whosTurn, dPacket.diceValue1 + dPacket.diceValue2);
+	if (!dPacket.isDesertIsland)	// 감옥이 아니라면 이동 처리
+	{
+		GameManager::GetInstance()->MoveUserPosition(dPacket.whosTurn, dPacket.diceValue1 + dPacket.diceValue2);
+	}
 }
 
 void SocketTransfer::BuyLandSignMethod(char* packet)

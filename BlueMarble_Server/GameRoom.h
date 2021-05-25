@@ -34,6 +34,9 @@ private:
 	int takeControlPlayer = 0;	// 누구 차례인지 구분 변수
 	int diceDoubleCount = 0;	// 주사위 더블 카운트 변수,
 
+	vector<bool> isDesertIsland; // 감옥 여부
+	vector<int> desertIslandCount;	// 감옥 카운트
+
 	vector<bool> isFinishTurnProcessVector;	// 해당 차례 처리 유무 
 	landData landBoardData;	// 건축물 데이터
 	boardData board;		// 지역 정보 및 건물 가격 데이터
@@ -66,11 +69,19 @@ public:
 	int GetDiceDoubleCount();		// 더블 카운트 전송
 	void SetDiceDoubleCount(int count);	// 더블 카운트 변경
 
+	bool IsDesertIsland();
+	int GetDesertIslandCount();
+
+	void SetIsDesertIsland(bool isDesert);
+	void SetDesertIslandCount(int count);
+
 	bool CheckSendDelay();	// 딜레이 체크 함수
 	void SendMapDataMethod(SOCKET& socekt);	// 맵 정보 전송 함수
 	void SendRollDiceSignMethod(SOCKET& socket);	// 주사위 신호 전송 함수
 
-	void SendRollTheDice(int value1, int value2);	// 주사위 눈 전송
+	void DesertIslandMethod();	// 감옥 처리
+
+	void SendRollTheDice(int value1, int value2, bool isDesertIsland);	// 주사위 눈 전송
 	void MoveUserPosition(int diceValue);	// 캐릭터 보드판 위치 이동
 
 	void SendPayTollSign();	// 통행료 지불

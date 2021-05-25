@@ -132,7 +132,7 @@ void GameManager::RoomLogicThreadMethod(GameRoom* room)
 			room->TempCheckNextTurn();
 			break;
 		case GameState::DESERT_ISLAND_TILE:
-			room->TempCheckNextTurn();
+			room->DesertIslandMethod();
 			break;
 		case GameState::OLYMPIC_TILE:
 			room->TempCheckNextTurn();
@@ -164,12 +164,25 @@ void GameManager::RollTheDice(GameRoom* room)
 	random_device rd;
 	mt19937 gen(rd());		// random_device 를 통해 난수 생성 엔진을 초기화 한다.
 	uniform_int_distribution<int> dis(1, 6);		// 1 부터 6 까지 균등하게 나타나는 난수열을 생성하기 위해 균등 분포 정의.
+	
+	int	diceValue1 = dis(gen);
+	int	diceValue2 = dis(gen);
 
-	int diceValue1 = dis(gen);
-	int diceValue2 = dis(gen);
+	if (room->IsDesertIsland() && diceValue1 == diceValue2)
+	{
+		room->SetIsDesertIsland(false);
+		room->SetDesertIslandCount(0);
+	}
 
-	room->SendRollTheDice(diceValue1, diceValue2);
-	room->MoveUserPosition(diceValue1 + diceValue2);		// 유저 위치 갱신
+	if (!room->IsDesertIsland() || (room->GetDesertIslandCount() >= ESCAPE_COUNT))
+	{
+		room->SendRollTheDice(diceValue1, diceValue2, false);
+		room->MoveUserPosition(diceValue1 + diceValue2);		// 유저 위치 갱신
+	}
+	else
+	{
+		room->SendRollTheDice(diceValue1, diceValue2, true);
+	}
 
 	// 도착한 지역에서의 처리
 	switch (room->GetMapData().code[room->GetUserPositionVector()[room->GetTakeControlPlayer()]])
@@ -201,7 +214,7 @@ void GameManager::RollTheDice(GameRoom* room)
 	if ((diceValue1 == diceValue2) && (!(room->GetDiceDoubleCount() >= 3)))
 	{
 		room->isDouble = true;
-		room->SetDiceDoubleCount(room->GetDiceDoubleCount()+1);
+		room->SetDiceDoubleCount(room->GetDiceDoubleCount() + 1);
 	}
 	else
 	{
@@ -241,7 +254,10 @@ void GameManager::BuyLand(GameRoom* room, char* data)
 	}
 	else   // 미 구매 시
 	{
-		room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
+		if (room->isDouble)
+			room->state = GameState::ROLL_DICE_SIGN;
+		else
+			room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
 	}
 }
 
@@ -271,7 +287,10 @@ void GameManager::BuyBuilding(GameRoom* room, char* data)
 
 		if ((!buyBuildingPkt.isBuyVilla) && (!buyBuildingPkt.isBuyBuilding) && (!buyBuildingPkt.isBuyHotel))	// 구입 버튼 눌렀으나 아무것도 구매하지 않았을 경우
 		{
-			room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
+			if (room->isDouble)
+				room->state = GameState::ROLL_DICE_SIGN;
+			else
+				room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
 		}
 		else
 		{
@@ -306,7 +325,10 @@ void GameManager::BuyBuilding(GameRoom* room, char* data)
 	}
 	else    // 미 구입 시
 	{
-		room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
+		if (room->isDouble)
+			room->state = GameState::ROLL_DICE_SIGN;
+		else
+			room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
 	}
 }
 

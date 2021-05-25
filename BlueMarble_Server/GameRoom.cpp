@@ -17,6 +17,12 @@ GameRoom::GameRoom(SOCKET user1, SOCKET user2)
 	userMoneyVector.emplace_back(2000);
 	userMoneyVector.emplace_back(2000);
 
+	isDesertIsland.emplace_back(false);
+	isDesertIsland.emplace_back(false);
+
+	desertIslandCount.emplace_back(0);
+	desertIslandCount.emplace_back(0);
+
 	isDouble = false;
 
 	board = *MapManager::GetInstance()->GetBoardData(ORIGINAL);
@@ -94,6 +100,26 @@ void GameRoom::SetDiceDoubleCount(int count)
 	diceDoubleCount = count;
 }
 
+bool GameRoom::IsDesertIsland()
+{
+	return isDesertIsland[takeControlPlayer];
+}
+
+int GameRoom::GetDesertIslandCount()
+{
+	return desertIslandCount[takeControlPlayer];
+}
+
+void GameRoom::SetIsDesertIsland(bool isDesert)
+{
+	isDesertIsland[takeControlPlayer] = isDesert;
+}
+
+void GameRoom::SetDesertIslandCount(int count)
+{
+	desertIslandCount[takeControlPlayer] = count;
+}
+
 bool GameRoom::CheckSendDelay()
 {
 	double duration = (finishTime - startTime) / CLOCKS_PER_SEC;
@@ -148,10 +174,32 @@ void GameRoom::SendRollDiceSignMethod(SOCKET& socket)
 	state = GameState::WAIT;
 }
 
-void GameRoom::SendRollTheDice(int value1, int value2)
+void GameRoom::DesertIslandMethod()
+{
+	if (!isDesertIsland[takeControlPlayer])	// 처음 무인도 진입 시
+	{
+		isDesertIsland[takeControlPlayer] = true;	// 무인도 집어넣고
+	}
+	else
+	{
+		if (isDouble)
+		{
+			isDesertIsland[takeControlPlayer] = false;
+			desertIslandCount[takeControlPlayer] = 0;
+		}
+		else
+		{
+			desertIslandCount[takeControlPlayer]++;	// 처음이 아니면 카운트 ++
+		}
+	}
+
+	state = GameState::NEXT_TURN;
+}
+
+void GameRoom::SendRollTheDice(int value1, int value2, bool isDesertIsland)
 {
 	int salary = SALARY;
-	bool isPassStartTile = false;
+	bool isPassStartTile = false;	// 월급 처리 유무
 	if ((userPositionVector[takeControlPlayer] + value1 + value2) >= (int)board.mapSize * DIRECTION)
 	{
 		isPassStartTile = true;
@@ -167,6 +215,8 @@ void GameRoom::SendRollTheDice(int value1, int value2)
 			gameServer->AppendPacketData(sendPacket, &packetLastIndex, salary, sizeof(int));
 		else
 			gameServer->AppendPacketData(sendPacket, &packetLastIndex, 0, sizeof(int));
+
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex, isDesertIsland, sizeof(isDesertIsland));
 		gameServer->PacektSendMethod(sendPacket, userVector[i]);
 	}
 }

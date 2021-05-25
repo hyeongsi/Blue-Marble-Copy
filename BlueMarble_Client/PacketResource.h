@@ -63,6 +63,7 @@ typedef struct DiceRollPacket
 	int diceValue1;	// 주사위1 값
 	int diceValue2;	// 주사위2 값
 	int plusMoney;  // 추가 자금
+	bool isDesertIsland;	//감옥 유무
 }diceRollPacket;
 
 typedef struct BuyLandPacket	// BUY_LAND_SIGN, BUY_TOUR_SIGN
