@@ -129,19 +129,19 @@ void GameManager::RoomLogicThreadMethod(GameRoom* room)
 			ArriveLandTileMethod(room);
 			break;
 		case GameState::CARD_TILE:
-			room->TempCheckNextTurn();
+			room->EndTurn();
 			break;
 		case GameState::DESERT_ISLAND_TILE:
 			room->DesertIslandMethod();
 			break;
 		case GameState::OLYMPIC_TILE:
-			room->TempCheckNextTurn();
+			room->EndTurn();
 			break;
 		case GameState::WORLD_TRABLE_TILE:
-			room->TempCheckNextTurn();
+			room->EndTurn();
 			break;
 		case GameState::REVENUE_TILE:
-			room->TempCheckNextTurn();
+			room->EndTurn();
 			break;
 		case GameState::NEXT_TURN:
 			room->SendFinishTurnSign();
@@ -254,10 +254,7 @@ void GameManager::BuyLand(GameRoom* room, char* data)
 	}
 	else   // 미 구매 시
 	{
-		if (room->isDouble)
-			room->state = GameState::ROLL_DICE_SIGN;
-		else
-			room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
+		room->EndTurn();
 	}
 }
 
@@ -287,10 +284,7 @@ void GameManager::BuyBuilding(GameRoom* room, char* data)
 
 		if ((!buyBuildingPkt.isBuyVilla) && (!buyBuildingPkt.isBuyBuilding) && (!buyBuildingPkt.isBuyHotel))	// 구입 버튼 눌렀으나 아무것도 구매하지 않았을 경우
 		{
-			if (room->isDouble)
-				room->state = GameState::ROLL_DICE_SIGN;
-			else
-				room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
+			room->EndTurn();
 		}
 		else
 		{
@@ -325,10 +319,7 @@ void GameManager::BuyBuilding(GameRoom* room, char* data)
 	}
 	else    // 미 구입 시
 	{
-		if (room->isDouble)
-			room->state = GameState::ROLL_DICE_SIGN;
-		else
-			room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
+		room->EndTurn();
 	}
 }
 

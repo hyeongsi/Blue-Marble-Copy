@@ -28,6 +28,7 @@ private:
 	buildInfo buildInfoData;
 	int accumBuildPrice = 0;
 	int payToll = 0;
+	int takeOverPrice = 0;
 
 	UiDialog();
 	~UiDialog();
@@ -48,5 +49,8 @@ public:
 
 	static BOOL CALLBACK PayTollDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 	void SetPriceText(int price);
+
+	static BOOL CALLBACK TakeOverDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
+	void SetTakeOverPriceText(int price);
 };
 

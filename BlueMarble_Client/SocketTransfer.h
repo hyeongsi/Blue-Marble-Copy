@@ -50,6 +50,9 @@ private:
 	static void PayTollSignMethod(char* packet);
 	void PayTollSign(char* packet);
 
+	static void TakeOverSignMethod(char* packet);
+	void TakeOverSign(char* packet);
+
 	static void GetBuyLandSyncMethod(char* packet);
 	void GetBuyLandSync(char* packet);
 

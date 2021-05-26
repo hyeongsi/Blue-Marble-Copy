@@ -59,6 +59,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case PAY_TOLL_SIGN:
 				PayTollSignMethod(cBuffer);
 				break;
+			case TAKE_OVER_SIGN:
+				TakeOverSignMethod(cBuffer);
+				break;
 			case BUY_LAND_SYNC:
 				GetBuyLandSyncMethod(cBuffer);
 				break;
@@ -326,6 +329,34 @@ void SocketTransfer::PayTollSign(char* packet)
 		AppendPacketData(payTollPkt.whosTurn, sizeof(int));	// 누가 지불하는지,
 		SendMessageToGameServer();
 	}
+}
+
+void SocketTransfer::TakeOverSignMethod(char* packet)
+{
+	instance->TakeOverSign(packet);
+}
+
+void SocketTransfer::TakeOverSign(char* packet)
+{
+	takeOverPacket takeOverPkt;
+
+	int accumDataSize = 1;
+	memcpy(&takeOverPkt.whosTurn, &packet[accumDataSize], sizeof(takeOverPkt.whosTurn));		// get turn
+	accumDataSize += sizeof(takeOverPkt.whosTurn);
+	memcpy(&takeOverPkt.takeOverPrice, &packet[accumDataSize], sizeof(takeOverPkt.takeOverPrice));// get takeOverPrice
+
+	UiDialog::GetInstance()->SetTakeOverPriceText(takeOverPkt.takeOverPrice);
+
+	DialogBox(MainSystem::GetInstance()->GetHinstance(), MAKEINTRESOURCE(IDD_TAKE_OVER_LAND),
+		GameWindow::GetInstance()->g_hWnd, UiDialog::GetInstance()->TakeOverDlgProc);
+
+	MakePacket(TAKE_OVER_SIGN);
+	AppendPacketData(takeOverPkt.whosTurn, sizeof(int));	// 누가 지불하는지,
+	if (UiDialog::GetInstance()->GetBuyLandDlgState() == IDOK)
+		AppendPacketData(true , sizeof(bool));	// 인수 유무
+	else
+		AppendPacketData(false, sizeof(bool));	// 인수 유무
+	SendMessageToGameServer();
 }
 
 void SocketTransfer::GetBuyLandSyncMethod(char* packet)

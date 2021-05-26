@@ -357,11 +357,34 @@ void GameRoom::CheckLandKindNSendMessage()
 	}
 	else  // Tour
 	{
-		if (isDouble)
-			state = GameState::ROLL_DICE_SIGN;
-		else
-			state = GameState::NEXT_TURN;
+		EndTurn();
 	}
+}
+
+void GameRoom::SendTakeOverSign(int landOwner)
+{
+	int takeOverPrice = 0;
+
+	takeOverPrice += board.land[userPositionVector[takeControlPlayer]];
+	if (landBoardData.villa[userPositionVector[takeControlPlayer]] == landOwner)
+	{
+		takeOverPrice += board.villa[userPositionVector[takeControlPlayer]];
+	}
+	if (landBoardData.building[userPositionVector[takeControlPlayer]] == landOwner)
+	{
+		takeOverPrice += board.building[userPositionVector[takeControlPlayer]];
+	}
+	if (landBoardData.hotel[userPositionVector[takeControlPlayer]] == landOwner)
+	{
+		takeOverPrice += board.hotel[userPositionVector[takeControlPlayer]];
+	}
+
+	takeOverPrice *= 2;	// 인수 비용은 구입 비용의 2배
+
+	gameServer->MakePacket(sendPacket, &packetLastIndex, TAKE_OVER_SIGN);	// 인수 메시지
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeOverPrice, sizeof(takeOverPrice));	// 인수비용
+	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
 }
 
 void GameRoom::CheckPassNCellMessage()
@@ -369,7 +392,6 @@ void GameRoom::CheckPassNCellMessage()
 	int tollPrice = 0;
 	int landOwner = landBoardData.land[userPositionVector[takeControlPlayer]];
 
-	// 땅 다 팔아도 돈 부족하면 게임오버 처리
 	if (landBoardData.landMark[userPositionVector[takeControlPlayer]] == landOwner)	// 랜드마크이면
 	{
 		tollPrice += board.tollLandMark[userPositionVector[takeControlPlayer]];
@@ -398,24 +420,24 @@ void GameRoom::CheckPassNCellMessage()
 
 		if (board.code[userPositionVector[takeControlPlayer]] == TOUR_TILE)  // 휴양지라면, 인수 못하니 다음턴
 		{
-			state = GameState::NEXT_TURN;
+			EndTurn();
 		}
 		else
 		{
 			if (landBoardData.landMark[userPositionVector[takeControlPlayer]] == takeControlPlayer) // 랜드마크 지어져 있으면
 			{
-				state = GameState::NEXT_TURN;
+				EndTurn();
 			}
-			else
+			else  // 인수 처리
 			{
-				// 인수 처리
-				state = GameState::NEXT_TURN;
+				SendTakeOverSign(landOwner);
+				EndTurn();
 			}
 		}
 	}
 	else
 	{
-		state = GameState::NEXT_TURN;
+		EndTurn();
 		// 땅팔기, 땅 팔아도 돈 부족하면 패배 처리 및 동기화 처리
 	}
 }
@@ -451,7 +473,7 @@ void GameRoom::CheckEndProcess(SOCKET clientSocket)
 	}
 }
 
-void GameRoom::TempCheckNextTurn()
+void GameRoom::EndTurn()
 {
 	if (isDouble)
 	{

@@ -22,6 +22,7 @@ enum MessageCode
 	BUY_LAND_SIGN = 5,
 	BUY_BUILDING_SIGN = 6,
 	PAY_TOLL_SIGN = 7,
+	TAKE_OVER_SIGN = 8,
 	CARD_SIGN = 9,
 	DESERT_ISLAND_SIGN = 10,
 	OLYMPIC_SIGN = 11,
@@ -129,3 +130,10 @@ typedef struct PayTollSyncPacket	//PAY_TOLL_SIGN_SYNC
 	int userMoney;	// 해당 유저 돈
 	int landOwnerMoney; // 땅 주인 돈
 }payTollSyncPacket;
+
+typedef struct TakeOverPacket	// TAKE_OVER_SIGN
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int takeOverPrice;	// 인수비용
+}takeOverPacket;

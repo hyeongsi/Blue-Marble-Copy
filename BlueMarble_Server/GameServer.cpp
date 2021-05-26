@@ -114,6 +114,9 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case PAY_TOLL_SIGN:
 				GameManager::GetInstance()->PayTollMethod(myRoom, cBuffer);
 				break;
+			case TAKE_OVER_SIGN:
+
+				break;
 			case BUY_LAND_SYNC:
 				myRoom->CheckLandKindNSendMessage();
 				break;

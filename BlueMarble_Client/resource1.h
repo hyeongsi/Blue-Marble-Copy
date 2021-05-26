@@ -2,9 +2,11 @@
 // Microsoft Visual C++에서 생성한 포함 파일입니다.
 // BlueMarble_Client.rc에서 사용되고 있습니다.
 //
+#define IDOK2                           2
 #define IDD_BUY_MENU2                   101
 #define IDD_BUY_MENU1                   102
 #define IDD_TOLL_MENU                   103
+#define IDD_TAKE_OVER_LAND              104
 #define IDI_BLUEMARBLECLIENT            106
 #define IDI_SMALL                       108
 #define IDC_BLUEMARBLECLIENT            109
