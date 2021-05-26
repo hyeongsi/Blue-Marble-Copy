@@ -44,7 +44,8 @@ enum MessageCode
 	BUY_LAND_SYNC = 17,
 	BUY_BUILDING_SYNC = 18,
 	PAY_TOLL_SIGN_SYNC = 19,
-	FINISH_THIS_TURN_PROCESS = 20,
+	TAKE_OVER_SYNC = 20,
+	FINISH_THIS_TURN_PROCESS = 25,
 	SET_MATCHING_USER_PACKET = 100,
 };
 
@@ -70,3 +71,10 @@ typedef struct PayTollSignPacket
 	char header;
 	int whosTurn;	// 누구의 요구인지
 }payTollSignPacket;
+
+typedef struct TakeOverSignPacket
+{
+	char header;
+	int whosTurn;	// 누구의 요구인지
+	bool isTakeOver;	// 인수유무
+}takeOverSignPacket;

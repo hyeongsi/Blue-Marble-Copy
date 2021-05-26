@@ -92,12 +92,18 @@ public:
 	void SendPayTollSyncSign(int turn, int tollPrice, bool isPass, int landOwner);
 
 	void SendTakeOverSign(int landOwner);
+	void SendTakeOverSyncSign(int takeOverPrice, int owner);
 
 	void CheckLandKindNSendMessage();
-	void CheckPassNCellMessage();
+	void CheckPassNSellMessage();
 		
+	void CheckCanBuild();	// 인수 후 추가 건축 가능 유무 확인 후 처리
+
 	void SendFinishTurnSign();	// 모든 처리 끝나고, 다음턴으로 넘어가도 되는지 확인 메시지 전송
 	void CheckEndProcess(SOCKET clientSocket);	// 다음턴으로 이동
+
+	int GetBuildPrice(int turn);	// 유저 건축물 기준으로 건축 가격 리턴
+	int TakeOverLand(int turn, int takeOverPrice);	// 인수 처리
 
 	void EndTurn();
 };

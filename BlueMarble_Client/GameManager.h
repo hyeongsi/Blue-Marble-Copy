@@ -81,7 +81,7 @@ public:
 	boardData GetBoardData();
 
 	buildData* GetAddressBoardBuildData();
-	buildData GetBoarBuilddData();
+	buildData GetBoarBuildData();
 
 	void MoveUserPosition(int userIndex, int diceValue);
 };

@@ -306,6 +306,9 @@ void GameRoom::SendBuildingSyncSign(int turn, bool isBuy, bool isBuyVilla, bool 
 
 void GameRoom::SendPayTollSyncSign(int turn, int tollPrice, bool isPass, int landOwner)
 {
+	int userMoney = userMoneyVector[turn] - tollPrice;
+	int ownerMoney = userMoneyVector[landOwner] + tollPrice;
+
 	gameServer->MakePacket(sendPacket, &packetLastIndex, PAY_TOLL_SIGN_SYNC);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isPass, sizeof(isPass));	// 통행료 지불 유무
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, turn, sizeof(turn));		// 유저
@@ -314,8 +317,8 @@ void GameRoom::SendPayTollSyncSign(int turn, int tollPrice, bool isPass, int lan
 
 	if (isPass)
 	{
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[turn] - tollPrice, sizeof(userMoneyVector[turn]));	// 해당 유저 돈
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[landOwner] + tollPrice, sizeof(userMoneyVector[landOwner]));	// 땅 주인 돈
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoney, sizeof(userMoneyVector[turn]));	// 해당 유저 돈
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex, ownerMoney, sizeof(userMoneyVector[landOwner]));	// 땅 주인 돈
 	}
 	else
 	{
@@ -363,21 +366,7 @@ void GameRoom::CheckLandKindNSendMessage()
 
 void GameRoom::SendTakeOverSign(int landOwner)
 {
-	int takeOverPrice = 0;
-
-	takeOverPrice += board.land[userPositionVector[takeControlPlayer]];
-	if (landBoardData.villa[userPositionVector[takeControlPlayer]] == landOwner)
-	{
-		takeOverPrice += board.villa[userPositionVector[takeControlPlayer]];
-	}
-	if (landBoardData.building[userPositionVector[takeControlPlayer]] == landOwner)
-	{
-		takeOverPrice += board.building[userPositionVector[takeControlPlayer]];
-	}
-	if (landBoardData.hotel[userPositionVector[takeControlPlayer]] == landOwner)
-	{
-		takeOverPrice += board.hotel[userPositionVector[takeControlPlayer]];
-	}
+	int takeOverPrice = GetBuildPrice(landOwner);
 
 	takeOverPrice *= 2;	// 인수 비용은 구입 비용의 2배
 
@@ -387,7 +376,25 @@ void GameRoom::SendTakeOverSign(int landOwner)
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
 }
 
-void GameRoom::CheckPassNCellMessage()
+void GameRoom::SendTakeOverSyncSign(int takeOverPrice, int owner)
+{
+	gameServer->MakePacket(sendPacket, &packetLastIndex, TAKE_OVER_SYNC);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeOverPrice, sizeof(takeOverPrice));	// 인수비용
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, owner, sizeof(owner));	// 원래 땅주인
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, 
+		userMoneyVector[takeControlPlayer], sizeof(userMoneyVector[takeControlPlayer]));	// 돈
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, 
+		userMoneyVector[owner], sizeof(userMoneyVector[owner]));	// 원래 땅주인 돈
+
+	for (auto& socketIterator : userVector)
+	{
+		gameServer->PacektSendMethod(sendPacket, socketIterator);
+		printf("%s %d\n", "send PayTakeOverSync - ", socketIterator);
+	}
+}
+
+void GameRoom::CheckPassNSellMessage()
 {
 	int tollPrice = 0;
 	int landOwner = landBoardData.land[userPositionVector[takeControlPlayer]];
@@ -425,20 +432,30 @@ void GameRoom::CheckPassNCellMessage()
 		else
 		{
 			if (landBoardData.landMark[userPositionVector[takeControlPlayer]] == takeControlPlayer) // 랜드마크 지어져 있으면
-			{
 				EndTurn();
-			}
 			else  // 인수 처리
-			{
 				SendTakeOverSign(landOwner);
-				EndTurn();
-			}
 		}
 	}
 	else
 	{
 		EndTurn();
 		// 땅팔기, 땅 팔아도 돈 부족하면 패배 처리 및 동기화 처리
+	}
+}
+
+void GameRoom::CheckCanBuild()
+{
+	if (landBoardData.villa[userPositionVector[takeControlPlayer]] == takeControlPlayer &&
+		landBoardData.building[userPositionVector[takeControlPlayer]] == takeControlPlayer &&
+		landBoardData.hotel[userPositionVector[takeControlPlayer]] == takeControlPlayer)
+	{
+		// 랜드마크 건설 신호 보내기
+		EndTurn();
+	}
+	else // 건물 3개가 지어있지 않을 경우
+	{
+		CheckLandKindNSendMessage();	// 건물 짓기 신호 보내기
 	}
 }
 
@@ -471,6 +488,45 @@ void GameRoom::CheckEndProcess(SOCKET clientSocket)
 	{
 		NextTurn();
 	}
+}
+
+int GameRoom::GetBuildPrice(int turn)
+{
+	int buildPrice = 0;
+
+	buildPrice += board.land[userPositionVector[takeControlPlayer]];
+	if (landBoardData.villa[userPositionVector[takeControlPlayer]] == turn)
+	{
+		buildPrice += board.villa[userPositionVector[takeControlPlayer]];
+	}
+	if (landBoardData.building[userPositionVector[takeControlPlayer]] == turn)
+	{
+		buildPrice += board.building[userPositionVector[takeControlPlayer]];
+	}
+	if (landBoardData.hotel[userPositionVector[takeControlPlayer]] == turn)
+	{
+		buildPrice += board.hotel[userPositionVector[takeControlPlayer]];
+	}
+
+	return buildPrice;
+}
+
+int GameRoom::TakeOverLand(int turn, int takeOverPrice)
+{
+	int owner = landBoardData.land[userPositionVector[takeControlPlayer]];
+
+	userMoneyVector[turn] -= takeOverPrice;
+	userMoneyVector[owner] += takeOverPrice;
+
+	landBoardData.land[userPositionVector[takeControlPlayer]] = turn;	// 땅 이전
+	if(landBoardData.villa[userPositionVector[takeControlPlayer]] == owner)	// 빌라 있다면
+		landBoardData.villa[userPositionVector[takeControlPlayer]] = turn;	// 빌라 명의 이전
+	if (landBoardData.building[userPositionVector[takeControlPlayer]] == owner)// 빌딩 있다면
+		landBoardData.building[userPositionVector[takeControlPlayer]] = turn;	// 빌딩 명의 이전
+	if (landBoardData.hotel[userPositionVector[takeControlPlayer]] == owner)// 호텔 있다면
+		landBoardData.hotel[userPositionVector[takeControlPlayer]] = turn;	// 호텔 명의 이전
+
+	return owner;
 }
 
 void GameRoom::EndTurn()

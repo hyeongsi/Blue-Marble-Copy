@@ -201,17 +201,17 @@ void RenderManager::DrawBoardMap()
     // 건물 출력
     for (int i = 0; i < (int)board.name.size(); i++)
     {
-        if (GameManager::GetInstance()->GetBoarBuilddData().villa[i])
+        if (GameManager::GetInstance()->GetBoarBuildData().villa[i])
         {
             Rectangle(memDC, rectVector[i].left, rectVector[i].top + (int)(tileHeight / 3),
                 rectVector[i].left + (int)(tileWidth/4), rectVector[i].top + ((int)(tileHeight / 3) * 2));
         }
-        if (GameManager::GetInstance()->GetBoarBuilddData().building[i])
+        if (GameManager::GetInstance()->GetBoarBuildData().building[i])
         {
             Ellipse(memDC, rectVector[i].left + (int)(tileWidth / 4) + (int)(tileWidth / 6), rectVector[i].top + (int)(tileHeight / 3),
                 rectVector[i].left + ((int)(tileWidth / 4) * 2) + (int)(tileWidth / 6), rectVector[i].top + ((int)(tileHeight / 3) * 2));
         }
-        if (GameManager::GetInstance()->GetBoarBuilddData().hotel[i])
+        if (GameManager::GetInstance()->GetBoarBuildData().hotel[i])
         {
             MoveToEx(memDC, (int)(rectVector[i].left + ((tileWidth / 4) * 2) + (tileWidth / 6)) + (int)(tileWidth / 8),
                 rectVector[i].top + (int)(tileHeight / 3), NULL);

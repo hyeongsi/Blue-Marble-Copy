@@ -120,7 +120,7 @@ buildData* GameManager::GetAddressBoardBuildData()
 	return &boardBuildData;
 }
 
-buildData GameManager::GetBoarBuilddData()
+buildData GameManager::GetBoarBuildData()
 {
 	return boardBuildData;
 }

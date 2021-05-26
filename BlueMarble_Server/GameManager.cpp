@@ -79,7 +79,7 @@ void GameManager::ArriveLandTileMethod(GameRoom* room)
 	{
 		if (room->GetLandBoardData().landMark[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer()) // 랜드마크 있으면
 		{
-			room->state = GameState::NEXT_TURN;	// 다음턴으로 넘기기
+			room->EndTurn();
 		}
 		else if (room->GetLandBoardData().villa[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer() &&
 			room->GetLandBoardData().building[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer() &&
@@ -165,8 +165,8 @@ void GameManager::RollTheDice(GameRoom* room)
 	mt19937 gen(rd());		// random_device 를 통해 난수 생성 엔진을 초기화 한다.
 	uniform_int_distribution<int> dis(1, 6);		// 1 부터 6 까지 균등하게 나타나는 난수열을 생성하기 위해 균등 분포 정의.
 	
-	int	diceValue1 = dis(gen);
-	int	diceValue2 = dis(gen);
+	int	diceValue1 = 1; //dis(gen);
+	int	diceValue2 = 5; //dis(gen);
 
 	if (room->IsDesertIsland() && diceValue1 == diceValue2)
 	{
@@ -369,4 +369,41 @@ void GameManager::PayToll(GameRoom* room, char* data)
 		room->SendPayTollSyncSign(payTollSignPkt.whosTurn, tollPrice, false, landOwner);
 	}
 		
+}
+
+void GameManager::TakeOverMethod(GameRoom* room, char* data)
+{
+	instance->TakeOver(room, data);
+}
+
+void GameManager::TakeOver(GameRoom* room, char* data)
+{
+	takeOverSignPacket takeOverSignPkt;
+	int accumDataSize = 1;
+	int takeOverPrice = 0;
+
+	memcpy(&takeOverSignPkt.whosTurn, &data[accumDataSize], sizeof(takeOverSignPkt.whosTurn));	// get turn
+	accumDataSize += sizeof(takeOverSignPkt.whosTurn);
+	memcpy(&takeOverSignPkt.isTakeOver, &data[accumDataSize], sizeof(takeOverSignPkt.isTakeOver));	// get isTakeOver
+
+	int owner = room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]];
+	takeOverPrice = room->GetBuildPrice(owner) * 2;
+
+	if (takeOverSignPkt.isTakeOver)
+	{
+		if ((*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] >= takeOverPrice) // 인수 비용 충분하면
+		{
+			owner = room->TakeOverLand(takeOverSignPkt.whosTurn, takeOverPrice);
+			room->SendTakeOverSyncSign(takeOverPrice, owner);
+		} 
+		else  // 인수 비용 없을 경우
+		{
+			// 땅 매각
+			room->EndTurn();
+		}
+	}
+	else
+	{
+		room->EndTurn();
+	}
 }

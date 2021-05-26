@@ -36,5 +36,8 @@ public:
 
 	static void PayTollMethod(GameRoom* room, char* data);
 	void PayToll(GameRoom* room, char* data);
+
+	static void TakeOverMethod(GameRoom* room, char* data);
+	void TakeOver(GameRoom* room, char* data);
 };
 

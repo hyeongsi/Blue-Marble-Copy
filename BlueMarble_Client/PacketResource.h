@@ -33,7 +33,8 @@ enum MessageCode
 	BUY_LAND_SYNC = 17,
 	BUY_BUILDING_SYNC = 18,
 	PAY_TOLL_SIGN_SYNC = 19,
-	FINISH_THIS_TURN_PROCESS = 20,
+	TAKE_OVER_SYNC = 20,
+	FINISH_THIS_TURN_PROCESS = 25,
 };
 
 typedef struct MapPacket1
@@ -137,3 +138,13 @@ typedef struct TakeOverPacket	// TAKE_OVER_SIGN
 	int whosTurn;	// 누구 턴인지
 	int takeOverPrice;	// 인수비용
 }takeOverPacket;
+
+typedef struct TakeOverSyncPacket	// TAKE_OVER_SYNC
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int takeOverPrice;	// 인수비용
+	int owner;	// 땅 주인
+	int userMoney; // 해당 유저 돈
+	int ownerMoney; // 원래 땅 주인 돈
+}takeOverSyncPacket;

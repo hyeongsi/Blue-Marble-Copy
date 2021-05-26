@@ -71,6 +71,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case PAY_TOLL_SIGN_SYNC:
 				GetPayTollSignSyncMethod(cBuffer);
 				break;
+			case TAKE_OVER_SYNC:
+				GetTakeOverSyncMethod(cBuffer);
+				break;
 			case FINISH_THIS_TURN_PROCESS:
 				SendNextTurnSignMethod();
 				break;
@@ -496,6 +499,42 @@ void SocketTransfer::GetPayTollSignSync(char* packet)
 	if (payTollSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
 	{
 		MakePacket(PAY_TOLL_SIGN_SYNC);
+		SendMessageToGameServer();
+	}
+}
+
+void SocketTransfer::GetTakeOverSyncMethod(char* packet)
+{
+	instance->GetTakeOverSync(packet);
+}
+
+void SocketTransfer::GetTakeOverSync(char* packet)
+{
+	takeOverSyncPacket takeOverSyncPkt;
+	int accumDataSize = 1;
+
+	memcpy(&takeOverSyncPkt.whosTurn, &packet[accumDataSize], sizeof(takeOverSyncPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(takeOverSyncPkt.whosTurn);
+	memcpy(&takeOverSyncPkt.takeOverPrice, &packet[accumDataSize], sizeof(takeOverSyncPkt.takeOverPrice));	// get price
+	accumDataSize += sizeof(takeOverSyncPkt.takeOverPrice);
+	memcpy(&takeOverSyncPkt.owner, &packet[accumDataSize], sizeof(takeOverSyncPkt.owner));	// get owner
+	accumDataSize += sizeof(takeOverSyncPkt.owner);
+	memcpy(&takeOverSyncPkt.userMoney, &packet[accumDataSize], sizeof(takeOverSyncPkt.userMoney));	// get usermoney
+	accumDataSize += sizeof(takeOverSyncPkt.userMoney);
+	memcpy(&takeOverSyncPkt.ownerMoney, &packet[accumDataSize], sizeof(takeOverSyncPkt.ownerMoney));	// get ownerMoney
+
+	GameManager::GetInstance()->SetGameMessage("인수 완료 - " + to_string(takeOverSyncPkt.takeOverPrice) + " 지불");	// 메시지 갱신
+
+	(*GameManager::GetInstance()->GetUserMoneyVector())[takeOverSyncPkt.whosTurn] = takeOverSyncPkt.userMoney;	// 돈 갱신
+	(*GameManager::GetInstance()->GetUserMoneyVector())[takeOverSyncPkt.owner] = takeOverSyncPkt.ownerMoney;	// 돈 갱신
+	
+	// 땅 인수 처리
+	GameManager::GetInstance()->GetAddressBoardData()->owner[
+		(*GameManager::GetInstance()->GetUserPositionVector())[takeOverSyncPkt.whosTurn]] = takeOverSyncPkt.whosTurn + 1;
+
+	if (takeOverSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
+	{
+		MakePacket(TAKE_OVER_SYNC);
 		SendMessageToGameServer();
 	}
 }

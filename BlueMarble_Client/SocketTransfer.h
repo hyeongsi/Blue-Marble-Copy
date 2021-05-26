@@ -62,6 +62,9 @@ private:
 	static void GetPayTollSignSyncMethod(char* packet);
 	void GetPayTollSignSync(char* packet);
 
+	static void GetTakeOverSyncMethod(char* packet);
+	void GetTakeOverSync(char* packet);
+
 	static void SendNextTurnSignMethod();
 	void SendNextTurnSign();
 

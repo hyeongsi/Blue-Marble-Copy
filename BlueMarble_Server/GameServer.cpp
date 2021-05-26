@@ -115,7 +115,7 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 				GameManager::GetInstance()->PayTollMethod(myRoom, cBuffer);
 				break;
 			case TAKE_OVER_SIGN:
-
+				GameManager::GetInstance()->TakeOverMethod(myRoom, cBuffer);
 				break;
 			case BUY_LAND_SYNC:
 				myRoom->CheckLandKindNSendMessage();
@@ -123,14 +123,14 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case BUY_BUILDING_SYNC:
 				if (myRoom != nullptr)
 				{
-					if (myRoom->isDouble)
-						myRoom->state = GameState::ROLL_DICE_SIGN;
-					else
-						myRoom->state = GameState::NEXT_TURN;
+					myRoom->EndTurn();
 				}
 				break;
 			case PAY_TOLL_SIGN_SYNC:
-				myRoom->CheckPassNCellMessage();
+				myRoom->CheckPassNSellMessage();
+				break;
+			case TAKE_OVER_SYNC:
+				myRoom->CheckCanBuild();
 				break;
 			case FINISH_THIS_TURN_PROCESS:
 				myRoom->CheckEndProcess(clientSocket);

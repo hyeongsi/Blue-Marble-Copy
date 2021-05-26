@@ -180,11 +180,11 @@ void MainWindow::MainMenuUpdate()
     instance->renderManager->RenderInitSetting();
     instance->renderManager->DrawWindow(State::MAIN_MENU);
 
-    for (int i = 0; i < (int)instance->hwndWindow.size(); i++)
+    for (int i = 0; i < (int)instance->hwndWindow.size()-1; i++)
     {
         instance->renderManager->DrawHwnd(instance->hwndWindow[i],
             (*instance->bitmapManager->GetHwnd(State::MAIN_MENU))[i].point, 
-            (*instance->bitmapManager->GetHwnd(State::MAIN_MENU))[i].size );
+            { 100,100 });
     }
 
     instance->renderManager->Render();
