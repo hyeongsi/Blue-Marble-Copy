@@ -362,11 +362,11 @@ void GameManager::PayToll(GameRoom* room, char* data)
 
 	if (tollPrice <= (*room->GetPUserMoneyVector())[payTollSignPkt.whosTurn])
 	{
-		room->SendPayTollSyncSign(payTollSignPkt.whosTurn, tollPrice, true, landOwner);
+		room->SendPayTollSignSync(payTollSignPkt.whosTurn, tollPrice, true, landOwner);
 	}
 	else
 	{
-		room->SendPayTollSyncSign(payTollSignPkt.whosTurn, tollPrice, false, landOwner);
+		room->SendPayTollSignSync(payTollSignPkt.whosTurn, tollPrice, false, landOwner);
 	}
 		
 }
@@ -394,9 +394,44 @@ void GameManager::TakeOver(GameRoom* room, char* data)
 		if ((*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] >= takeOverPrice) // 인수 비용 충분하면
 		{
 			owner = room->TakeOverLand(takeOverSignPkt.whosTurn, takeOverPrice);
-			room->SendTakeOverSyncSign(takeOverPrice, owner);
+			room->SendTakeOverSignSync(takeOverPrice, owner);
 		} 
 		else  // 인수 비용 없을 경우
+		{
+			// 땅 매각
+			room->EndTurn();
+		}
+	}
+	else
+	{
+		room->EndTurn();
+	}
+}
+
+void GameManager::BuyLandMarkMethod(GameRoom* room, char* data)
+{
+	instance->BuyLandMark(room, data);
+}
+
+void GameManager::BuyLandMark(GameRoom* room, char* data)
+{
+	buyLandMarkSignPacket buyLandMarkSignPkt;
+	int accumDataSize = 1;
+
+	memcpy(&buyLandMarkSignPkt.whosTurn, &data[accumDataSize], sizeof(buyLandMarkSignPkt.whosTurn));	// get turn
+	accumDataSize += sizeof(buyLandMarkSignPkt.whosTurn);
+	memcpy(&buyLandMarkSignPkt.isBuy, &data[accumDataSize], sizeof(buyLandMarkSignPkt.isBuy));	// get isBuy
+
+	int landMarkPrice = room->GetLandBoardData().landMark[room->GetUserPositionVector()[room->GetTakeControlPlayer()]];
+
+	if (buyLandMarkSignPkt.isBuy)  // 구입 의사 있다면
+	{
+		if ((*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] >= landMarkPrice) // 구입 비용 충분하면
+		{
+			room->BuyLandMark(landMarkPrice);	// 구입처리
+			room->SendBuyLandMarkSignSync(landMarkPrice);	// 싱크 메시지 전송
+		}
+		else  // 랜드마크 구입 비용 없을 경우
 		{
 			// 땅 매각
 			room->EndTurn();

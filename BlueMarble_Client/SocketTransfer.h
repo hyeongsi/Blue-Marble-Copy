@@ -53,6 +53,9 @@ private:
 	static void TakeOverSignMethod(char* packet);
 	void TakeOverSign(char* packet);
 
+	static void BuyLandMarkSignMethod(char* packet);
+	void BuyLandMarkSign(char* packet);
+
 	static void GetBuyLandSyncMethod(char* packet);
 	void GetBuyLandSync(char* packet);
 
@@ -64,6 +67,9 @@ private:
 
 	static void GetTakeOverSyncMethod(char* packet);
 	void GetTakeOverSync(char* packet);
+
+	static void GetBuyLandMarkSyncMethod(char* packet);
+	void GetBuyLandMarkSync(char* packet);
 
 	static void SendNextTurnSignMethod();
 	void SendNextTurnSign();

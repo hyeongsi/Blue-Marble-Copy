@@ -89,10 +89,13 @@ public:
 
 	void SendLandSyncSign(int turn, bool isBuy);
 	void SendBuildingSyncSign(int turn, bool isBuy, bool isBuyVilla, bool isBuyBuilding, bool isBuyHotel, int accumPrice);
-	void SendPayTollSyncSign(int turn, int tollPrice, bool isPass, int landOwner);
+	void SendPayTollSignSync(int turn, int tollPrice, bool isPass, int landOwner);
 
 	void SendTakeOverSign(int landOwner);
-	void SendTakeOverSyncSign(int takeOverPrice, int owner);
+	void SendTakeOverSignSync(int takeOverPrice, int owner);
+
+	void SendBuyLandMarkSign();
+	void SendBuyLandMarkSignSync(int landMarkPrice); // 랜드마크 구입 싱크 메시지 전송
 
 	void CheckLandKindNSendMessage();
 	void CheckPassNSellMessage();
@@ -104,6 +107,8 @@ public:
 
 	int GetBuildPrice(int turn);	// 유저 건축물 기준으로 건축 가격 리턴
 	int TakeOverLand(int turn, int takeOverPrice);	// 인수 처리
+
+	void BuyLandMark(int price);	// 인수 처리
 
 	void EndTurn();
 };

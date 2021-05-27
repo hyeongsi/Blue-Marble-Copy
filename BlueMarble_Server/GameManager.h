@@ -39,5 +39,8 @@ public:
 
 	static void TakeOverMethod(GameRoom* room, char* data);
 	void TakeOver(GameRoom* room, char* data);
+
+	static void BuyLandMarkMethod(GameRoom* room, char* data);
+	void BuyLandMark(GameRoom* room, char* data);
 };
 

@@ -201,28 +201,34 @@ void RenderManager::DrawBoardMap()
     // 건물 출력
     for (int i = 0; i < (int)board.name.size(); i++)
     {
-        if (GameManager::GetInstance()->GetBoarBuildData().villa[i])
+        if (GameManager::GetInstance()->GetBoarBuildData().landMark[i]) // 랜드마크 그리기
         {
-            Rectangle(memDC, rectVector[i].left, rectVector[i].top + (int)(tileHeight / 3),
-                rectVector[i].left + (int)(tileWidth/4), rectVector[i].top + ((int)(tileHeight / 3) * 2));
+            // 랜드마크 그리기용
         }
-        if (GameManager::GetInstance()->GetBoarBuildData().building[i])
+        else   // 랜드마크 아니면 건물 그리기
         {
-            Ellipse(memDC, rectVector[i].left + (int)(tileWidth / 4) + (int)(tileWidth / 6), rectVector[i].top + (int)(tileHeight / 3),
-                rectVector[i].left + ((int)(tileWidth / 4) * 2) + (int)(tileWidth / 6), rectVector[i].top + ((int)(tileHeight / 3) * 2));
-        }
-        if (GameManager::GetInstance()->GetBoarBuildData().hotel[i])
-        {
-            MoveToEx(memDC, (int)(rectVector[i].left + ((tileWidth / 4) * 2) + (tileWidth / 6)) + (int)(tileWidth / 8),
-                rectVector[i].top + (int)(tileHeight / 3), NULL);
-            LineTo(memDC, rectVector[i].left + ((int)(tileWidth / 4) * 2) + (int)(tileWidth / 6), rectVector[i].top + ((int)(tileHeight / 3) * 2));
-            LineTo(memDC, rectVector[i].left + ((int)(tileWidth / 4) * 3) + (int)(tileWidth / 6), rectVector[i].top + ((int)(tileHeight / 3) * 2));
-            LineTo(memDC, (int)(rectVector[i].left + ((tileWidth / 4) * 2) + (tileWidth / 6)) + (int)(tileWidth / 8), rectVector[i].top + (int)(tileHeight / 3));
+            if (GameManager::GetInstance()->GetBoarBuildData().villa[i])    // 빌라 그리기
+            {
+                Rectangle(memDC, rectVector[i].left, rectVector[i].top + (int)(tileHeight / 3),
+                    rectVector[i].left + (int)(tileWidth / 4), rectVector[i].top + ((int)(tileHeight / 3) * 2));
+            }
+            if (GameManager::GetInstance()->GetBoarBuildData().building[i]) // 빌딩 그리기
+            {
+                Ellipse(memDC, rectVector[i].left + (int)(tileWidth / 4) + (int)(tileWidth / 6), rectVector[i].top + (int)(tileHeight / 3),
+                    rectVector[i].left + ((int)(tileWidth / 4) * 2) + (int)(tileWidth / 6), rectVector[i].top + ((int)(tileHeight / 3) * 2));
+            }
+            if (GameManager::GetInstance()->GetBoarBuildData().hotel[i])    // 호텔 그리기
+            {
+                MoveToEx(memDC, (int)(rectVector[i].left + ((tileWidth / 4) * 2) + (tileWidth / 6)) + (int)(tileWidth / 8),
+                    rectVector[i].top + (int)(tileHeight / 3), NULL);
+                LineTo(memDC, rectVector[i].left + ((int)(tileWidth / 4) * 2) + (int)(tileWidth / 6), rectVector[i].top + ((int)(tileHeight / 3) * 2));
+                LineTo(memDC, rectVector[i].left + ((int)(tileWidth / 4) * 3) + (int)(tileWidth / 6), rectVector[i].top + ((int)(tileHeight / 3) * 2));
+                LineTo(memDC, (int)(rectVector[i].left + ((tileWidth / 4) * 2) + (tileWidth / 6)) + (int)(tileWidth / 8), rectVector[i].top + (int)(tileHeight / 3));
+            }
         }
     }
 
     // 맵 이름 출력
-    SetTextColor(hdc, RGB(255, 0, 0));
     for (int i = 0; i < (int)board.name.size(); i++)
     {
         switch ( GameManager::GetInstance()->GetBoardData().owner[i] )

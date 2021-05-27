@@ -117,6 +117,9 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case TAKE_OVER_SIGN:
 				GameManager::GetInstance()->TakeOverMethod(myRoom, cBuffer);
 				break;
+			case BUY_LANDMARK_SIGN:
+				GameManager::GetInstance()->BuyLandMarkMethod(myRoom, cBuffer);
+				break;
 			case BUY_LAND_SYNC:
 				myRoom->CheckLandKindNSendMessage();
 				break;
@@ -131,6 +134,9 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 				break;
 			case TAKE_OVER_SYNC:
 				myRoom->CheckCanBuild();
+				break;
+			case BUY_LANDMARK_SIGN_SYNC:
+				myRoom->NextTurn();
 				break;
 			case FINISH_THIS_TURN_PROCESS:
 				myRoom->CheckEndProcess(clientSocket);

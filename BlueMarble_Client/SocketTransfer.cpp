@@ -62,6 +62,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case TAKE_OVER_SIGN:
 				TakeOverSignMethod(cBuffer);
 				break;
+			case BUY_LANDMARK_SIGN:
+				BuyLandMarkSignMethod(cBuffer);
+				break;
 			case BUY_LAND_SYNC:
 				GetBuyLandSyncMethod(cBuffer);
 				break;
@@ -73,6 +76,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 				break;
 			case TAKE_OVER_SYNC:
 				GetTakeOverSyncMethod(cBuffer);
+				break;
+			case BUY_LANDMARK_SIGN_SYNC:
+				GetBuyLandMarkSyncMethod(cBuffer);
 				break;
 			case FINISH_THIS_TURN_PROCESS:
 				SendNextTurnSignMethod();
@@ -362,6 +368,34 @@ void SocketTransfer::TakeOverSign(char* packet)
 	SendMessageToGameServer();
 }
 
+void SocketTransfer::BuyLandMarkSignMethod(char* packet)
+{
+	instance->BuyLandMarkSign(packet);
+}
+
+void SocketTransfer::BuyLandMarkSign(char* packet)
+{
+	buyLandMarkSignPacket buyLandMarkSignPkt;
+
+	int accumDataSize = 1;
+	memcpy(&buyLandMarkSignPkt.whosTurn, &packet[accumDataSize], sizeof(buyLandMarkSignPkt.whosTurn));		// get turn
+	accumDataSize += sizeof(buyLandMarkSignPkt.whosTurn);
+	memcpy(&buyLandMarkSignPkt.landMarkPrice, &packet[accumDataSize], sizeof(buyLandMarkSignPkt.landMarkPrice));// get landmarkPrice
+
+	UiDialog::GetInstance()->SetLandMarkPriceText(buyLandMarkSignPkt.landMarkPrice);
+
+	DialogBox(MainSystem::GetInstance()->GetHinstance(), MAKEINTRESOURCE(IDD_BUY_LANDMARK),
+		GameWindow::GetInstance()->g_hWnd, UiDialog::GetInstance()->TakeOverDlgProc);
+
+	MakePacket(BUY_LANDMARK_SIGN);
+	AppendPacketData(buyLandMarkSignPkt.whosTurn, sizeof(int));	// 누가 지불하는지,
+	if (UiDialog::GetInstance()->GetBuyLandDlgState() == IDOK)
+		AppendPacketData(true, sizeof(bool));	// 인수 유무
+	else
+		AppendPacketData(false, sizeof(bool));	// 인수 유무
+	SendMessageToGameServer();
+}
+
 void SocketTransfer::GetBuyLandSyncMethod(char* packet)
 {
 	instance->GetBuyLandSync(packet);
@@ -535,6 +569,35 @@ void SocketTransfer::GetTakeOverSync(char* packet)
 	if (takeOverSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
 	{
 		MakePacket(TAKE_OVER_SYNC);
+		SendMessageToGameServer();
+	}
+}
+
+void SocketTransfer::GetBuyLandMarkSyncMethod(char* packet)
+{
+	instance->GetBuyLandMarkSync(packet);
+}
+
+void SocketTransfer::GetBuyLandMarkSync(char* packet)
+{
+	buyLandMarkSyncPacket buyLandMarkSyncPkt;
+	int accumDataSize = 1;
+
+	memcpy(&buyLandMarkSyncPkt.whosTurn, &packet[accumDataSize], sizeof(buyLandMarkSyncPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(buyLandMarkSyncPkt.whosTurn);
+	memcpy(&buyLandMarkSyncPkt.landMarkPrice, &packet[accumDataSize], sizeof(buyLandMarkSyncPkt.landMarkPrice));	// get price
+	accumDataSize += sizeof(buyLandMarkSyncPkt.landMarkPrice);
+	memcpy(&buyLandMarkSyncPkt.userMoney, &packet[accumDataSize], sizeof(buyLandMarkSyncPkt.userMoney));	// get userMoney
+
+	GameManager::GetInstance()->SetGameMessage("랜드마크 구매 - " + to_string(buyLandMarkSyncPkt.landMarkPrice) + " 지불");	// 메시지 갱신
+
+	(*GameManager::GetInstance()->GetUserMoneyVector())[buyLandMarkSyncPkt.whosTurn] = buyLandMarkSyncPkt.userMoney;	// 돈 갱신
+	GameManager::GetInstance()->GetAddressBoardBuildData()->landMark
+		[(*GameManager::GetInstance()->GetUserPositionVector())[buyLandMarkSyncPkt.whosTurn]] = true;	// 랜드마크 구매 처리
+
+	if (buyLandMarkSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
+	{
+		MakePacket(BUY_LANDMARK_SIGN_SYNC);
 		SendMessageToGameServer();
 	}
 }

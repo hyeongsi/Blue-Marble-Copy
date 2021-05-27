@@ -23,17 +23,19 @@ enum MessageCode
 	BUY_BUILDING_SIGN = 6,
 	PAY_TOLL_SIGN = 7,
 	TAKE_OVER_SIGN = 8,
-	CARD_SIGN = 9,
-	DESERT_ISLAND_SIGN = 10,
-	OLYMPIC_SIGN = 11,
-	OLYMPIC = 12,
-	WORLD_TRABLE_SIGN = 13,
-	WORLD_TRABLE = 14,
-	REVENUE_SIGN = 15,
+	BUY_LANDMARK_SIGN = 9,
+	CARD_SIGN = 10,
+	DESERT_ISLAND_SIGN = 11,
+	OLYMPIC_SIGN = 12,
+	OLYMPIC = 13,
+	WORLD_TRABLE_SIGN = 14,
+	WORLD_TRABLE = 15,
+	REVENUE_SIGN = 16,
 	BUY_LAND_SYNC = 17,
 	BUY_BUILDING_SYNC = 18,
 	PAY_TOLL_SIGN_SYNC = 19,
 	TAKE_OVER_SYNC = 20,
+	BUY_LANDMARK_SIGN_SYNC = 21,
 	FINISH_THIS_TURN_PROCESS = 25,
 };
 
@@ -132,6 +134,13 @@ typedef struct PayTollSyncPacket	//PAY_TOLL_SIGN_SYNC
 	int landOwnerMoney; // 땅 주인 돈
 }payTollSyncPacket;
 
+typedef struct BuyLandMarkSignPacket	// BUY_LANDMARK_SIGN
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int landMarkPrice;	// 랜드마크 가격
+}buyLandMarkSignPacket;
+
 typedef struct TakeOverPacket	// TAKE_OVER_SIGN
 {
 	char header;
@@ -148,3 +157,11 @@ typedef struct TakeOverSyncPacket	// TAKE_OVER_SYNC
 	int userMoney; // 해당 유저 돈
 	int ownerMoney; // 원래 땅 주인 돈
 }takeOverSyncPacket;
+
+typedef struct BuyLandMarkSyncPacket	// BUY_LANDMARK_SIGN_SYNC
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int landMarkPrice;	// 랜드마크 가격
+	int userMoney; // 해당 유저 돈
+}buyLandMarkSyncPacket;

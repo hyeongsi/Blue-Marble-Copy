@@ -29,6 +29,7 @@ private:
 	int accumBuildPrice = 0;
 	int payToll = 0;
 	int takeOverPrice = 0;
+	int landMarkPrice = 0;
 
 	UiDialog();
 	~UiDialog();
@@ -52,5 +53,8 @@ public:
 
 	static BOOL CALLBACK TakeOverDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 	void SetTakeOverPriceText(int price);
+
+	static BOOL CALLBACK BuyLandMarkDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
+	void SetLandMarkPriceText(int price);
 };
 
