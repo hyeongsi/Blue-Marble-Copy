@@ -400,7 +400,7 @@ void GameRoom::SendBuyLandMarkSign()
 	
 	gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_LANDMARK_SIGN);	// 인수 메시지
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
-	gameServer->AppendPacketData(sendPacket, &packetLastIndex, landMarkPrice, sizeof(landMarkPrice));	// 인수비용
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, landMarkPrice, sizeof(landMarkPrice));	// 랜드마크 건설비용
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
 }
 
@@ -411,7 +411,12 @@ void GameRoom::SendBuyLandMarkSignSync(int landMarkPrice)
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, landMarkPrice, sizeof(landMarkPrice));	// 구입가격
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, 
 		userMoneyVector[takeControlPlayer], sizeof(userMoneyVector[takeControlPlayer]));	// 유저 돈
-	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+
+	for (auto& socketIterator : userVector)
+	{
+		gameServer->PacektSendMethod(sendPacket, socketIterator);
+		printf("%s %d\n", "send BuyLandMarkSync - ", socketIterator);
+	}
 }
 
 void GameRoom::CheckPassNSellMessage()
@@ -470,8 +475,7 @@ void GameRoom::CheckCanBuild()
 		landBoardData.building[userPositionVector[takeControlPlayer]] == takeControlPlayer &&
 		landBoardData.hotel[userPositionVector[takeControlPlayer]] == takeControlPlayer)
 	{
-		// 랜드마크 건설 신호 보내기
-		EndTurn();
+		SendBuyLandMarkSign();
 	}
 	else // 건물 3개가 지어있지 않을 경우
 	{

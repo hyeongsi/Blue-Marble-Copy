@@ -203,7 +203,8 @@ void RenderManager::DrawBoardMap()
     {
         if (GameManager::GetInstance()->GetBoarBuildData().landMark[i]) // 랜드마크 그리기
         {
-            // 랜드마크 그리기용
+            Rectangle(memDC, rectVector[i].left, rectVector[i].top + (int)(tileHeight / 3),
+                rectVector[i].left + tileWidth, rectVector[i].top + ((int)(tileHeight / 3) * 2));
         }
         else   // 랜드마크 아니면 건물 그리기
         {

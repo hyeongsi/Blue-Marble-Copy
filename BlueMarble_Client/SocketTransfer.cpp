@@ -385,7 +385,7 @@ void SocketTransfer::BuyLandMarkSign(char* packet)
 	UiDialog::GetInstance()->SetLandMarkPriceText(buyLandMarkSignPkt.landMarkPrice);
 
 	DialogBox(MainSystem::GetInstance()->GetHinstance(), MAKEINTRESOURCE(IDD_BUY_LANDMARK),
-		GameWindow::GetInstance()->g_hWnd, UiDialog::GetInstance()->TakeOverDlgProc);
+		GameWindow::GetInstance()->g_hWnd, UiDialog::GetInstance()->BuyLandMarkDlgProc);
 
 	MakePacket(BUY_LANDMARK_SIGN);
 	AppendPacketData(buyLandMarkSignPkt.whosTurn, sizeof(int));	// 누가 지불하는지,

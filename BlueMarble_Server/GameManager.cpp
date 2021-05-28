@@ -85,7 +85,7 @@ void GameManager::ArriveLandTileMethod(GameRoom* room)
 			room->GetLandBoardData().building[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer() &&
 			room->GetLandBoardData().hotel[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == room->GetTakeControlPlayer() )
 		{
-			// 랜드마크 구매 메시지
+			room->SendBuyLandMarkSign();
 		}
 		else // 건물이 모두 건설되어 있지 않다면,
 		{
@@ -422,7 +422,7 @@ void GameManager::BuyLandMark(GameRoom* room, char* data)
 	accumDataSize += sizeof(buyLandMarkSignPkt.whosTurn);
 	memcpy(&buyLandMarkSignPkt.isBuy, &data[accumDataSize], sizeof(buyLandMarkSignPkt.isBuy));	// get isBuy
 
-	int landMarkPrice = room->GetLandBoardData().landMark[room->GetUserPositionVector()[room->GetTakeControlPlayer()]];
+	int landMarkPrice = room->GetMapData().landMark[room->GetUserPositionVector()[room->GetTakeControlPlayer()]];
 
 	if (buyLandMarkSignPkt.isBuy)  // 구입 의사 있다면
 	{
