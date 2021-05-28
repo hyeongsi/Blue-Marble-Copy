@@ -20,6 +20,13 @@ enum class GameState
 	NEXT_TURN = 9,
 };
 
+enum SellState
+{
+	BUILD_LANDMARK = 0,
+	PAY_TOLL = 1,
+	TAKE_OVER_LAND = 2,
+};
+
 class GameServer;
 class GameRoom
 {
@@ -48,6 +55,7 @@ public:
 	int connectPlayer = 0;
 	clock_t startTime = 0;
 	clock_t finishTime = 0;
+	int beforeSellSign = -1;
 
 	bool isDouble = false;	// 더블 유무
 
@@ -97,6 +105,8 @@ public:
 	void SendBuyLandMarkSign();
 	void SendBuyLandMarkSignSync(int landMarkPrice); // 랜드마크 구입 싱크 메시지 전송
 
+	void SendSellLandSign(int goalPrice, int state); // 매각 메시지 보내기
+
 	void CheckLandKindNSendMessage();
 	void CheckPassNSellMessage();
 		
@@ -109,6 +119,7 @@ public:
 	int TakeOverLand(int turn, int takeOverPrice);	// 인수 처리
 
 	void BuyLandMark(int price);	// 인수 처리
+	int DisposalPrice();	// 땅 처분 가격
 
 	void EndTurn();
 };

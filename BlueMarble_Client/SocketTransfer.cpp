@@ -71,6 +71,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case BUY_BUILDING_SYNC:
 				GetBuyBuildSyncMethod(cBuffer);
 				break;
+			case SELL_LAND_SIGN:
+				SellLandSignMethod(cBuffer);
+				break;
 			case PAY_TOLL_SIGN_SYNC:
 				GetPayTollSignSyncMethod(cBuffer);
 				break;
@@ -498,6 +501,28 @@ void SocketTransfer::GetBuyBuildSync(char* packet)
 		MakePacket(BUY_BUILDING_SYNC);
 		SendMessageToGameServer();
 	}
+}
+
+void SocketTransfer::SellLandSignMethod(char* packet)
+{
+	instance->SellLandSign(packet);
+}
+
+void SocketTransfer::SellLandSign(char* packet)
+{
+	sellLandSignPacket sellLandSignPkt;
+	int accumDataSize = 1;
+	int landPosition = -1;
+
+	memcpy(&sellLandSignPkt.whosTurn, &packet[accumDataSize], sizeof(sellLandSignPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(sellLandSignPkt.whosTurn);
+	memcpy(&sellLandSignPkt.goalPrice, &packet[accumDataSize], sizeof(sellLandSignPkt.goalPrice));  // get goalPrice
+	accumDataSize += sizeof(sellLandSignPkt.goalPrice);
+	memcpy(&sellLandSignPkt.userMoney, &packet[accumDataSize], sizeof(sellLandSignPkt.userMoney));  // get userMoney
+
+	(*GameManager::GetInstance()->GetUserMoneyVector())[sellLandSignPkt.whosTurn] = sellLandSignPkt.userMoney;	// 돈 갱신
+
+	GameManager::GetInstance()->SetSelectMapMode(true, sellLandSignPkt.goalPrice);
 }
 
 void SocketTransfer::GetPayTollSignSyncMethod(char* packet)

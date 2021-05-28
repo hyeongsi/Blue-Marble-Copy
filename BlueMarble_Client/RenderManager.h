@@ -5,6 +5,14 @@
 
 #pragma comment(lib, "msimg32.lib")
 
+enum DrawDir
+{
+	SOUTH = 0,
+	WEST = 1,
+	NORTH = 2,
+	EAST = 3,
+};
+
 class RenderManager
 {
 private:
@@ -31,6 +39,9 @@ private:
 	RenderManager();
 	~RenderManager();
 public:
+	bool isSelectMapMode = false;
+	int selectPosition = -1;
+
 	static RenderManager* GetInstance();
 	static void ReleaseInstance();
 
@@ -46,6 +57,7 @@ public:
 	void DrawHwnd(const HWND dHwnd, const POINT printPoint, const SIZE hwndSize);
 	void DrawBitmap(const HBITMAP bitmap, const POINT printPoint, bool isTransparentBlt = false);
 	void DrawGameMessage(string message);
+	void DrawSelectMode(); // selectMode라면 맵 선택 테두리 그리기
 	void Render();
 };
 

@@ -58,18 +58,6 @@ void GameManager::SetGameMessage(string msg)
 	gameMessage = msg;
 }
 
-void GameManager::MoveUserPosition(int userIndex, int diceValue)
-{
-	userPositionVector[userIndex] += diceValue;
-
-	if (userPositionVector[userIndex] >= (int)board.mapSize * DIRECTION)
-	{
-		userPositionVector[userIndex] -= ((int)board.mapSize * DIRECTION);
-	}
-
-	RenderManager::GetInstance()->SetPlayerBitmapLocation(userIndex, userPositionVector[userIndex]);
-}
-
 string GameManager::GetGameMessage()
 {
 	return gameMessage;
@@ -123,4 +111,39 @@ buildData* GameManager::GetAddressBoardBuildData()
 buildData GameManager::GetBoarBuildData()
 {
 	return boardBuildData;
+}
+
+void GameManager::SetSelectMapMode(bool isMyTurn, int goalPrice)
+{
+	bool isHaveLand = false;
+
+	this->goalPrice = goalPrice;
+	isSellTurn = isMyTurn;
+
+	RenderManager::GetInstance()->isSelectMapMode = true;	// 선택모드 활성화
+
+	for (int i = 0; i < (int)board.code.size(); i++)
+	{
+		if (board.owner[i] == myCharacterIndex)
+		{
+			isHaveLand = true;
+			RenderManager::GetInstance()->selectPosition = i;	// 초기 선택 땅 초기화
+			break;
+		}
+	}
+
+	if(!isHaveLand)
+		RenderManager::GetInstance()->selectPosition = -1; // 초기 선택 땅 초기화
+}
+
+void GameManager::MoveUserPosition(int userIndex, int diceValue)
+{
+	userPositionVector[userIndex] += diceValue;
+
+	if (userPositionVector[userIndex] >= (int)board.mapSize * DIRECTION)
+	{
+		userPositionVector[userIndex] -= ((int)board.mapSize * DIRECTION);
+	}
+
+	RenderManager::GetInstance()->SetPlayerBitmapLocation(userIndex, userPositionVector[userIndex]);
 }

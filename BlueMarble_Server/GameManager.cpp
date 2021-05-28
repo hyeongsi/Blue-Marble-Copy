@@ -398,8 +398,24 @@ void GameManager::TakeOver(GameRoom* room, char* data)
 		} 
 		else  // 인수 비용 없을 경우
 		{
-			// 땅 매각
-			room->EndTurn();
+			bool isHaveLand = false;
+			for (int i = 0; i < (int)room->GetMapData().land.size(); i++)
+			{
+				if (room->GetTakeControlPlayer() == room->GetLandBoardData().land[i])
+				{
+					isHaveLand = true;
+					break;
+				}
+			}
+
+			if (isHaveLand)   // 땅을 하나라도 가지고 있다면
+			{
+				room->SendSellLandSign(takeOverPrice, TAKE_OVER_LAND);	// 땅 팔기
+			}
+			else    // 땅을 하나라도 가지고 있지 않으면
+			{
+				room->EndTurn();   // 인수 취소
+			}
 		}
 	}
 	else
@@ -433,8 +449,24 @@ void GameManager::BuyLandMark(GameRoom* room, char* data)
 		}
 		else  // 랜드마크 구입 비용 없을 경우
 		{
-			// 땅 매각
-			room->EndTurn();
+			bool isHaveLand = false;
+			for (int i = 0; i < (int)room->GetMapData().land.size(); i++)
+			{
+				if (room->GetTakeControlPlayer() == room->GetLandBoardData().land[i])
+				{
+					isHaveLand = true;
+					break;
+				}
+			}
+
+			if (isHaveLand)   // 땅을 하나라도 가지고 있다면
+			{
+				room->SendSellLandSign(landMarkPrice, BUILD_LANDMARK);	// 땅 팔기
+			}
+			else    // 땅을 하나라도 가지고 있지 않으면
+			{
+				room->EndTurn();   // 인수 취소
+			}	
 		}
 	}
 	else

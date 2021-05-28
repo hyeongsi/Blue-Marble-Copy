@@ -62,6 +62,9 @@ private:
 	static void GetBuyBuildSyncMethod(char* packet);
 	void GetBuyBuildSync(char* packet);
 
+	static void SellLandSignMethod(char* packet);
+	void SellLandSign(char* packet);
+
 	static void GetPayTollSignSyncMethod(char* packet);
 	void GetPayTollSignSync(char* packet);
 

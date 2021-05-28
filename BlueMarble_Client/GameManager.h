@@ -54,6 +54,9 @@ private:
 	GameManager();
 	~GameManager();
 public:
+	int goalPrice = 0;
+	bool isSellTurn = false;
+
 	static GameManager* GetInstance();
 	static void ReleaseInstance();
 
@@ -82,6 +85,8 @@ public:
 
 	buildData* GetAddressBoardBuildData();
 	buildData GetBoarBuildData();
+
+	void SetSelectMapMode(bool isMyTurn, int goalPrice);
 
 	void MoveUserPosition(int userIndex, int diceValue);
 };

@@ -419,6 +419,29 @@ void GameRoom::SendBuyLandMarkSignSync(int landMarkPrice)
 	}
 }
 
+void GameRoom::SendSellLandSign(int goalPrice, int state)
+{
+	beforeSellSign = state;
+
+	gameServer->MakePacket(sendPacket, &packetLastIndex, SELL_LAND_SIGN);	// 매각 메시지
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, goalPrice, sizeof(goalPrice));	// 필요 금액
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex,
+		userMoneyVector[takeControlPlayer], sizeof(userMoneyVector[takeControlPlayer]));	// 유저 돈
+
+	vector<int> landPosition;
+
+	for (int i = 0; i < (int)board.land.size(); i++)
+	{
+		if (landBoardData.land[i] == takeControlPlayer)  // 땅이 지어져 있는 곳이면
+		{
+			landPosition.emplace_back(i);
+		}
+	}
+
+	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+}
+
 void GameRoom::CheckPassNSellMessage()
 {
 	int tollPrice = 0;
@@ -464,8 +487,14 @@ void GameRoom::CheckPassNSellMessage()
 	}
 	else
 	{
-		EndTurn();
-		// 땅팔기, 땅 팔아도 돈 부족하면 패배 처리 및 동기화 처리
+		if (DisposalPrice() + userMoneyVector[takeControlPlayer] >= tollPrice)  // 판매 시 통행료를 낼 수 있을 때
+		{
+			SendSellLandSign(tollPrice, TAKE_OVER_LAND); // 판매 메시지 보내기
+		}
+		else    // 판매금 + 소지금이 통행료보다 적을 경우
+		{
+			// 게임 오버 처리
+		}
 	}
 }
 
@@ -557,6 +586,37 @@ void GameRoom::BuyLandMark(int price)
 {
 	userMoneyVector[takeControlPlayer] -= price;		// 돈 제거
 	landBoardData.landMark[userPositionVector[takeControlPlayer]] = takeControlPlayer;	// 랜드마크 건설 처리
+}
+
+int GameRoom::DisposalPrice()
+{
+	int disposalPrice = 0;
+
+	for (int i = 0; i < (int)board.land.size(); i++)
+	{
+		if (landBoardData.land[i] == takeControlPlayer)  // 땅이 지어져 있는 곳이면
+		{
+			disposalPrice += board.land[i];
+		}
+		if (landBoardData.villa[i] == takeControlPlayer)  // 빌라 있으면
+		{
+			disposalPrice += board.villa[i];
+		}
+		if (landBoardData.building[i] == takeControlPlayer)  // 빌딩 있으면
+		{
+			disposalPrice += board.building[i];
+		}
+		if (landBoardData.hotel[i] == takeControlPlayer)  // 호텔 있으면
+		{
+			disposalPrice += board.hotel[i];
+		}
+		if (landBoardData.landMark[i] == takeControlPlayer)  // 랜드마크 있으면
+		{
+			disposalPrice += board.landMark[i];
+		}
+	}
+
+	return disposalPrice / 2;	// 매각 비용은 건설비용의 반토막 ( x / 2 ) 값
 }
 
 void GameRoom::EndTurn()

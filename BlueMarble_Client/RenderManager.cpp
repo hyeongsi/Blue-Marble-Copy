@@ -321,6 +321,40 @@ void RenderManager::DrawGameMessage(string message)
     }
 }
 
+void RenderManager::DrawSelectMode()
+{
+    // 빨간색 펜으로 그리기
+    
+    int remainder = selectPosition % (int)GameManager::GetInstance()->GetBoardData().mapSize;   // 나눈 나머지
+
+    switch (selectPosition/ (int)GameManager::GetInstance()->GetBoardData().mapSize)
+    {
+    case SOUTH:
+        Rectangle(memDC, RIGHT_BOTTOM_PRINT_POINT.x - ((remainder + 1) * tileWidth), RIGHT_BOTTOM_PRINT_POINT.y - tileHeight,
+            RIGHT_BOTTOM_PRINT_POINT.x - (remainder * tileWidth), RIGHT_BOTTOM_PRINT_POINT.y);
+        break;
+    case WEST:
+        Rectangle(memDC, LEFT_TOP_PRINT_POINT.x, RIGHT_BOTTOM_PRINT_POINT.y - ((remainder + 1) * tileHeight),
+            LEFT_TOP_PRINT_POINT.x + tileWidth, RIGHT_BOTTOM_PRINT_POINT.y - (remainder * tileHeight));
+        break;
+    case NORTH:
+        Rectangle(memDC, LEFT_TOP_PRINT_POINT.x + (remainder * tileWidth), LEFT_TOP_PRINT_POINT.y,
+            LEFT_TOP_PRINT_POINT.x + ((remainder + 1) * tileWidth), LEFT_TOP_PRINT_POINT.y + tileHeight);
+        break;
+    case EAST:
+        Rectangle(memDC, RIGHT_BOTTOM_PRINT_POINT.x - tileWidth, LEFT_TOP_PRINT_POINT.y + ((remainder + 1) * tileHeight),
+            RIGHT_BOTTOM_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y + (remainder * tileHeight));
+        break;
+    default:
+        break;
+    }
+
+    if (GameManager::GetInstance()->isSellTurn) // 내차례니까 판매 확인, 취소 버튼이 출력되도록 추가하기
+    {
+
+    }
+}
+
 void RenderManager::Render()
 {
     BitBlt(hdc, 0, 0, ClientSize.cx, ClientSize.cy, memDC, 0, 0, SRCCOPY);

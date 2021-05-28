@@ -145,6 +145,7 @@ void GameWindow::GameUpdate()
         }
     }
 
+    instance->renderManager->DrawSelectMode();
     instance->renderManager->DrawGameMessage(GameManager::GetInstance()->GetGameMessage());
 
     instance->renderManager->Render();

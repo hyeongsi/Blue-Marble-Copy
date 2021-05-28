@@ -24,19 +24,27 @@ enum MessageCode
 	PAY_TOLL_SIGN = 7,
 	TAKE_OVER_SIGN = 8,
 	BUY_LANDMARK_SIGN = 9,
-	CARD_SIGN = 10,
-	DESERT_ISLAND_SIGN = 11,
-	OLYMPIC_SIGN = 12,
-	OLYMPIC = 13,
-	WORLD_TRABLE_SIGN = 14,
-	WORLD_TRABLE = 15,
-	REVENUE_SIGN = 16,
-	BUY_LAND_SYNC = 17,
-	BUY_BUILDING_SYNC = 18,
-	PAY_TOLL_SIGN_SYNC = 19,
-	TAKE_OVER_SYNC = 20,
-	BUY_LANDMARK_SIGN_SYNC = 21,
+	SELL_LAND_SIGN = 10,
+	CARD_SIGN = 11,
+	DESERT_ISLAND_SIGN = 12,
+	OLYMPIC_SIGN = 13,
+	OLYMPIC = 14,
+	WORLD_TRABLE_SIGN = 15,
+	WORLD_TRABLE = 16,
+	REVENUE_SIGN = 17,
+	BUY_LAND_SYNC = 18,
+	BUY_BUILDING_SYNC = 19,
+	PAY_TOLL_SIGN_SYNC = 20,
+	TAKE_OVER_SYNC = 21,
+	BUY_LANDMARK_SIGN_SYNC = 22,
 	FINISH_THIS_TURN_PROCESS = 25,
+};
+
+enum SellState
+{
+	BUILD_LANDMARK = 0,
+	PAY_TOLL = 1,
+	TAKE_OVER_LAND = 2,
 };
 
 typedef struct MapPacket1
@@ -102,7 +110,7 @@ typedef struct BuyBuildingPacket	//BUY_BUILDING_SIGN
 	int userMoney;	// 해당 유저 돈
 }buyBuildingPacket;
 
-typedef struct BuyBuildSyncPacket	//BUY_BUILDING_SYNC
+typedef struct BuyBuildSyncPacket	//SELL_LAND_SIGN
 {
 	char header;
 	bool isBuy;		// 구입 여부
@@ -115,6 +123,16 @@ typedef struct BuyBuildSyncPacket	//BUY_BUILDING_SYNC
 	int accumPrice;	// 총 가격
 	int userMoney;	// 해당 유저 돈
 }buyBuildingSyncPacket;
+
+typedef struct SellLandSignPacket	//SELL_LAND_SIGN
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int goalPrice;	// 요구 금액
+	int userMoney;	// 해당 유저 돈
+	int landSize; // 땅 개수
+	vector<int> landPosition;	// 땅 위치
+}sellLandSignPacket;
 
 typedef struct PayTollPacket	// PAY_TOLL_SIGN
 {
