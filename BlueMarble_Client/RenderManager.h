@@ -22,6 +22,10 @@ private:
 	HDC memDC{ nullptr };
 	HDC backMemDC{ nullptr };
 	HBITMAP oldCreateBitmap = nullptr;
+
+	HPEN redHpen = nullptr;
+	HPEN oldHpen = nullptr;
+
 	SIZE ClientSize = { 1280,720 };
 	const POINT LEFT_TOP_PRINT_POINT = { 240,60 };
 	const POINT RIGHT_BOTTOM_PRINT_POINT = { 1040,640 };

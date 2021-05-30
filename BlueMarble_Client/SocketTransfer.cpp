@@ -86,6 +86,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case FINISH_THIS_TURN_PROCESS:
 				SendNextTurnSignMethod();
 				break;
+			case SEND_SELECT_MODE_INPUT_KEY:
+				GetSelectValue(cBuffer);
+				break;
 			default:
 				break;
 			}
@@ -513,6 +516,7 @@ void SocketTransfer::SellLandSign(char* packet)
 	sellLandSignPacket sellLandSignPkt;
 	int accumDataSize = 1;
 	int landPosition = -1;
+	int needMoney = 0;
 
 	memcpy(&sellLandSignPkt.whosTurn, &packet[accumDataSize], sizeof(sellLandSignPkt.whosTurn));  // get turn
 	accumDataSize += sizeof(sellLandSignPkt.whosTurn);
@@ -520,7 +524,10 @@ void SocketTransfer::SellLandSign(char* packet)
 	accumDataSize += sizeof(sellLandSignPkt.goalPrice);
 	memcpy(&sellLandSignPkt.userMoney, &packet[accumDataSize], sizeof(sellLandSignPkt.userMoney));  // get userMoney
 
+	needMoney = sellLandSignPkt.goalPrice - sellLandSignPkt.userMoney;
+
 	(*GameManager::GetInstance()->GetUserMoneyVector())[sellLandSignPkt.whosTurn] = sellLandSignPkt.userMoney;	// 돈 갱신
+	GameManager::GetInstance()->SetGameMessage(to_string(needMoney) + " 만큼 돈이 부족합니다.\n토지를 팔아주세요.");	// 메시지 갱신
 
 	GameManager::GetInstance()->SetSelectMapMode(true, sellLandSignPkt.goalPrice);
 }
@@ -637,6 +644,21 @@ void SocketTransfer::SendNextTurnSign()
 	GameManager::GetInstance()->SetIsMyDiceTurn(false);
 	MakePacket(FINISH_THIS_TURN_PROCESS);
 	SendMessageToGameServer();
+}
+
+void SocketTransfer::GetSelectValueMethod(char* packet)
+{
+	instance->GetSelectValue(packet);
+}
+
+void SocketTransfer::GetSelectValue(char* packet)
+{
+	selectInputKeyPacket selectInputKeyPkt;
+	int accumDataSize = 1;
+
+	memcpy(&selectInputKeyPkt.selectLandIndex, &packet[accumDataSize], sizeof(selectInputKeyPkt.selectLandIndex));  // get landIndex
+
+	RenderManager::GetInstance()->selectPosition = selectInputKeyPkt.selectLandIndex;
 }
 
 void SocketTransfer::PrintErrorCode(State state, const int errorCode)
@@ -761,5 +783,16 @@ void SocketTransfer::SendRollDiceSign()
 	recvCBF = GetRollDiceMethod;
 
 	MakePacket(ROLL_DICE_SIGN);
+	SendMessageToGameServer();
+}
+
+void SocketTransfer::SendSelectModeInput(int inputKey)
+{
+	if (inputKey == NONE)
+		return;
+
+	MakePacket(SEND_SELECT_MODE_INPUT_KEY);
+	AppendPacketData(inputKey, sizeof(inputKey));	// 무슨 키 입력했는지 전달
+	AppendPacketData(RenderManager::GetInstance()->selectPosition, sizeof(RenderManager::GetInstance()->selectPosition));	// 현재 선택 값 전달
 	SendMessageToGameServer();
 }

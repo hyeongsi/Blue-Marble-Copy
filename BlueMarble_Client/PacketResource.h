@@ -38,6 +38,7 @@ enum MessageCode
 	TAKE_OVER_SYNC = 21,
 	BUY_LANDMARK_SIGN_SYNC = 22,
 	FINISH_THIS_TURN_PROCESS = 25,
+	SEND_SELECT_MODE_INPUT_KEY = 30,
 };
 
 enum SellState
@@ -183,3 +184,9 @@ typedef struct BuyLandMarkSyncPacket	// BUY_LANDMARK_SIGN_SYNC
 	int landMarkPrice;	// 랜드마크 가격
 	int userMoney; // 해당 유저 돈
 }buyLandMarkSyncPacket;
+
+typedef struct SelectInputKeyPacket	// SEND_SELECT_MODE_INPUT_KEY
+{
+	char header;
+	int selectLandIndex;	// 선택 지역 번호
+}selectInputKeyPacket;

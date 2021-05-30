@@ -11,6 +11,7 @@ GameManager* GameManager::GetInstance()
 	if (nullptr == instance)
 	{
 		instance = new GameManager();
+		instance->keyInputDelayTime = clock();
 	}
 
 	return instance;
@@ -118,7 +119,7 @@ void GameManager::SetSelectMapMode(bool isMyTurn, int goalPrice)
 	bool isHaveLand = false;
 
 	this->goalPrice = goalPrice;
-	isSellTurn = isMyTurn;
+	isSelectTurn = isMyTurn;
 
 	RenderManager::GetInstance()->isSelectMapMode = true;	// 선택모드 활성화
 
@@ -146,4 +147,31 @@ void GameManager::MoveUserPosition(int userIndex, int diceValue)
 	}
 
 	RenderManager::GetInstance()->SetPlayerBitmapLocation(userIndex, userPositionVector[userIndex]);
+}
+
+int GameManager::SelectModeInputKey()
+{
+	if (!RenderManager::GetInstance()->isSelectMapMode)
+		return NONE;
+
+	if ((clock() - keyInputDelayTime) >= 200) // 딜레이 0.2초
+	{
+		if (GetAsyncKeyState(VK_SPACE) & 0x8000)	// 스페이스바
+		{
+			keyInputDelayTime = clock();
+			return INPUT_SPACE;
+		}
+		else if (GetAsyncKeyState(VK_LEFT) & 0x8000)	// 왼쪽 방향키
+		{
+			keyInputDelayTime = clock();
+			return INPUT_LEFT;
+		}
+		else if (GetAsyncKeyState(VK_RIGHT) & 0x8000)	// 오른쪽 방향키
+		{
+			keyInputDelayTime = clock();
+			return INPUT_RIGHT;
+		}
+	}
+
+	return NONE;
 }

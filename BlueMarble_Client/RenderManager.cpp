@@ -12,6 +12,7 @@ RenderManager* RenderManager::GetInstance()
 	if (nullptr == instance)
 	{
 		instance = new RenderManager();
+        instance->redHpen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
 	}
 
 	return instance;
@@ -19,6 +20,7 @@ RenderManager* RenderManager::GetInstance()
 
 void RenderManager::ReleaseInstance()
 {
+    DeleteObject(instance->redHpen);
 	delete instance;
 	instance = nullptr;
 }
@@ -198,6 +200,8 @@ void RenderManager::DrawBoardMap()
         LineTo(memDC, RIGHT_BOTTOM_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y + (tileHeight * (i+1)));
     }
     
+    DrawSelectMode();   // 토지 선택창 출력
+
     // 건물 출력
     for (int i = 0; i < (int)board.name.size(); i++)
     {
@@ -323,8 +327,13 @@ void RenderManager::DrawGameMessage(string message)
 
 void RenderManager::DrawSelectMode()
 {
-    // 빨간색 펜으로 그리기
-    
+    if (GameManager::GetInstance()->GetBoardData().mapSize == 0)
+        return;
+    if (!isSelectMapMode)
+        return;
+
+    oldHpen = (HPEN)SelectObject(memDC, (HGDIOBJ)redHpen);
+
     int remainder = selectPosition % (int)GameManager::GetInstance()->GetBoardData().mapSize;   // 나눈 나머지
 
     switch (selectPosition/ (int)GameManager::GetInstance()->GetBoardData().mapSize)
@@ -349,7 +358,9 @@ void RenderManager::DrawSelectMode()
         break;
     }
 
-    if (GameManager::GetInstance()->isSellTurn) // 내차례니까 판매 확인, 취소 버튼이 출력되도록 추가하기
+    redHpen = (HPEN)SelectObject(memDC, (HGDIOBJ)oldHpen);
+
+    if (GameManager::GetInstance()->isSelectTurn) // 내차례니까 판매 확인, 취소 버튼이 출력되도록 추가하기
     {
 
     }

@@ -543,6 +543,14 @@ void GameRoom::CheckEndProcess(SOCKET clientSocket)
 	}
 }
 
+void GameRoom::SendSelectLandIndex(int index)
+{
+	gameServer->MakePacket(sendPacket, &packetLastIndex, SEND_SELECT_MODE_INPUT_KEY);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, index, sizeof(index));	// 선택 지역 인덱스
+	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+	printf("%s\ %dn", "send Data", SEND_SELECT_MODE_INPUT_KEY);
+}
+
 int GameRoom::GetBuildPrice(int turn)
 {
 	int buildPrice = 0;
@@ -617,6 +625,60 @@ int GameRoom::DisposalPrice()
 	}
 
 	return disposalPrice / 2;	// 매각 비용은 건설비용의 반토막 ( x / 2 ) 값
+}
+
+int GameRoom::FindNextLand(int selectValue, bool isLeft)
+{
+	list<int> myLand;
+
+	for (int i = 0; i < (int)landBoardData.land.size(); i++)
+	{
+		if (landBoardData.land[i] == takeControlPlayer) // 땅을 소유하고 있다면 
+		{
+			myLand.emplace_back(i);
+		}
+	}
+
+	if (isLeft)	// 왼쪽의 지역 찾기 , 순방향 참조
+	{
+		if (myLand.size() == 1 || myLand.size() == 0)	// 소지한 땅이 0,1개면
+			return selectValue;
+
+		if (myLand.back() == selectValue)	// 선택 지역이 맨끝이면
+			return myLand.front();
+
+		for (auto it = myLand.begin(); it != myLand.end(); it++)
+		{
+			if ((*it) == selectValue)
+			{
+				it++;
+				return (*it);
+			}
+		}
+
+		return selectValue;
+	}
+	else   // 오른쪽의 지역 찾기 , 역방향 참조
+	{
+		if (myLand.size() == 1 || myLand.size() == 0)	// 소지한 땅이 0,1개면
+			return selectValue;
+
+		if (myLand.front() == selectValue)	// 선택 지역이 맨처음이면
+			return myLand.back();
+
+		reverse(myLand.begin(), myLand.end());
+
+		for (auto it = myLand.begin(); it != myLand.end(); it++)
+		{
+			if ((*it) == selectValue)
+			{
+				it++;
+				return (*it);
+			}
+		}
+
+		return selectValue;
+	}
 }
 
 void GameRoom::EndTurn()

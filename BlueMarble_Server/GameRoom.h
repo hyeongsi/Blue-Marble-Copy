@@ -115,11 +115,15 @@ public:
 	void SendFinishTurnSign();	// 모든 처리 끝나고, 다음턴으로 넘어가도 되는지 확인 메시지 전송
 	void CheckEndProcess(SOCKET clientSocket);	// 다음턴으로 이동
 
+	void SendSelectLandIndex(int index);	// 선택한 지역인덱스 전송
+
 	int GetBuildPrice(int turn);	// 유저 건축물 기준으로 건축 가격 리턴
 	int TakeOverLand(int turn, int takeOverPrice);	// 인수 처리
 
 	void BuyLandMark(int price);	// 인수 처리
 	int DisposalPrice();	// 땅 처분 가격
+
+	int FindNextLand(int selectValue, bool isLeft);	// 그다음 소지한 지역 찾기
 
 	void EndTurn();
 };

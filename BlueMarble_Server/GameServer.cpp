@@ -141,6 +141,9 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case FINISH_THIS_TURN_PROCESS:
 				myRoom->CheckEndProcess(clientSocket);
 				break;
+			case SEND_SELECT_MODE_INPUT_KEY:
+				GameManager::GetInstance()->SelectInputKeyProcessMethod(myRoom, cBuffer);
+				break;
 			default:
 				break;
 			}

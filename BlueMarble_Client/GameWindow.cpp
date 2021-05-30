@@ -145,8 +145,9 @@ void GameWindow::GameUpdate()
         }
     }
 
-    instance->renderManager->DrawSelectMode();
     instance->renderManager->DrawGameMessage(GameManager::GetInstance()->GetGameMessage());
+
+    SocketTransfer::GetInstance()->SendSelectModeInput(GameManager::GetInstance()->SelectModeInputKey());     // 선택모드일 때 선택받은 키값 전달
 
     instance->renderManager->Render();
 }

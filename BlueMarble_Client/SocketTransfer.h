@@ -77,6 +77,9 @@ private:
 	static void SendNextTurnSignMethod();
 	void SendNextTurnSign();
 
+	static void GetSelectValueMethod(char* packet);
+	void GetSelectValue(char* packet);
+
 public:
 	void PrintErrorCode(State state, const int errorCode);
 
@@ -95,6 +98,7 @@ public:
 	void RegistRecvCallbackFunction(CALLBACK_FUNC_PACKET cbf);
 
 	void SendRollDiceSign();
+	void SendSelectModeInput(int inputKey);
 };
 
 template<class T>

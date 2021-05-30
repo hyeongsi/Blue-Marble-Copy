@@ -165,7 +165,7 @@ void GameManager::RollTheDice(GameRoom* room)
 	mt19937 gen(rd());		// random_device 를 통해 난수 생성 엔진을 초기화 한다.
 	uniform_int_distribution<int> dis(1, 6);		// 1 부터 6 까지 균등하게 나타나는 난수열을 생성하기 위해 균등 분포 정의.
 	
-	int	diceValue1 = 1; //dis(gen);
+	int	diceValue1 = 2; //dis(gen);
 	int	diceValue2 = 5; //dis(gen);
 
 	if (room->IsDesertIsland() && diceValue1 == diceValue2)
@@ -288,33 +288,43 @@ void GameManager::BuyBuilding(GameRoom* room, char* data)
 		}
 		else
 		{
+			// 구매하고자 하는 건축비용 계산
 			if (buyBuildingPkt.isBuyVilla)
-			{
-				(*room->GetPUserMoneyVector())[buyBuildingPkt.whosTurn] -=
-					room->GetMapData().villa[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];		// 돈 차감
-
-				room->GetPLandBoardData()->villa[room->GetUserPositionVector()[buyBuildingPkt.whosTurn]] = buyBuildingPkt.whosTurn;	// 구매 처리
 				accumBuildPrice += room->GetMapData().villa[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];
-			}
 			if (buyBuildingPkt.isBuyBuilding)
-			{
-				(*room->GetPUserMoneyVector())[buyBuildingPkt.whosTurn] -=
-					room->GetMapData().building[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];		// 돈 차감
-
-				room->GetPLandBoardData()->building[room->GetUserPositionVector()[buyBuildingPkt.whosTurn]] = buyBuildingPkt.whosTurn;	// 구매 처리
 				accumBuildPrice += room->GetMapData().building[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];
-			}
 			if (buyBuildingPkt.isBuyHotel)
-			{
-				(*room->GetPUserMoneyVector())[buyBuildingPkt.whosTurn] -=
-					room->GetMapData().hotel[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];		// 돈 차감
-
-				room->GetPLandBoardData()->hotel[room->GetUserPositionVector()[buyBuildingPkt.whosTurn]] = buyBuildingPkt.whosTurn;	// 구매 처리
 				accumBuildPrice += room->GetMapData().hotel[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];
-			}
 
-			room->SendBuildingSyncSign(buyBuildingPkt.whosTurn, buyBuildingPkt.isBuy,
-				buyBuildingPkt.isBuyVilla, buyBuildingPkt.isBuyBuilding, buyBuildingPkt.isBuyHotel, accumBuildPrice);
+			// 건물들 금액이 소지한 금액보다 작다면 구매처리
+			if (accumBuildPrice <= (*room->GetPUserMoneyVector())[buyBuildingPkt.whosTurn])	
+			{
+				if (buyBuildingPkt.isBuyVilla)
+				{
+					room->GetPLandBoardData()->villa[room->GetUserPositionVector()[buyBuildingPkt.whosTurn]] = buyBuildingPkt.whosTurn;	// 구매 처리
+				}
+				if (buyBuildingPkt.isBuyBuilding)
+				{
+					room->GetPLandBoardData()->building[room->GetUserPositionVector()[buyBuildingPkt.whosTurn]] = buyBuildingPkt.whosTurn;	// 구매 처리
+				}
+				if (buyBuildingPkt.isBuyHotel)
+				{
+					(*room->GetPUserMoneyVector())[buyBuildingPkt.whosTurn] -=
+						room->GetMapData().hotel[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];		// 돈 차감
+
+					room->GetPLandBoardData()->hotel[room->GetUserPositionVector()[buyBuildingPkt.whosTurn]] = buyBuildingPkt.whosTurn;	// 구매 처리
+					accumBuildPrice += room->GetMapData().hotel[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];
+				}
+
+				(*room->GetPUserMoneyVector())[buyBuildingPkt.whosTurn] -= accumBuildPrice;
+
+				room->SendBuildingSyncSign(buyBuildingPkt.whosTurn, buyBuildingPkt.isBuy,
+					buyBuildingPkt.isBuyVilla, buyBuildingPkt.isBuyBuilding, buyBuildingPkt.isBuyHotel, accumBuildPrice);
+			}
+			else  // 건축 비용을 낼 돈이 없다면
+			{
+				room->CheckLandKindNSendMessage();	// 다시 건축메시지 보냄
+			}
 		}
 	}
 	else    // 미 구입 시
@@ -472,5 +482,32 @@ void GameManager::BuyLandMark(GameRoom* room, char* data)
 	else
 	{
 		room->EndTurn();
+	}
+}
+
+void GameManager::SelectInputKeyProcessMethod(GameRoom* room, char* data)
+{
+	instance->SelectInputKeyProcess(room, data);
+}
+
+void GameManager::SelectInputKeyProcess(GameRoom* room, char* data)
+{
+	selectInputKeyPacket selectInputKeyPkt;
+	int accumDataSize = 1;
+
+	memcpy(&selectInputKeyPkt.inputKey, &data[accumDataSize], sizeof(selectInputKeyPkt.inputKey));	// get key
+	accumDataSize += sizeof(selectInputKeyPkt.inputKey);
+	memcpy(&selectInputKeyPkt.currentSelectValue, &data[accumDataSize], sizeof(selectInputKeyPkt.currentSelectValue));	// get currentSelectValue
+
+	switch (selectInputKeyPkt.inputKey)
+	{
+	case INPUT_SPACE:
+		break;
+	case INPUT_LEFT:
+		room->SendSelectLandIndex(room->FindNextLand(selectInputKeyPkt.currentSelectValue, true));
+		break;
+	case INPUT_RIGHT:
+		room->SendSelectLandIndex(room->FindNextLand(selectInputKeyPkt.currentSelectValue, false));
+		break;
 	}
 }
