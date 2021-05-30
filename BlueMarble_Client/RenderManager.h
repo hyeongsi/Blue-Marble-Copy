@@ -13,6 +13,13 @@ enum DrawDir
 	EAST = 3,
 };
 
+enum SelectBtnNumber
+{
+	ROLL_DICE_BTN_NUMBER,
+	SELECT_MODE_OK_BTN_NUMBER,
+	SELECT_MODE_CANCEL_BTN_NUMBER,
+};
+
 class RenderManager
 {
 private:
@@ -23,7 +30,8 @@ private:
 	HDC backMemDC{ nullptr };
 	HBITMAP oldCreateBitmap = nullptr;
 
-	HPEN redHpen = nullptr;
+	HPEN redColorHpen = nullptr;
+	HPEN greenColorHpen = nullptr;
 	HPEN oldHpen = nullptr;
 
 	SIZE ClientSize = { 1280,720 };
@@ -64,4 +72,3 @@ public:
 	void DrawSelectMode(); // selectMode라면 맵 선택 테두리 그리기
 	void Render();
 };
-

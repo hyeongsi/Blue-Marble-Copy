@@ -48,8 +48,10 @@ enum MessageCode
 	PAY_TOLL_SIGN_SYNC = 20,
 	TAKE_OVER_SYNC = 21,
 	BUY_LANDMARK_SIGN_SYNC = 22,
+	SELL_LAND_SIGN_SYNC = 23,
 	FINISH_THIS_TURN_PROCESS = 25,
 	SEND_SELECT_MODE_INPUT_KEY = 30,
+	SELECT_MODE_BTN = 31,
 	SET_MATCHING_USER_PACKET = 100,
 };
 
@@ -96,3 +98,9 @@ typedef struct SelectInputKeyPacket
 	int inputKey;	// 입력 키값
 	int currentSelectValue;	// 현재 선택 값
 }selectInputKeyPacket;
+
+typedef struct SellLandProcessPacket
+{
+	char header;
+	bool isOK;
+}sellLandProcessPacket;

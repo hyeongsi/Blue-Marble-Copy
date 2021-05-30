@@ -143,6 +143,8 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 				break;
 			case SEND_SELECT_MODE_INPUT_KEY:
 				GameManager::GetInstance()->SelectInputKeyProcessMethod(myRoom, cBuffer);
+			case SELECT_MODE_BTN:
+				GameManager::GetInstance()->SellLandProcessMethod(cBuffer);
 				break;
 			default:
 				break;

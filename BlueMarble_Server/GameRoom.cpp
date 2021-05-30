@@ -120,6 +120,11 @@ void GameRoom::SetDesertIslandCount(int count)
 	desertIslandCount[takeControlPlayer] = count;
 }
 
+vector<int>* GameRoom::GetSelectLandIndex()
+{
+	return &selectLandIndex;
+}
+
 bool GameRoom::CheckSendDelay()
 {
 	double duration = (finishTime - startTime) / CLOCKS_PER_SEC;
@@ -422,6 +427,7 @@ void GameRoom::SendBuyLandMarkSignSync(int landMarkPrice)
 void GameRoom::SendSellLandSign(int goalPrice, int state)
 {
 	beforeSellSign = state;
+	this->goalPrice = goalPrice;
 
 	gameServer->MakePacket(sendPacket, &packetLastIndex, SELL_LAND_SIGN);	// 매각 메시지
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
@@ -429,17 +435,30 @@ void GameRoom::SendSellLandSign(int goalPrice, int state)
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex,
 		userMoneyVector[takeControlPlayer], sizeof(userMoneyVector[takeControlPlayer]));	// 유저 돈
 
-	vector<int> landPosition;
-
-	for (int i = 0; i < (int)board.land.size(); i++)
-	{
-		if (landBoardData.land[i] == takeControlPlayer)  // 땅이 지어져 있는 곳이면
-		{
-			landPosition.emplace_back(i);
-		}
-	}
+	selectLandIndex.clear();
 
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+}
+
+void GameRoom::SendSellLandSignSync()
+{
+	int sellLandSize = (int)selectLandIndex.size();
+
+	gameServer->MakePacket(sendPacket, &packetLastIndex, SELL_LAND_SIGN_SYNC);	// 매각 동기화 메시지
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex,
+		userMoneyVector[takeControlPlayer], sizeof(userMoneyVector[takeControlPlayer]));	// 유저 돈
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, sellLandSize, sizeof(sellLandSize));	// 판매하는 땅 개수
+	for (int i = 0; i < sellLandSize; i++)
+	{
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex, selectLandIndex[i], sizeof(selectLandIndex[i]));	// 판매하는 땅 인덱스
+	}
+
+	for (auto& socketIterator : userVector)
+	{
+		gameServer->PacektSendMethod(sendPacket, socketIterator);
+		printf("%s %d\n", "send SellLandSignSync - ", socketIterator);
+	}
 }
 
 void GameRoom::CheckPassNSellMessage()
@@ -487,13 +506,13 @@ void GameRoom::CheckPassNSellMessage()
 	}
 	else
 	{
-		if (DisposalPrice() + userMoneyVector[takeControlPlayer] >= tollPrice)  // 판매 시 통행료를 낼 수 있을 때
+		if (TotalDisposalPrice() + userMoneyVector[takeControlPlayer] >= tollPrice)  // 판매 시 통행료를 낼 수 있을 때
 		{
-			SendSellLandSign(tollPrice, TAKE_OVER_LAND); // 판매 메시지 보내기
+			SendSellLandSign(tollPrice, PAY_TOLL); // 판매 메시지 보내기
 		}
 		else    // 판매금 + 소지금이 통행료보다 적을 경우
 		{
-			// 게임 오버 처리
+			EndTurn(); // 게임 오버 처리
 		}
 	}
 }
@@ -543,12 +562,38 @@ void GameRoom::CheckEndProcess(SOCKET clientSocket)
 	}
 }
 
-void GameRoom::SendSelectLandIndex(int index)
+void GameRoom::SendSelectLandIndex(int index, bool isSpaceBar)
 {
 	gameServer->MakePacket(sendPacket, &packetLastIndex, SEND_SELECT_MODE_INPUT_KEY);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, index, sizeof(index));	// 선택 지역 인덱스
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isSpaceBar, sizeof(isSpaceBar));	// 스페이스바 동작인지
+
+	bool isErase = false;
+	int sellLandPrice = 0;
+
+	if (isSpaceBar)
+	{
+		for (auto it = selectLandIndex.begin(); it != selectLandIndex.end(); it++)
+		{
+			if ((*it) == index)   // 한번 선택된 장소라면, 해당 장소 제거
+			{
+				selectLandIndex.erase(it);
+				isErase = true;
+				break;
+			}
+		}
+
+		if (!isErase)
+			selectLandIndex.emplace_back(index);	// 선택 안된 장소면 장소 추가
+	}
+
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isErase, sizeof(isErase));	// 삭제 유무
+
+	sellLandPrice = DisposalPrice(index);
+
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, sellLandPrice, sizeof(sellLandPrice));	// 판매 금액
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
-	printf("%s\ %dn", "send Data", SEND_SELECT_MODE_INPUT_KEY);
+	printf("%s %d\n", "send Data", SEND_SELECT_MODE_INPUT_KEY);
 }
 
 int GameRoom::GetBuildPrice(int turn)
@@ -596,7 +641,7 @@ void GameRoom::BuyLandMark(int price)
 	landBoardData.landMark[userPositionVector[takeControlPlayer]] = takeControlPlayer;	// 랜드마크 건설 처리
 }
 
-int GameRoom::DisposalPrice()
+int GameRoom::TotalDisposalPrice()
 {
 	int disposalPrice = 0;
 
@@ -605,6 +650,8 @@ int GameRoom::DisposalPrice()
 		if (landBoardData.land[i] == takeControlPlayer)  // 땅이 지어져 있는 곳이면
 		{
 			disposalPrice += board.land[i];
+			if (board.code[i] == TOUR_TILE)
+				continue;
 		}
 		if (landBoardData.villa[i] == takeControlPlayer)  // 빌라 있으면
 		{
@@ -625,6 +672,57 @@ int GameRoom::DisposalPrice()
 	}
 
 	return disposalPrice / 2;	// 매각 비용은 건설비용의 반토막 ( x / 2 ) 값
+}
+
+int GameRoom::DisposalPrice(int index)
+{
+	int disposalPrice = 0;
+
+	if (landBoardData.land[index] == takeControlPlayer)  // 땅이 지어져 있는 곳이면
+	{
+		disposalPrice += board.land[index];
+		if (board.code[index] == TOUR_TILE)
+			return disposalPrice / 2;	// 매각 비용은 건설비용의 반토막 ( x / 2 ) 값
+	}
+	if (landBoardData.villa[index] == takeControlPlayer)  // 빌라 있으면
+	{
+		disposalPrice += board.villa[index];
+	}
+	if (landBoardData.building[index] == takeControlPlayer)  // 빌딩 있으면
+	{
+		disposalPrice += board.building[index];
+	}
+	if (landBoardData.hotel[index] == takeControlPlayer)  // 호텔 있으면
+	{
+		disposalPrice += board.hotel[index];
+	}
+	if (landBoardData.landMark[index] == takeControlPlayer)  // 랜드마크 있으면
+	{
+		disposalPrice += board.landMark[index];
+	}
+
+	return disposalPrice / 2;	// 매각 비용은 건설비용의 반토막 ( x / 2 ) 값
+}
+
+void GameRoom::SellLand()
+{
+	int accumPrice = 0;
+
+	for (auto it : selectLandIndex)
+	{
+		accumPrice += DisposalPrice(it);
+	}
+
+	for (auto it : selectLandIndex)  // 처분 처리
+	{
+		landBoardData.land[it] = -1;
+		landBoardData.villa[it] = -1;
+		landBoardData.hotel[it] = -1;
+		landBoardData.building[it] = -1;
+		landBoardData.landMark[it] = -1;
+	}
+
+	userMoneyVector[takeControlPlayer] += accumPrice;	// 돈 증가
 }
 
 int GameRoom::FindNextLand(int selectValue, bool isLeft)

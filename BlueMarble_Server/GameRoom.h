@@ -51,11 +51,14 @@ private:
 	char sendPacket[MAX_PACKET_SIZE] = {};
 	unsigned int packetLastIndex = 0;
 
+	vector<int> selectLandIndex;
 public:
 	int connectPlayer = 0;
 	clock_t startTime = 0;
 	clock_t finishTime = 0;
 	int beforeSellSign = -1;
+
+	int goalPrice = 0;
 
 	bool isDouble = false;	// 더블 유무
 
@@ -83,6 +86,8 @@ public:
 	void SetIsDesertIsland(bool isDesert);
 	void SetDesertIslandCount(int count);
 
+	vector<int>* GetSelectLandIndex();
+
 	bool CheckSendDelay();	// 딜레이 체크 함수
 	void SendMapDataMethod(SOCKET& socekt);	// 맵 정보 전송 함수
 	void SendRollDiceSignMethod(SOCKET& socket);	// 주사위 신호 전송 함수
@@ -106,6 +111,7 @@ public:
 	void SendBuyLandMarkSignSync(int landMarkPrice); // 랜드마크 구입 싱크 메시지 전송
 
 	void SendSellLandSign(int goalPrice, int state); // 매각 메시지 보내기
+	void SendSellLandSignSync();
 
 	void CheckLandKindNSendMessage();
 	void CheckPassNSellMessage();
@@ -115,13 +121,15 @@ public:
 	void SendFinishTurnSign();	// 모든 처리 끝나고, 다음턴으로 넘어가도 되는지 확인 메시지 전송
 	void CheckEndProcess(SOCKET clientSocket);	// 다음턴으로 이동
 
-	void SendSelectLandIndex(int index);	// 선택한 지역인덱스 전송
+	void SendSelectLandIndex(int index, bool isSpaceBar);	// 선택한 지역인덱스 전송
 
 	int GetBuildPrice(int turn);	// 유저 건축물 기준으로 건축 가격 리턴
 	int TakeOverLand(int turn, int takeOverPrice);	// 인수 처리
 
 	void BuyLandMark(int price);	// 인수 처리
-	int DisposalPrice();	// 땅 처분 가격
+	int TotalDisposalPrice();	// 전체 땅 처분 가격
+	int DisposalPrice(int index);	// 땅 처분 가격
+	void SellLand();	// 저장해놓은 땅 처분 처리
 
 	int FindNextLand(int selectValue, bool isLeft);	// 그다음 소지한 지역 찾기
 

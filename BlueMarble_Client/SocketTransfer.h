@@ -74,12 +74,14 @@ private:
 	static void GetBuyLandMarkSyncMethod(char* packet);
 	void GetBuyLandMarkSync(char* packet);
 
+	static void GetSellLandSignSyncMethod(char* packet);
+	void GetSellLandSignSync(char* packet);
+
 	static void SendNextTurnSignMethod();
 	void SendNextTurnSign();
 
 	static void GetSelectValueMethod(char* packet);
 	void GetSelectValue(char* packet);
-
 public:
 	void PrintErrorCode(State state, const int errorCode);
 
@@ -99,6 +101,7 @@ public:
 
 	void SendRollDiceSign();
 	void SendSelectModeInput(int inputKey);
+	void GetSelectBtnMsg(bool isOK);
 };
 
 template<class T>

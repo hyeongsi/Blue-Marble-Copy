@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <time.h>
 
 using namespace std;
 
@@ -31,6 +32,15 @@ enum class GameState
 	ROLL_DICE = 1,
 	BUY_LAND = 2,
 	SELL_LAND = 3,
+	SELECT_MODE = 4,
+};
+
+enum InputKey
+{
+	NONE = 0,
+	INPUT_SPACE = 1,
+	INPUT_LEFT = 2,
+	INPUT_RIGHT = 3,
 };
 
 class GameManager
@@ -55,7 +65,10 @@ private:
 	~GameManager();
 public:
 	int goalPrice = 0;
-	bool isSellTurn = false;
+	bool isSelectTurn = false;
+	long keyInputDelayTime = 0;
+	vector<int> selectLandIndex;
+	int totalSelectLandSellPrice = 0;
 
 	static GameManager* GetInstance();
 	static void ReleaseInstance();
@@ -89,5 +102,7 @@ public:
 	void SetSelectMapMode(bool isMyTurn, int goalPrice);
 
 	void MoveUserPosition(int userIndex, int diceValue);
+
+	int SelectModeInputKey();
 };
 

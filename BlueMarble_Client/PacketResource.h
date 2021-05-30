@@ -37,8 +37,10 @@ enum MessageCode
 	PAY_TOLL_SIGN_SYNC = 20,
 	TAKE_OVER_SYNC = 21,
 	BUY_LANDMARK_SIGN_SYNC = 22,
+	SELL_LAND_SIGN_SYNC = 23,
 	FINISH_THIS_TURN_PROCESS = 25,
 	SEND_SELECT_MODE_INPUT_KEY = 30,
+	SELECT_MODE_BTN = 31,
 };
 
 enum SellState
@@ -127,11 +129,11 @@ typedef struct BuyBuildSyncPacket	//SELL_LAND_SIGN
 
 typedef struct SellLandSignPacket	//SELL_LAND_SIGN
 {
-	char header;
-	int whosTurn;	// 누구 턴인지
-	int goalPrice;	// 요구 금액
-	int userMoney;	// 해당 유저 돈
-	int landSize; // 땅 개수
+	char header = 0;
+	int whosTurn = 0;	// 누구 턴인지
+	int goalPrice = 0;	// 요구 금액
+	int userMoney = 0;	// 해당 유저 돈
+	int landSize = 0; // 땅 개수
 	vector<int> landPosition;	// 땅 위치
 }sellLandSignPacket;
 
@@ -185,8 +187,20 @@ typedef struct BuyLandMarkSyncPacket	// BUY_LANDMARK_SIGN_SYNC
 	int userMoney; // 해당 유저 돈
 }buyLandMarkSyncPacket;
 
+typedef struct SellLandSyncPacket	// SELL_LAND_SIGN_SYNC
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int userMoney;	// 유저 돈
+	int sellLandCount;	// 판매하는 땅 개수
+	vector<int> landIndex; // 땅 번호
+}sellLandSyncPacket;
+
 typedef struct SelectInputKeyPacket	// SEND_SELECT_MODE_INPUT_KEY
 {
 	char header;
 	int selectLandIndex;	// 선택 지역 번호
+	bool isSpaceBar;	// 스페이스바 동작 유무
+	bool isErase;		// 데이터 삭제 유무
+	int sellLandPrice;  // 매각 땅 가격
 }selectInputKeyPacket;

@@ -83,6 +83,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case BUY_LANDMARK_SIGN_SYNC:
 				GetBuyLandMarkSyncMethod(cBuffer);
 				break;
+			case SELL_LAND_SIGN_SYNC:
+				GetSellLandSignSyncMethod(cBuffer);
+				break;
 			case FINISH_THIS_TURN_PROCESS:
 				SendNextTurnSignMethod();
 				break;
@@ -188,7 +191,7 @@ void SocketTransfer::GetRollDiceSign(char* packet)
 	GameManager::GetInstance()->SetGameState(GameState::ROLL_DICE);
 	GameManager::GetInstance()->SetGameMessage("주사위를 돌려주세요");
 	
-	GameWindow::GetInstance()->ShowButton();
+	GameWindow::GetInstance()->ShowButton(ROLL_DICE_BTN);
 }
 
 void SocketTransfer::GetRollDiceMethod(char* packet)
@@ -227,7 +230,7 @@ void SocketTransfer::GetRollDice(char* packet)
 	{
 		GameManager::GetInstance()->SetGameMessage(to_string(dPacket.diceValue1) + " , " + to_string(dPacket.diceValue2));	// 메시지 갱신
 	}
-	GameWindow::GetInstance()->HideButton();
+	GameWindow::GetInstance()->HideButton(ROLL_DICE_BTN);
 
 	if (!dPacket.isDesertIsland)	// 감옥이 아니라면 이동 처리
 	{
@@ -526,10 +529,16 @@ void SocketTransfer::SellLandSign(char* packet)
 
 	needMoney = sellLandSignPkt.goalPrice - sellLandSignPkt.userMoney;
 
-	(*GameManager::GetInstance()->GetUserMoneyVector())[sellLandSignPkt.whosTurn] = sellLandSignPkt.userMoney;	// 돈 갱신
-	GameManager::GetInstance()->SetGameMessage(to_string(needMoney) + " 만큼 돈이 부족합니다.\n토지를 팔아주세요.");	// 메시지 갱신
+	GameManager::GetInstance()->selectLandIndex.clear();		// 선택 땅들 초기화
+	GameManager::GetInstance()->totalSelectLandSellPrice = 0;	// 매각 땅 합계 초기화
 
 	GameManager::GetInstance()->SetSelectMapMode(true, sellLandSignPkt.goalPrice);
+
+	(*GameManager::GetInstance()->GetUserMoneyVector())[sellLandSignPkt.whosTurn] = sellLandSignPkt.userMoney;	// 돈 갱신
+	GameManager::GetInstance()->SetGameMessage("소지자금 부족 , 매각 실시 - " + to_string(sellLandSignPkt.goalPrice) +
+		"을 충족해야 합니다. \n매각 지역 합계 : " + to_string(GameManager::GetInstance()->totalSelectLandSellPrice));	// 메시지 갱신
+
+	GameWindow::GetInstance()->ShowButton(SELECT_UI_BTN);
 }
 
 void SocketTransfer::GetPayTollSignSyncMethod(char* packet)
@@ -557,7 +566,8 @@ void SocketTransfer::GetPayTollSignSync(char* packet)
 	if (payTollSyncPkt.isPass)
 		GameManager::GetInstance()->SetGameMessage("통행료 지불 완료 - " + to_string(payTollSyncPkt.toll));	// 메시지 갱신
 	else
-		GameManager::GetInstance()->SetGameMessage("소지자금 부족, 통행료 미지급 - " + to_string(payTollSyncPkt.toll));	// 메시지 갱신
+		GameManager::GetInstance()->SetGameMessage("소지자금 부족 , 매각 실시 - " + to_string(payTollSyncPkt.toll)+
+			"을 충족해야 합니다. \n매각 지역 합계 : " + to_string(GameManager::GetInstance()->totalSelectLandSellPrice));	// 메시지 갱신
 
 	(*GameManager::GetInstance()->GetUserMoneyVector())[payTollSyncPkt.whosTurn] = payTollSyncPkt.userMoney;	// 돈 갱신
 	(*GameManager::GetInstance()->GetUserMoneyVector())[payTollSyncPkt.landOwner] = payTollSyncPkt.landOwnerMoney;	// 돈 갱신
@@ -634,6 +644,43 @@ void SocketTransfer::GetBuyLandMarkSync(char* packet)
 	}
 }
 
+void SocketTransfer::GetSellLandSignSyncMethod(char* packet)
+{
+	instance->GetSellLandSignSync(packet);
+}
+
+void SocketTransfer::GetSellLandSignSync(char* packet)
+{
+	sellLandSyncPacket sellLandSyncPkt;
+	int accumDataSize = 1;
+	int landIndex = -1;
+
+	memcpy(&sellLandSyncPkt.whosTurn, &packet[accumDataSize], sizeof(sellLandSyncPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(sellLandSyncPkt.whosTurn);
+	memcpy(&sellLandSyncPkt.userMoney, &packet[accumDataSize], sizeof(sellLandSyncPkt.userMoney));	// get userMoney
+	accumDataSize += sizeof(sellLandSyncPkt.userMoney);
+	memcpy(&sellLandSyncPkt.sellLandCount, &packet[accumDataSize], sizeof(sellLandSyncPkt.sellLandCount));	// get sellLandCount
+	accumDataSize += sizeof(sellLandSyncPkt.sellLandCount);
+
+	for (int i = 0; i < sellLandSyncPkt.sellLandCount; i++)
+	{
+		memcpy(&landIndex, &packet[accumDataSize], sizeof(landIndex));	// get landIndex
+		accumDataSize += sizeof(landIndex);
+		sellLandSyncPkt.landIndex.emplace_back(landIndex);
+	}
+
+	// 돈 추가하고,
+	// 메시지 바꾸고
+	// 땅 판거 처리하고,
+	// 그외 등등 아무튼 하면 됨
+
+	if (sellLandSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
+	{
+		MakePacket(SELL_LAND_SIGN_SYNC);
+		SendMessageToGameServer();
+	}
+}
+
 void SocketTransfer::SendNextTurnSignMethod()
 {
 	instance->SendNextTurnSign();
@@ -657,8 +704,40 @@ void SocketTransfer::GetSelectValue(char* packet)
 	int accumDataSize = 1;
 
 	memcpy(&selectInputKeyPkt.selectLandIndex, &packet[accumDataSize], sizeof(selectInputKeyPkt.selectLandIndex));  // get landIndex
+	accumDataSize += sizeof(selectInputKeyPkt.selectLandIndex);
+	memcpy(&selectInputKeyPkt.isSpaceBar, &packet[accumDataSize], sizeof(selectInputKeyPkt.isSpaceBar));	// get isSpaceBar
 
-	RenderManager::GetInstance()->selectPosition = selectInputKeyPkt.selectLandIndex;
+	if(!selectInputKeyPkt.isSpaceBar)
+		RenderManager::GetInstance()->selectPosition = selectInputKeyPkt.selectLandIndex;
+	else
+	{
+		accumDataSize += sizeof(selectInputKeyPkt.isSpaceBar);
+		memcpy(&selectInputKeyPkt.isErase, &packet[accumDataSize], sizeof(selectInputKeyPkt.isErase));	// get isErase
+		accumDataSize += sizeof(selectInputKeyPkt.isErase);
+		memcpy(&selectInputKeyPkt.sellLandPrice, &packet[accumDataSize], sizeof(selectInputKeyPkt.sellLandPrice));	// get sellLandPrice
+
+		if (selectInputKeyPkt.isErase)	// 선택 땅 삭제 될 경우
+		{
+			GameManager::GetInstance()->totalSelectLandSellPrice -= selectInputKeyPkt.sellLandPrice;
+			GameManager::GetInstance()->SetGameMessage("소지자금 부족 , 매각 실시 - " + to_string(GameManager::GetInstance()->goalPrice) +
+				"을 충족해야 합니다. \n매각 지역 합계 : " + to_string(GameManager::GetInstance()->totalSelectLandSellPrice));	// 메시지 갱신
+			for (auto it = GameManager::GetInstance()->selectLandIndex.begin(); it != GameManager::GetInstance()->selectLandIndex.end(); it++)
+			{
+				if ((*it) == selectInputKeyPkt.selectLandIndex)
+				{
+					GameManager::GetInstance()->selectLandIndex.erase(it);
+					break;
+				}
+			}
+		}
+		else  // 선택 땅 추가될 경우
+		{
+			GameManager::GetInstance()->totalSelectLandSellPrice += selectInputKeyPkt.sellLandPrice;
+			GameManager::GetInstance()->SetGameMessage("소지자금 부족 , 매각 실시 - " + to_string(GameManager::GetInstance()->goalPrice) +
+				"을 충족해야 합니다. \n매각 지역 합계 : " + to_string(GameManager::GetInstance()->totalSelectLandSellPrice));	// 메시지 갱신
+			GameManager::GetInstance()->selectLandIndex.emplace_back(selectInputKeyPkt.selectLandIndex);
+		}
+	}
 }
 
 void SocketTransfer::PrintErrorCode(State state, const int errorCode)
@@ -794,5 +873,12 @@ void SocketTransfer::SendSelectModeInput(int inputKey)
 	MakePacket(SEND_SELECT_MODE_INPUT_KEY);
 	AppendPacketData(inputKey, sizeof(inputKey));	// 무슨 키 입력했는지 전달
 	AppendPacketData(RenderManager::GetInstance()->selectPosition, sizeof(RenderManager::GetInstance()->selectPosition));	// 현재 선택 값 전달
+	SendMessageToGameServer();
+}
+
+void SocketTransfer::GetSelectBtnMsg(bool isOK)
+{
+	MakePacket(SELECT_MODE_BTN);
+	AppendPacketData(isOK, sizeof(isOK));	// 확인, 취소 유무
 	SendMessageToGameServer();
 }

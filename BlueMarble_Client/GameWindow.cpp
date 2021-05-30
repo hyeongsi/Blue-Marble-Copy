@@ -27,7 +27,8 @@ void GameWindow::ReInitGame(HWND hWnd)
 {
     instance->renderManager->Init(hWnd);        // MainMenu <- -> Game Render
     MainSystem::GetInstance()->RegistUpdateCallbackFunction(GameUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
-    HideButton();
+    HideButton(ROLL_DICE_BTN);
+    HideButton(SELECT_UI_BTN);
 }
 
 void GameWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd)
@@ -57,19 +58,31 @@ void GameWindow::CreateButton(HWND hWnd)
     }
 }
 
-void GameWindow::ShowButton()
+void GameWindow::ShowButton(int kind)
 {
-    for (const auto& buttonHandleIterator : instance->hwndWindow)
+    switch (kind)
     {
-        ShowWindow(buttonHandleIterator, SW_SHOW);                // 버튼 출력
+    case ROLL_DICE_BTN:
+        ShowWindow(hwndWindow[ROLL_DICE_BTN_NUMBER], SW_SHOW);                // 버튼 출력
+        break;
+    case SELECT_UI_BTN:
+        ShowWindow(hwndWindow[SELECT_MODE_OK_BTN_NUMBER], SW_SHOW);           // 버튼 출력
+        ShowWindow(hwndWindow[SELECT_MODE_CANCEL_BTN_NUMBER], SW_SHOW);       // 버튼 출력
+        break;
     }
 }
 
-void GameWindow::HideButton()
+void GameWindow::HideButton(int kind)
 {
-    for (const auto& buttonHandleIterator : instance->hwndWindow)
+    switch (kind)
     {
-        ShowWindow(buttonHandleIterator, SW_HIDE);                // 버튼 출력
+    case ROLL_DICE_BTN:
+        ShowWindow(hwndWindow[ROLL_DICE_BTN_NUMBER], SW_HIDE);               // 버튼 출력
+        break;
+    case SELECT_UI_BTN:
+        ShowWindow(hwndWindow[SELECT_MODE_OK_BTN_NUMBER], SW_HIDE);          // 버튼 출력
+        ShowWindow(hwndWindow[SELECT_MODE_CANCEL_BTN_NUMBER], SW_HIDE);      // 버튼 출력
+        break;
     }
 }
 
@@ -82,7 +95,21 @@ void GameWindow::SendDiceTriggerMsg()
 {
     SocketTransfer::GetInstance()->SendRollDiceSign();
     GameManager::GetInstance()->SetGameState(GameState::WAIT);
-    HideButton();
+    HideButton(ROLL_DICE_BTN);
+}
+
+void GameWindow::SendSelectBtnMsgMethod(bool isOK)
+{
+    instance->SendSelectBtnMsg(isOK);
+}
+
+void GameWindow::SendSelectBtnMsg(bool isOK)
+{
+    SocketTransfer::GetInstance()->GetSelectBtnMsg(isOK);
+    GameManager::GetInstance()->SetGameState(GameState::WAIT);
+    HideButton(SELECT_UI_BTN);
+
+    RenderManager::GetInstance()->isSelectMapMode = false;
 }
 
 GameWindow* GameWindow::GetInstance()
@@ -120,6 +147,12 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
         case IDC_ROLL_THE_DICE:
             SendDiceTriggerMsgMethod();
             break;
+        case IDC_SELECT_OK:
+            SendSelectBtnMsgMethod(true);
+            break;
+        case IDC_SELECT_CANCEL:
+            SendSelectBtnMsgMethod(false);
+            break;
         }
         break;
        
@@ -137,7 +170,14 @@ void GameWindow::GameUpdate()
 
     if (GameManager::GetInstance()->GetIsMyDiceTurn() || GameManager::GetInstance()->GetGameState() == GameState::ROLL_DICE)
     {
-        for (int i = 0; i < (int)instance->hwndWindow.size(); i++)
+        instance->renderManager->DrawHwnd(instance->hwndWindow[ROLL_DICE_BTN_NUMBER],
+            (*instance->bitmapManager->GetHwnd(State::GAME))[ROLL_DICE_BTN_NUMBER].point,
+            (*instance->bitmapManager->GetHwnd(State::GAME))[ROLL_DICE_BTN_NUMBER].size);
+    }
+
+    if (GameManager::GetInstance()->GetGameState() == GameState::SELECT_MODE)
+    {
+        for (int i = SELECT_MODE_OK_BTN_NUMBER; i <= SELECT_MODE_CANCEL_BTN_NUMBER; i++)
         {
             instance->renderManager->DrawHwnd(instance->hwndWindow[i],
                 (*instance->bitmapManager->GetHwnd(State::GAME))[i].point,

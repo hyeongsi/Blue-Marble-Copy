@@ -1,6 +1,12 @@
 ﻿#pragma once
 #include "SocketTransfer.h"
 
+enum ButtonHWndKind
+{
+	ROLL_DICE_BTN = 0,
+	SELECT_UI_BTN = 1,
+};
+
 class RenderManager;
 class BitmapManager;
 class GameWindow
@@ -22,6 +28,9 @@ private:
 
 	static void SendDiceTriggerMsgMethod();
 	void SendDiceTriggerMsg();
+
+	static void SendSelectBtnMsgMethod(bool isOK);
+	void SendSelectBtnMsg(bool isOK);
 public:
 	HWND g_hWnd = nullptr;
 
@@ -31,7 +40,7 @@ public:
 	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	static void GameUpdate();	// Game Update
 
-	void ShowButton();
-	void HideButton();
+	void ShowButton(int kind);
+	void HideButton(int kind);
 };
 

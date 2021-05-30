@@ -120,6 +120,7 @@ void GameManager::SetSelectMapMode(bool isMyTurn, int goalPrice)
 
 	this->goalPrice = goalPrice;
 	isSelectTurn = isMyTurn;
+	state = GameState::SELECT_MODE;
 
 	RenderManager::GetInstance()->isSelectMapMode = true;	// 선택모드 활성화
 

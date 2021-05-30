@@ -53,5 +53,8 @@ public:
 
 	static void SelectInputKeyProcessMethod(GameRoom* room, char* data);	// 선택모드 입력키 처리 후 값 전송
 	void SelectInputKeyProcess(GameRoom* room, char* data);
+
+	static void SellLandProcessMethod(GameRoom* room, char* data);
+	void SellLandProcess(GameRoom* room, char* data);
 };
 
