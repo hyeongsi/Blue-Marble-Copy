@@ -138,7 +138,7 @@ void GameManager::RoomLogicThreadMethod(GameRoom* room)
 			room->EndTurn();
 			break;
 		case GameState::WORLD_TRABLE_TILE:
-			room->EndTurn();
+			room->WorldTrableMethod();
 			break;
 		case GameState::REVENUE_TILE:
 			room->SendRevenueSign();
@@ -165,8 +165,8 @@ void GameManager::RollTheDice(GameRoom* room)
 	mt19937 gen(rd());		// random_device 를 통해 난수 생성 엔진을 초기화 한다.
 	uniform_int_distribution<int> dis(1, 6);		// 1 부터 6 까지 균등하게 나타나는 난수열을 생성하기 위해 균등 분포 정의.
 	
-	int	diceValue1 = 2; //dis(gen);
-	int	diceValue2 = 5; //dis(gen);
+	int	diceValue1 = 10; //dis(gen);
+	int	diceValue2 = 14; //dis(gen);
 
 	if (room->IsDesertIsland() && diceValue1 == diceValue2)
 	{
@@ -185,31 +185,7 @@ void GameManager::RollTheDice(GameRoom* room)
 	}
 
 	// 도착한 지역에서의 처리
-	switch (room->GetMapData().code[room->GetUserPositionVector()[room->GetTakeControlPlayer()]])
-	{
-	case START_TILE:
-		room->state = GameState::NEXT_TURN;
-		break;
-	case LAND_TILE:
-	case TOUR_TILE:
-		room->state = GameState::LAND_TILE;
-		break;
-	case CARD_TILE:
-		room->state = GameState::CARD_TILE;
-		break;
-	case DESERT_ISLAND_TILE:
-		room->state = GameState::DESERT_ISLAND_TILE;
-		break;
-	case OLYMPIC_TILE:
-		room->state = GameState::OLYMPIC_TILE;
-		break;
-	case WORLD_TRABLE_TILE:
-		room->state = GameState::WORLD_TRABLE_TILE;
-		break;
-	case REVENUE_TILE:
-		room->state = GameState::REVENUE_TILE;
-		break;
-	}
+	room->MoveTileProcess();
 
 	if ((diceValue1 == diceValue2) && (!(room->GetDiceDoubleCount() >= 3)))
 	{
@@ -275,7 +251,7 @@ void GameManager::BuyBuilding(GameRoom* room, char* data)
 
 	if (buyBuildingPkt.isBuy)	// 구입 시
 	{
-		memcpy(&buyBuildingPkt.isBuyVilla, &data[accumDataSize], sizeof(buyBuildingPkt.isBuyVilla));		// get usBuyVilla
+		memcpy(&buyBuildingPkt.isBuyVilla, &data[accumDataSize], sizeof(buyBuildingPkt.isBuyVilla));		// get isBuyVilla
 		accumDataSize += sizeof(buyBuildingPkt.isBuyVilla);
 		memcpy(&buyBuildingPkt.isBuyBuilding, &data[accumDataSize], sizeof(buyBuildingPkt.isBuyBuilding));	// get isBuyBuilding
 		accumDataSize += sizeof(buyBuildingPkt.isBuyBuilding);
@@ -299,21 +275,11 @@ void GameManager::BuyBuilding(GameRoom* room, char* data)
 			if (accumBuildPrice <= (*room->GetPUserMoneyVector())[buyBuildingPkt.whosTurn])	
 			{
 				if (buyBuildingPkt.isBuyVilla)
-				{
 					room->GetPLandBoardData()->villa[room->GetUserPositionVector()[buyBuildingPkt.whosTurn]] = buyBuildingPkt.whosTurn;	// 구매 처리
-				}
 				if (buyBuildingPkt.isBuyBuilding)
-				{
 					room->GetPLandBoardData()->building[room->GetUserPositionVector()[buyBuildingPkt.whosTurn]] = buyBuildingPkt.whosTurn;	// 구매 처리
-				}
 				if (buyBuildingPkt.isBuyHotel)
-				{
-					(*room->GetPUserMoneyVector())[buyBuildingPkt.whosTurn] -=
-						room->GetMapData().hotel[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];		// 돈 차감
-
 					room->GetPLandBoardData()->hotel[room->GetUserPositionVector()[buyBuildingPkt.whosTurn]] = buyBuildingPkt.whosTurn;	// 구매 처리
-					accumBuildPrice += room->GetMapData().hotel[(room->GetUserPositionVector())[buyBuildingPkt.whosTurn]];
-				}
 
 				(*room->GetPUserMoneyVector())[buyBuildingPkt.whosTurn] -= accumBuildPrice;
 
@@ -481,6 +447,35 @@ void GameManager::BuyLandMark(GameRoom* room, char* data)
 	else
 	{
 		room->EndTurn();
+	}
+}
+
+void GameManager::GetSelectIndexMethod(GameRoom* room, char* data, char header)
+{
+	instance->GetSelectIndex(room, data, header);
+}
+
+void GameManager::GetSelectIndex(GameRoom* room, char* data, char header)
+{
+	getSelectIndexPacket getSelectIndexPkt;
+	int accumDataSize = 1;
+
+	memcpy(&getSelectIndexPkt.selectIndex, &data[accumDataSize], sizeof(getSelectIndexPkt.selectIndex));	// get selectIndex
+
+	switch (header)
+	{
+	case OLYMPIC_SIGN:
+		// 통행료 2배 처리
+		break;
+	case WORLD_TRABLE_SIGN:
+		if (room->GetUserPositionVector()[room->GetTakeControlPlayer()] <= getSelectIndexPkt.selectIndex)
+			room->MoveUserPosition(getSelectIndexPkt.selectIndex - room->GetUserPositionVector()[room->GetTakeControlPlayer()]); // 맵인덱스 - 내위치 -> 이동거리
+		else
+			room->MoveUserPosition(room->GetMapData().code.size() - room->GetUserPositionVector()[room->GetTakeControlPlayer()] +
+				getSelectIndexPkt.selectIndex); // 맵사이즈 - 내위치 + 맵인덱스 ==> 이동거리
+
+		room->WorldTrableSignSyncMethod();
+		break;
 	}
 }
 

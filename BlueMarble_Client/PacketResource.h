@@ -30,7 +30,7 @@ enum MessageCode
 	OLYMPIC_SIGN = 13,
 	OLYMPIC = 14,
 	WORLD_TRABLE_SIGN = 15,
-	WORLD_TRABLE = 16,
+	WORLD_TRABLE_SIGN_SYNC = 16,
 	REVENUE_SIGN = 17,
 	BUY_LAND_SYNC = 18,
 	BUY_BUILDING_SYNC = 19,
@@ -137,6 +137,20 @@ typedef struct SellLandSignPacket	// SELL_LAND_SIGN
 	int landSize = 0; // 땅 개수
 	vector<int> landPosition;	// 땅 위치
 }sellLandSignPacket;
+
+typedef struct WorldTrableSignPacket	// WORLD_TRABLE_SIGN
+{
+	char header;
+	int userPosition;	// 현재 위치
+}worldTrableSignPacket;
+
+typedef struct WorldTrableSignSyncPacket	// WORLD_TRABLE_SIGN_SYNC
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int userPosition; // 유저 위치
+	int userMoney;	// 유저 돈
+}worldTrableSignSyncPacket;
 
 typedef struct RevenueSignPacket	// REVENUE_SIGN
 {

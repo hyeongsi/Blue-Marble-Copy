@@ -109,7 +109,7 @@ void GameWindow::SendSelectBtnMsg(bool isOK)
     GameManager::GetInstance()->SetGameState(GameState::WAIT);
     HideButton(SELECT_UI_BTN);
 
-    RenderManager::GetInstance()->isSelectMapMode = false;
+    RenderManager::GetInstance()->isSelectMapMode = IDLE_MODE;
 }
 
 GameWindow* GameWindow::GetInstance()

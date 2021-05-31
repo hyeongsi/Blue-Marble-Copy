@@ -201,6 +201,30 @@ void GameRoom::DesertIslandMethod()
 	state = GameState::NEXT_TURN;
 }
 
+void GameRoom::WorldTrableMethod()
+{
+	state = GameState::WAIT;
+	gameServer->MakePacket(sendPacket, &packetLastIndex, WORLD_TRABLE_SIGN);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userPositionVector[takeControlPlayer], sizeof(userPositionVector[takeControlPlayer]));	// 위치
+	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+}
+
+void GameRoom::WorldTrableSignSyncMethod()
+{
+	gameServer->MakePacket(sendPacket, &packetLastIndex, WORLD_TRABLE_SIGN_SYNC);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(int));	// 차례
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userPositionVector[takeControlPlayer], 
+		sizeof(userPositionVector[takeControlPlayer])); // 위치
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[takeControlPlayer],
+		sizeof(userMoneyVector[takeControlPlayer])); // 돈
+
+	for (auto& socketIterator : userVector)
+	{
+		gameServer->PacektSendMethod(sendPacket, socketIterator);
+		printf("%s %d\n", "send WorldTrableSignSync - ", socketIterator);
+	}
+}
+
 void GameRoom::SendRollTheDice(int value1, int value2, bool isDesertIsland)
 {
 	int salary = SALARY;
@@ -234,6 +258,35 @@ void GameRoom::MoveUserPosition(int diceValue)
 	{
 		userPositionVector[takeControlPlayer] -= board.mapSize * DIRECTION;
 		userMoneyVector[takeControlPlayer] += SALARY;	// START 지점 통과, 30만원 지급
+	}
+}
+
+void GameRoom::MoveTileProcess()
+{
+	switch(board.code[userPositionVector[takeControlPlayer]])
+	{
+	case START_TILE:
+		state = GameState::NEXT_TURN;
+		break;
+	case LAND_TILE:
+	case TOUR_TILE:
+		state = GameState::LAND_TILE;
+		break;
+	case CARD_TILE:
+		state = GameState::CARD_TILE;
+		break;
+	case DESERT_ISLAND_TILE:
+		state = GameState::DESERT_ISLAND_TILE;
+		break;
+	case OLYMPIC_TILE:
+		state = GameState::OLYMPIC_TILE;
+		break;
+	case WORLD_TRABLE_TILE:
+		state = GameState::WORLD_TRABLE_TILE;
+		break;
+	case REVENUE_TILE:
+		state = GameState::REVENUE_TILE;
+		break;
 	}
 }
 
@@ -401,6 +454,7 @@ void GameRoom::SendTakeOverSignSync(int takeOverPrice, int owner)
 
 void GameRoom::SendRevenueSign()
 {
+	state = GameState::WAIT;
 	gameServer->MakePacket(sendPacket, &packetLastIndex, REVENUE_SIGN);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, TAX, sizeof(TAX));	// 세금

@@ -319,7 +319,7 @@ BOOL UiDialog::RevenueDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lP
 	case WM_INITDIALOG:
 		GetWindowRect(GameWindow::GetInstance()->g_hWnd, &instance->rect);
 		SetWindowPos(hDlg, HWND_TOP, instance->rect.left + 500, instance->rect.top + 300, 0, 0, SWP_NOSIZE);
-		SetDlgItemText(hDlg, IDC_STATIC_PAYTOLL, string("세금 : " + to_string(instance->tax)).c_str());
+		SetDlgItemText(hDlg, IDC_STATIC_TAXTEXT, string("세금 : " + to_string(instance->tax)).c_str());
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))

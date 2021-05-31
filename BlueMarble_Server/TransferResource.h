@@ -41,7 +41,7 @@ enum MessageCode
 	OLYMPIC_SIGN = 13,
 	OLYMPIC = 14,
 	WORLD_TRABLE_SIGN = 15,
-	WORLD_TRABLE = 16,
+	WORLD_TRABLE_SIGN_SYNC = 16,
 	REVENUE_SIGN = 17,
 	BUY_LAND_SYNC = 18,
 	BUY_BUILDING_SYNC = 19,
@@ -92,6 +92,12 @@ typedef struct BuyLandMarkSignPacket
 	int whosTurn;	// 누구의 요구인지
 	bool isBuy;	// 구매유무
 }buyLandMarkSignPacket;
+
+typedef struct GetSelectIndexPacket	// OLYMPIC_SIGN, WORLD_TRABLE_SIGN
+{
+	char header;
+	int selectIndex;	// 선택 값
+}getSelectIndexPacket;
 
 typedef struct SelectInputKeyPacket
 {

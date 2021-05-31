@@ -20,6 +20,14 @@ enum SelectBtnNumber
 	SELECT_MODE_CANCEL_BTN_NUMBER,
 };
 
+enum SelectMode
+{
+	IDLE_MODE = 0,
+	SELL_LAND_MODE = 1,
+	OLYMPIC_MODE = 2,
+	WORLD_TRABLE_MODE = 3,
+};
+
 class RenderManager
 {
 private:
@@ -51,7 +59,7 @@ private:
 	RenderManager();
 	~RenderManager();
 public:
-	bool isSelectMapMode = false;
+	int isSelectMapMode = IDLE_MODE;
 	int selectPosition = -1;
 
 	static RenderManager* GetInstance();
@@ -61,6 +69,7 @@ public:
 	void Init(HWND hWnd);
 	void RenderInitSetting();
 
+	void MoveSelectPosition(bool isLeft);
 	void SetPlayerBitmapLocation(int playerIndex, int tileIndex);
 
 	void InitDrawBoardMap();

@@ -74,6 +74,12 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case SELL_LAND_SIGN:
 				SellLandSignMethod(cBuffer);
 				break;
+			case WORLD_TRABLE_SIGN:
+				GetWorldTrableSignMethod(cBuffer);
+				break;
+			case WORLD_TRABLE_SIGN_SYNC:
+				GetWorldTrableSignSyncMethod(cBuffer);
+				break;
 			case REVENUE_SIGN:
 				GetRevenueSignMethod(cBuffer);
 				break;
@@ -547,6 +553,54 @@ void SocketTransfer::SellLandSign(char* packet)
 	GameWindow::GetInstance()->ShowButton(SELECT_UI_BTN);
 }
 
+void SocketTransfer::GetWorldTrableSignMethod(char* packet)
+{
+	instance->GetWorldTrableSign(packet);
+}
+
+void SocketTransfer::GetWorldTrableSign(char* packet)
+{
+	worldTrableSignPacket worldTrableSignPkt;
+	int accumDataSize = 1;
+
+	memcpy(&worldTrableSignPkt.userPosition, &packet[accumDataSize], sizeof(worldTrableSignPkt.userPosition));  // get position
+
+	RenderManager::GetInstance()->isSelectMapMode = WORLD_TRABLE_MODE;
+	RenderManager::GetInstance()->selectPosition = worldTrableSignPkt.userPosition;
+}
+
+void SocketTransfer::GetWorldTrableSignSyncMethod(char* packet)
+{
+	instance->GetWorldTrableSignSync(packet);
+}
+
+void SocketTransfer::GetWorldTrableSignSync(char* packet)
+{
+	worldTrableSignSyncPacket worldTrableSignSyncPkt;
+	int accumDataSize = 1;
+
+	RenderManager::GetInstance()->isSelectMapMode = IDLE_MODE; // 선택 모드 해제
+
+	memcpy(&worldTrableSignSyncPkt.whosTurn, &packet[accumDataSize], sizeof(worldTrableSignSyncPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(worldTrableSignSyncPkt.whosTurn);
+	memcpy(&worldTrableSignSyncPkt.userPosition, &packet[accumDataSize], sizeof(worldTrableSignSyncPkt.userPosition));  // get userPosition
+	accumDataSize += sizeof(worldTrableSignSyncPkt.userPosition);
+	memcpy(&worldTrableSignSyncPkt.userMoney, &packet[accumDataSize], sizeof(worldTrableSignSyncPkt.userMoney));  // get userMoney
+
+	(*GameManager::GetInstance()->GetUserPositionVector())[worldTrableSignSyncPkt.whosTurn] = worldTrableSignSyncPkt.userPosition; // 위치 갱신
+	RenderManager::GetInstance()->SetPlayerBitmapLocation(worldTrableSignSyncPkt.whosTurn, worldTrableSignSyncPkt.userPosition);	// 해당 위치로 UI 갱신
+
+	GameManager::GetInstance()->SetGameMessage("세계여행 - " + GameManager::GetInstance()->GetBoardData().name[worldTrableSignSyncPkt.userPosition]
+			+ " 로 이동 했습니다.");	// 메시지 갱신
+	(*GameManager::GetInstance()->GetUserMoneyVector())[worldTrableSignSyncPkt.whosTurn] = worldTrableSignSyncPkt.userMoney;	// 돈 갱신
+
+	if (worldTrableSignSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
+	{
+		MakePacket(WORLD_TRABLE_SIGN_SYNC);
+		SendMessageToGameServer();
+	}
+}
+
 void SocketTransfer::GetRevenueSignMethod(char* packet)
 {
 	instance->GetRevenueSign(packet);
@@ -942,16 +996,41 @@ void SocketTransfer::SendRollDiceSign()
 
 void SocketTransfer::SendSelectModeInput(int inputKey)
 {
-	if (!RenderManager::GetInstance()->isSelectMapMode)
+	if (RenderManager::GetInstance()->isSelectMapMode == IDLE_MODE)
 		return;
 
 	if (inputKey == NONE)
 		return;
 
-	MakePacket(SEND_SELECT_MODE_INPUT_KEY);
-	AppendPacketData(inputKey, sizeof(inputKey));	// 무슨 키 입력했는지 전달
-	AppendPacketData(RenderManager::GetInstance()->selectPosition, sizeof(RenderManager::GetInstance()->selectPosition));	// 현재 선택 값 전달
-	SendMessageToGameServer();
+	switch (RenderManager::GetInstance()->isSelectMapMode)
+	{
+	case SELL_LAND_MODE:
+		MakePacket(SEND_SELECT_MODE_INPUT_KEY);
+		AppendPacketData(inputKey, sizeof(inputKey));	// 무슨 키 입력했는지 전달
+		AppendPacketData(RenderManager::GetInstance()->selectPosition, sizeof(RenderManager::GetInstance()->selectPosition));	// 현재 선택 값 전달
+		SendMessageToGameServer();
+		break;
+	case OLYMPIC_MODE:
+		if (inputKey == INPUT_ENTER)
+		{
+			MakePacket(OLYMPIC_SIGN);
+			AppendPacketData(RenderManager::GetInstance()->selectPosition, sizeof(RenderManager::GetInstance()->selectPosition)); // 위치값 전달
+			SendMessageToGameServer();
+		}
+		else
+			RenderManager::GetInstance()->MoveSelectPosition((inputKey == INPUT_LEFT) ? true : false);
+		break;
+	case WORLD_TRABLE_MODE:
+		if (inputKey == INPUT_ENTER)
+		{
+			MakePacket(WORLD_TRABLE_SIGN);
+			AppendPacketData(RenderManager::GetInstance()->selectPosition, sizeof(RenderManager::GetInstance()->selectPosition)); // 위치값 전달
+			SendMessageToGameServer();
+		}
+		else
+			RenderManager::GetInstance()->MoveSelectPosition((inputKey == INPUT_LEFT) ? true : false);
+		break;
+	}
 }
 
 void SocketTransfer::GetSelectBtnMsg(bool isOK)

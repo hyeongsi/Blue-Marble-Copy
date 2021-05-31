@@ -65,6 +65,12 @@ private:
 	static void SellLandSignMethod(char* packet);
 	void SellLandSign(char* packet);
 
+	static void GetWorldTrableSignMethod(char* packet);
+	void GetWorldTrableSign(char* packet);
+
+	static void GetWorldTrableSignSyncMethod(char* packet);
+	void GetWorldTrableSignSync(char* packet);
+
 	static void GetRevenueSignMethod(char* packet);
 	void GetRevenueSign(char* packet);
 	

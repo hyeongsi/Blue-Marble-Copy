@@ -95,8 +95,12 @@ public:
 
 	void DesertIslandMethod();	// 감옥 처리
 
+	void WorldTrableMethod();	// 세계여행 처리
+	void WorldTrableSignSyncMethod();
+
 	void SendRollTheDice(int value1, int value2, bool isDesertIsland);	// 주사위 눈 전송
 	void MoveUserPosition(int diceValue);	// 캐릭터 보드판 위치 이동
+	void MoveTileProcess();
 
 	void SendPayTollSign();	// 통행료 지불
 	void SendBuyLandSign();	// 구입 시 처리

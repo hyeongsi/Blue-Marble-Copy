@@ -38,7 +38,7 @@ enum class GameState
 enum InputKey
 {
 	NONE = 0,
-	INPUT_SPACE = 1,
+	INPUT_ENTER = 1,
 	INPUT_LEFT = 2,
 	INPUT_RIGHT = 3,
 };

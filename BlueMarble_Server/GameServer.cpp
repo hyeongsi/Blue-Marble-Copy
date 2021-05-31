@@ -120,6 +120,13 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case BUY_LANDMARK_SIGN:
 				GameManager::GetInstance()->BuyLandMarkMethod(myRoom, cBuffer);
 				break;
+			case OLYMPIC_SIGN:
+			case WORLD_TRABLE_SIGN:
+				GameManager::GetInstance()->GetSelectIndexMethod(myRoom, cBuffer, header);
+				break;
+			case WORLD_TRABLE_SIGN_SYNC:
+				myRoom->MoveTileProcess();
+				break;
 			case REVENUE_SIGN:
 				GameManager::GetInstance()->RevenueSignMethod(myRoom);
 				break;

@@ -69,6 +69,28 @@ void RenderManager::RenderInitSetting()
     FillRect(memDC, &windowRect, (HBRUSH)GetStockObject(WHITE_BRUSH));      // 바탕 흰색으로 초기화
 }
 
+void RenderManager::MoveSelectPosition(bool isLeft)
+{
+    if (isLeft)
+    {
+        selectPosition += 1;
+
+        if (GameManager::GetInstance()->GetBoardData().code.size() <= selectPosition)
+        {
+            selectPosition -= GameManager::GetInstance()->GetBoardData().code.size();
+        }
+    }
+    else
+    {
+        selectPosition -= 1;
+
+        if (0 > selectPosition)
+        {
+            selectPosition += (GameManager::GetInstance()->GetBoardData().code.size());
+        }
+    }
+}
+
 void RenderManager::SetPlayerBitmapLocation(int playerIndex, int tileIndex)
 {
     POINT printPoint;
@@ -331,7 +353,7 @@ void RenderManager::DrawSelectMode()
 {
     if (GameManager::GetInstance()->GetBoardData().mapSize == 0)
         return;
-    if (!isSelectMapMode)
+    if (isSelectMapMode == IDLE_MODE)
         return;
 
     int remainder;
