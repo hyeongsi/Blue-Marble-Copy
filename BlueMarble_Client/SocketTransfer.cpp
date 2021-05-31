@@ -74,6 +74,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case SELL_LAND_SIGN:
 				SellLandSignMethod(cBuffer);
 				break;
+			case REVENUE_SIGN:
+				GetRevenueSignMethod(cBuffer);
+				break;
 			case PAY_TOLL_SIGN_SYNC:
 				GetPayTollSignSyncMethod(cBuffer);
 				break;
@@ -85,6 +88,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 				break;
 			case SELL_LAND_SIGN_SYNC:
 				GetSellLandSignSyncMethod(cBuffer);
+				break;
+			case REVENUE_SIGN_SYNC:
+				GetRevenueSignSyncMethod(cBuffer);
 				break;
 			case FINISH_THIS_TURN_PROCESS:
 				SendNextTurnSignMethod();
@@ -541,6 +547,29 @@ void SocketTransfer::SellLandSign(char* packet)
 	GameWindow::GetInstance()->ShowButton(SELECT_UI_BTN);
 }
 
+void SocketTransfer::GetRevenueSignMethod(char* packet)
+{
+	instance->GetRevenueSign(packet);
+}
+
+void SocketTransfer::GetRevenueSign(char* packet)
+{
+	revenueSignPacket revenueSignPkt;
+	int accumDataSize = 1;
+
+	memcpy(&revenueSignPkt.whosTurn, &packet[accumDataSize], sizeof(revenueSignPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(revenueSignPkt.whosTurn);
+	memcpy(&revenueSignPkt.tax, &packet[accumDataSize], sizeof(revenueSignPkt.tax));  // get tax
+
+	UiDialog::GetInstance()->SetTaxText(revenueSignPkt.tax);
+
+	DialogBox(MainSystem::GetInstance()->GetHinstance(), MAKEINTRESOURCE(IDD_REVENUE),
+		GameWindow::GetInstance()->g_hWnd, UiDialog::GetInstance()->RevenueDlgProc);
+
+	MakePacket(REVENUE_SIGN);
+	SendMessageToGameServer();
+}
+
 void SocketTransfer::GetPayTollSignSyncMethod(char* packet)
 {
 	instance->GetPayTollSignSync(packet);
@@ -697,6 +726,32 @@ void SocketTransfer::GetSellLandSignSync(char* packet)
 	if (sellLandSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
 	{
 		MakePacket(SELL_LAND_SIGN_SYNC);
+		SendMessageToGameServer();
+	}
+}
+
+void SocketTransfer::GetRevenueSignSyncMethod(char* packet)
+{
+	instance->GetRevenueSignSync(packet);
+}
+
+void SocketTransfer::GetRevenueSignSync(char* packet)
+{
+	revenueSignSyncPacket revenueSignSyncPkt;
+	int accumDataSize = 1;
+
+	memcpy(&revenueSignSyncPkt.whosTurn, &packet[accumDataSize], sizeof(revenueSignSyncPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(revenueSignSyncPkt.whosTurn);
+	memcpy(&revenueSignSyncPkt.tax, &packet[accumDataSize], sizeof(revenueSignSyncPkt.tax));	// get tax
+	accumDataSize += sizeof(revenueSignSyncPkt.tax);
+	memcpy(&revenueSignSyncPkt.userMoney, &packet[accumDataSize], sizeof(revenueSignSyncPkt.userMoney));	// get userMoney
+	
+	(*GameManager::GetInstance()->GetUserMoneyVector())[revenueSignSyncPkt.whosTurn] = revenueSignSyncPkt.userMoney;	// 돈 갱신
+	GameManager::GetInstance()->SetGameMessage("세금 - " + to_string(revenueSignSyncPkt.tax) + " 를 지불했습니다.");	// 메시지 갱신
+
+	if (revenueSignSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
+	{
+		MakePacket(REVENUE_SIGN_SYNC);
 		SendMessageToGameServer();
 	}
 }

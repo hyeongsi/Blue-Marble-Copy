@@ -399,6 +399,27 @@ void GameRoom::SendTakeOverSignSync(int takeOverPrice, int owner)
 	}
 }
 
+void GameRoom::SendRevenueSign()
+{
+	gameServer->MakePacket(sendPacket, &packetLastIndex, REVENUE_SIGN);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, TAX, sizeof(TAX));	// 세금
+	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+}
+
+void GameRoom::SendRevenueSignSync()
+{
+	gameServer->MakePacket(sendPacket, &packetLastIndex, REVENUE_SIGN_SYNC);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, TAX, sizeof(TAX));	// 세금
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[takeControlPlayer], sizeof(userMoneyVector[takeControlPlayer]));	// 유저 돈
+	for (auto& socketIterator : userVector)
+	{
+		gameServer->PacektSendMethod(sendPacket, socketIterator);
+		printf("%s %d\n", "send RevenueSignSync - ", socketIterator);
+	}
+}
+
 void GameRoom::SendBuyLandMarkSign()
 {
 	int landMarkPrice = board.landMark[userPositionVector[takeControlPlayer]];

@@ -38,6 +38,7 @@ enum MessageCode
 	TAKE_OVER_SYNC = 21,
 	BUY_LANDMARK_SIGN_SYNC = 22,
 	SELL_LAND_SIGN_SYNC = 23,
+	REVENUE_SIGN_SYNC = 24,
 	FINISH_THIS_TURN_PROCESS = 25,
 	SEND_SELECT_MODE_INPUT_KEY = 30,
 	SELECT_MODE_BTN = 31,
@@ -127,7 +128,7 @@ typedef struct BuyBuildSyncPacket	//SELL_LAND_SIGN
 	int userMoney;	// 해당 유저 돈
 }buyBuildingSyncPacket;
 
-typedef struct SellLandSignPacket	//SELL_LAND_SIGN
+typedef struct SellLandSignPacket	// SELL_LAND_SIGN
 {
 	char header = 0;
 	int whosTurn = 0;	// 누구 턴인지
@@ -136,6 +137,13 @@ typedef struct SellLandSignPacket	//SELL_LAND_SIGN
 	int landSize = 0; // 땅 개수
 	vector<int> landPosition;	// 땅 위치
 }sellLandSignPacket;
+
+typedef struct RevenueSignPacket	// REVENUE_SIGN
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int tax;		// 세금
+}revenueSignPacket;
 
 typedef struct PayTollPacket	// PAY_TOLL_SIGN
 {
@@ -196,6 +204,14 @@ typedef struct SellLandSyncPacket	// SELL_LAND_SIGN_SYNC
 	int sellLandCount;	// 판매하는 땅 개수
 	vector<int> landIndex; // 땅 번호
 }sellLandSyncPacket;
+
+typedef struct RevenueSignSyncPacket	// REVENUE_SIGN_SYNC
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int tax;	// 세금
+	int userMoney;	// 유저 돈
+}revenueSignSyncPacket;
 
 typedef struct SelectInputKeyPacket	// SEND_SELECT_MODE_INPUT_KEY
 {

@@ -107,6 +107,16 @@ BEGIN
     DEFPUSHBUTTON   "취소",IDCANCEL,119,60,50,14
 END
 
+IDD_REVENUE DIALOGEX 0, 0, 221, 81
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
+CAPTION "세금 지불"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "확인",IDOK,80,60,50,14
+    LTEXT           "세금을 지불해야 합니다.",IDC_STATIC,69,19,81,8
+    LTEXT           "세금 : 0",IDC_STATIC_TAXTEXT,67,38,131,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -155,6 +165,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 74
     END
+
+    IDD_REVENUE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 214
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 74
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -185,6 +203,11 @@ BEGIN
 END
 
 IDD_BUY_LANDMARK AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_REVENUE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

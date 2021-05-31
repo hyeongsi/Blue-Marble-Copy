@@ -25,6 +25,7 @@ enum SellState
 	BUILD_LANDMARK = 0,
 	PAY_TOLL = 1,
 	TAKE_OVER_LAND = 2,
+	PAY_TAX = 3,
 };
 
 class GameServer;
@@ -106,6 +107,9 @@ public:
 
 	void SendTakeOverSign(int landOwner);
 	void SendTakeOverSignSync(int takeOverPrice, int owner);
+
+	void SendRevenueSign();
+	void SendRevenueSignSync();
 
 	void SendBuyLandMarkSign();
 	void SendBuyLandMarkSignSync(int landMarkPrice); // 랜드마크 구입 싱크 메시지 전송

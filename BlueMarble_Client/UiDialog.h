@@ -30,6 +30,7 @@ private:
 	int payToll = 0;
 	int takeOverPrice = 0;
 	int landMarkPrice = 0;
+	int tax = 0;
 
 	UiDialog();
 	~UiDialog();
@@ -56,5 +57,8 @@ public:
 
 	static BOOL CALLBACK BuyLandMarkDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
 	void SetLandMarkPriceText(int price);
+
+	static BOOL CALLBACK RevenueDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam);
+	void SetTaxText(int tax);
 };
 

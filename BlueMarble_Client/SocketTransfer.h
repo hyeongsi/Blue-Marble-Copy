@@ -65,6 +65,9 @@ private:
 	static void SellLandSignMethod(char* packet);
 	void SellLandSign(char* packet);
 
+	static void GetRevenueSignMethod(char* packet);
+	void GetRevenueSign(char* packet);
+	
 	static void GetPayTollSignSyncMethod(char* packet);
 	void GetPayTollSignSync(char* packet);
 
@@ -76,6 +79,9 @@ private:
 
 	static void GetSellLandSignSyncMethod(char* packet);
 	void GetSellLandSignSync(char* packet);
+
+	static void GetRevenueSignSyncMethod(char* packet);
+	void GetRevenueSignSync(char* packet);
 
 	static void SendNextTurnSignMethod();
 	void SendNextTurnSign();

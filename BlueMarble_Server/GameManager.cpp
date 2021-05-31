@@ -141,7 +141,7 @@ void GameManager::RoomLogicThreadMethod(GameRoom* room)
 			room->EndTurn();
 			break;
 		case GameState::REVENUE_TILE:
-			room->EndTurn();
+			room->SendRevenueSign();
 			break;
 		case GameState::NEXT_TURN:
 			room->SendFinishTurnSign();
@@ -484,6 +484,29 @@ void GameManager::BuyLandMark(GameRoom* room, char* data)
 	}
 }
 
+void GameManager::RevenueSignMethod(GameRoom* room)
+{
+	instance->RevenueSign(room);
+}
+
+void GameManager::RevenueSign(GameRoom* room)
+{
+	if ((*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] >= TAX)	// 세금을 바로 낼 수 있다면
+	{
+		(*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] -= TAX;
+		room->SendRevenueSignSync();
+	}
+	else if(room->TotalDisposalPrice() + (*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] >= TAX) // 땅 매각 후 세금 내기
+	{
+		room->SendSellLandSign(TAX, PAY_TAX);
+	}
+	else  // 세금 낼 돈이 아예 없으면
+	{
+		// 게임오버 처리
+		room->NextTurn();
+	}
+}
+
 void GameManager::SelectInputKeyProcessMethod(GameRoom* room, char* data)
 {
 	instance->SelectInputKeyProcess(room, data);
@@ -544,6 +567,9 @@ void GameManager::SellLandProcess(GameRoom* room, char* data)
 		case TAKE_OVER_LAND:
 			room->SendTakeOverSign(room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]]);
 			break;
+		case PAY_TAX:
+			room->SendRevenueSign();
+			break;
 		}
 	}
 }
@@ -574,6 +600,9 @@ void GameManager::AfterSellLandSync(GameRoom* room)
 			break;
 		case TAKE_OVER_LAND:
 			room->SendTakeOverSign(room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]]);
+			break;
+		case PAY_TAX:
+			room->SendRevenueSign();
 			break;
 		}
 	}

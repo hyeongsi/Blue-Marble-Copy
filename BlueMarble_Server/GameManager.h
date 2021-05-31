@@ -51,6 +51,9 @@ public:
 	static void BuyLandMarkMethod(GameRoom* room, char* data);
 	void BuyLandMark(GameRoom* room, char* data);
 
+	static void RevenueSignMethod(GameRoom* room);
+	void RevenueSign(GameRoom* room);
+
 	static void SelectInputKeyProcessMethod(GameRoom* room, char* data);	// 선택모드 입력키 처리 후 값 전송
 	void SelectInputKeyProcess(GameRoom* room, char* data);
 

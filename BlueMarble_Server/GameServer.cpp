@@ -120,6 +120,9 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case BUY_LANDMARK_SIGN:
 				GameManager::GetInstance()->BuyLandMarkMethod(myRoom, cBuffer);
 				break;
+			case REVENUE_SIGN:
+				GameManager::GetInstance()->RevenueSignMethod(myRoom);
+				break;
 			case BUY_LAND_SYNC:
 				myRoom->CheckLandKindNSendMessage();
 				break;
@@ -140,6 +143,9 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 				break;
 			case SELL_LAND_SIGN_SYNC:
 				GameManager::GetInstance()->AfterSellLandSyncMethod(myRoom);
+				break;
+			case REVENUE_SIGN_SYNC:
+				myRoom->NextTurn();
 				break;
 			case FINISH_THIS_TURN_PROCESS:
 				myRoom->CheckEndProcess(clientSocket);
