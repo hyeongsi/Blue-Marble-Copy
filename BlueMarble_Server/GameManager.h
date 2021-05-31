@@ -56,5 +56,8 @@ public:
 
 	static void SellLandProcessMethod(GameRoom* room, char* data);
 	void SellLandProcess(GameRoom* room, char* data);
+
+	static void AfterSellLandSyncMethod(GameRoom* room);
+	void AfterSellLandSync(GameRoom* room);
 };
 

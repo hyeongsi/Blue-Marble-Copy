@@ -521,47 +521,60 @@ void GameManager::SellLandProcess(GameRoom* room, char* data)
 {
 	sellLandProcessPacket sellLandProcessPkt;
 	int accumDataSize = 1;
+	int sellPrice = 0;
 
 	memcpy(&sellLandProcessPkt.isOK, &data[accumDataSize], sizeof(sellLandProcessPkt.isOK));	// get isOK
 
 	if (sellLandProcessPkt.isOK)
 	{
-		room->SellLand();	// 땅 팔기 처리
-
-		if (room->goalPrice > (*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()])  // 팔았는데도 돈이 안채워지면
+		sellPrice = room->SellLand();	// 땅 팔기 처리
+		room->SendSellLandSignSync();
+		(*room->GetSelectLandIndex()).clear();	// 땅 팔았으니 선택한 땅들 초기화
+	}
+	else   // 취소를 눌렀을 때
+	{
+		switch (room->beforeSellSign)
 		{
-			room->SendSellLandSign(room->goalPrice, room->beforeSellSign);	// 다시 땅 팔기
-		}
-		else  // 팔고 돈 채워지면
-		{
-			// 동기화 작업 하고 밑에 작업 추가로 하기
-			room->SendSellLandSignSync();
-			(*room->GetSelectLandIndex()).clear();	// 땅 팔았으니 선택한 땅들 초기화
-
-			switch (room->beforeSellSign)
-			{
-			case BUILD_LANDMARK:
-				room->SendBuyLandMarkSign();
-				break;
-			case PAY_TOLL:
-				(*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] -= room->goalPrice;
-				room->NextTurn();
-				break;
-			case TAKE_OVER_LAND:
-				room->SendTakeOverSign(room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]]);
-				break;
-			}
+		case BUILD_LANDMARK:
+			room->SendBuyLandMarkSign();
+			break;
+		case PAY_TOLL:
+			room->SendPayTollSign();
+			break;
+		case TAKE_OVER_LAND:
+			room->SendTakeOverSign(room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]]);
+			break;
 		}
 	}
-	else
+}
+
+void GameManager::AfterSellLandSyncMethod(GameRoom * room)
+{
+	instance->AfterSellLandSync(room);
+}
+
+void GameManager::AfterSellLandSync(GameRoom* room)
+{
+	if (room->goalPrice > (*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()])  // 팔았는데도 돈이 안채워지면
 	{
-		if (room->beforeSellSign != PAY_TOLL) // 통행료 내는게 아니면
+		room->SendSellLandSign(room->goalPrice, room->beforeSellSign);	// 다시 땅 팔기
+	}
+	else  // 팔고 돈 채워지면
+	{
+		switch (room->beforeSellSign)
 		{
-			room->EndTurn();	// 다음턴으로 넘기기
-		}
-		else  // 통행료를 내야 하니까 다시 땅 팔기 실행
-		{
-			room->SendSellLandSign(room->goalPrice, room->beforeSellSign);	// 다시 땅 팔기
+		case BUILD_LANDMARK:
+			if (room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] != room->GetTakeControlPlayer()) // 랜드마크 지을려는 땅까지 팔아버렸으면 다음턴으로
+				room->NextTurn();
+			else
+				room->SendBuyLandMarkSign();
+			break;
+		case PAY_TOLL:
+			room->SendPayTollSign();
+			break;
+		case TAKE_OVER_LAND:
+			room->SendTakeOverSign(room->GetLandBoardData().land[room->GetUserPositionVector()[room->GetTakeControlPlayer()]]);
+			break;
 		}
 	}
 }

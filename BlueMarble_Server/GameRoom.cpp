@@ -129,7 +129,7 @@ bool GameRoom::CheckSendDelay()
 {
 	double duration = (finishTime - startTime) / CLOCKS_PER_SEC;
 
-	if (duration >= 2.0)
+	if (duration >= 1.0)
 	{
 		startTime = clock();
 		return true;
@@ -448,6 +448,7 @@ void GameRoom::SendSellLandSignSync()
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex,
 		userMoneyVector[takeControlPlayer], sizeof(userMoneyVector[takeControlPlayer]));	// 유저 돈
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, goalPrice, sizeof(goalPrice));	// 목표금액
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, sellLandSize, sizeof(sellLandSize));	// 판매하는 땅 개수
 	for (int i = 0; i < sellLandSize; i++)
 	{
@@ -499,9 +500,14 @@ void GameRoom::CheckPassNSellMessage()
 		else
 		{
 			if (landBoardData.landMark[userPositionVector[takeControlPlayer]] == takeControlPlayer) // 랜드마크 지어져 있으면
-				SendBuyLandMarkSign();
+				EndTurn();	// 인수 못하니까 다음턴으로 넘기기
 			else  // 인수 처리
-				SendTakeOverSign(landOwner);
+			{
+				if ((GetBuildPrice(landOwner) * 2) > (userMoneyVector[takeControlPlayer] + TotalDisposalPrice())) // 인수 비용이 땅 매각가격 + 소지금 보다 많다면 인수 불가
+					EndTurn();
+				else   // 땅 팔아서 인수 비용 충당이 가능하다면 땅 매각
+					SendTakeOverSign(landOwner);
+			}	
 		}
 	}
 	else
@@ -704,7 +710,7 @@ int GameRoom::DisposalPrice(int index)
 	return disposalPrice / 2;	// 매각 비용은 건설비용의 반토막 ( x / 2 ) 값
 }
 
-void GameRoom::SellLand()
+int GameRoom::SellLand()
 {
 	int accumPrice = 0;
 
@@ -723,6 +729,8 @@ void GameRoom::SellLand()
 	}
 
 	userMoneyVector[takeControlPlayer] += accumPrice;	// 돈 증가
+
+	return accumPrice;
 }
 
 int GameRoom::FindNextLand(int selectValue, bool isLeft)

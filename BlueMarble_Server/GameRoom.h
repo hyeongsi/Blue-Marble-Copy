@@ -129,7 +129,7 @@ public:
 	void BuyLandMark(int price);	// 인수 처리
 	int TotalDisposalPrice();	// 전체 땅 처분 가격
 	int DisposalPrice(int index);	// 땅 처분 가격
-	void SellLand();	// 저장해놓은 땅 처분 처리
+	int SellLand();	// 저장해놓은 땅 처분 처리
 
 	int FindNextLand(int selectValue, bool isLeft);	// 그다음 소지한 지역 찾기
 

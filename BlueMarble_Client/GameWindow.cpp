@@ -142,20 +142,25 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
         PostQuitMessage(0);
         break;
     case WM_COMMAND:
-        switch (LOWORD(wParam))
+        switch (HIWORD(wParam))
         {
-        case IDC_ROLL_THE_DICE:
-            SendDiceTriggerMsgMethod();
-            break;
-        case IDC_SELECT_OK:
-            SendSelectBtnMsgMethod(true);
-            break;
-        case IDC_SELECT_CANCEL:
-            SendSelectBtnMsgMethod(false);
-            break;
+            case BN_CLICKED:
+            {
+                switch (LOWORD(wParam))
+                {
+                   case IDC_ROLL_THE_DICE:
+                       SendDiceTriggerMsgMethod();
+                       break;
+                   case IDC_SELECT_OK:
+                       SendSelectBtnMsgMethod(true);
+                       break;
+                   case IDC_SELECT_CANCEL:
+                       SendSelectBtnMsgMethod(false);
+                       break;
+                }
+            }
         }
         break;
-       
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }

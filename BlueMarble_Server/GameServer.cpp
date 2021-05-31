@@ -138,13 +138,17 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case BUY_LANDMARK_SIGN_SYNC:
 				myRoom->NextTurn();
 				break;
+			case SELL_LAND_SIGN_SYNC:
+				GameManager::GetInstance()->AfterSellLandSyncMethod(myRoom);
+				break;
 			case FINISH_THIS_TURN_PROCESS:
 				myRoom->CheckEndProcess(clientSocket);
 				break;
 			case SEND_SELECT_MODE_INPUT_KEY:
 				GameManager::GetInstance()->SelectInputKeyProcessMethod(myRoom, cBuffer);
+				break;
 			case SELECT_MODE_BTN:
-				GameManager::GetInstance()->SellLandProcessMethod(cBuffer);
+				GameManager::GetInstance()->SellLandProcessMethod(myRoom, cBuffer);
 				break;
 			default:
 				break;

@@ -90,7 +90,7 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 				SendNextTurnSignMethod();
 				break;
 			case SEND_SELECT_MODE_INPUT_KEY:
-				GetSelectValue(cBuffer);
+				GetSelectValueMethod(cBuffer);
 				break;
 			default:
 				break;
@@ -659,6 +659,8 @@ void SocketTransfer::GetSellLandSignSync(char* packet)
 	accumDataSize += sizeof(sellLandSyncPkt.whosTurn);
 	memcpy(&sellLandSyncPkt.userMoney, &packet[accumDataSize], sizeof(sellLandSyncPkt.userMoney));	// get userMoney
 	accumDataSize += sizeof(sellLandSyncPkt.userMoney);
+	memcpy(&sellLandSyncPkt.goalPrice, &packet[accumDataSize], sizeof(sellLandSyncPkt.goalPrice));	// get goalPrice
+	accumDataSize += sizeof(sellLandSyncPkt.goalPrice);
 	memcpy(&sellLandSyncPkt.sellLandCount, &packet[accumDataSize], sizeof(sellLandSyncPkt.sellLandCount));	// get sellLandCount
 	accumDataSize += sizeof(sellLandSyncPkt.sellLandCount);
 
@@ -669,10 +671,28 @@ void SocketTransfer::GetSellLandSignSync(char* packet)
 		sellLandSyncPkt.landIndex.emplace_back(landIndex);
 	}
 
-	// 돈 추가하고,
-	// 메시지 바꾸고
-	// 땅 판거 처리하고,
-	// 그외 등등 아무튼 하면 됨
+	string msg = "소지 자금이 부족하여 매각 처리 했습니다\n 목표자금 - " + to_string(sellLandSyncPkt.goalPrice) +
+		"을 충족해야 합니다. \n" + "매각 땅 : ";
+
+	(*GameManager::GetInstance()->GetUserMoneyVector())[sellLandSyncPkt.whosTurn] = sellLandSyncPkt.userMoney;	// 돈 갱신
+
+	for (const auto& it : sellLandSyncPkt.landIndex)
+	{
+		msg += GameManager::GetInstance()->GetBoardData().name[it];
+		if (it == sellLandSyncPkt.landIndex.back())
+			break;
+		msg += ", ";
+	}
+	GameManager::GetInstance()->SetGameMessage(msg);	// 메시지 갱신
+
+	for (const auto& it : sellLandSyncPkt.landIndex)	// 땅 주인 및 건물 제거
+	{
+		GameManager::GetInstance()->GetAddressBoardData()->owner[it] = 0;
+		GameManager::GetInstance()->GetAddressBoardBuildData()->villa[it] = false;
+		GameManager::GetInstance()->GetAddressBoardBuildData()->building[it] = false;
+		GameManager::GetInstance()->GetAddressBoardBuildData()->hotel[it] = false;
+		GameManager::GetInstance()->GetAddressBoardBuildData()->landMark[it] = false;
+	}
 
 	if (sellLandSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
 	{
@@ -707,9 +727,9 @@ void SocketTransfer::GetSelectValue(char* packet)
 	accumDataSize += sizeof(selectInputKeyPkt.selectLandIndex);
 	memcpy(&selectInputKeyPkt.isSpaceBar, &packet[accumDataSize], sizeof(selectInputKeyPkt.isSpaceBar));	// get isSpaceBar
 
-	if(!selectInputKeyPkt.isSpaceBar)
-		RenderManager::GetInstance()->selectPosition = selectInputKeyPkt.selectLandIndex;
-	else
+	RenderManager::GetInstance()->selectPosition = selectInputKeyPkt.selectLandIndex;
+
+	if (selectInputKeyPkt.isSpaceBar)
 	{
 		accumDataSize += sizeof(selectInputKeyPkt.isSpaceBar);
 		memcpy(&selectInputKeyPkt.isErase, &packet[accumDataSize], sizeof(selectInputKeyPkt.isErase));	// get isErase
@@ -867,6 +887,9 @@ void SocketTransfer::SendRollDiceSign()
 
 void SocketTransfer::SendSelectModeInput(int inputKey)
 {
+	if (!RenderManager::GetInstance()->isSelectMapMode)
+		return;
+
 	if (inputKey == NONE)
 		return;
 

@@ -192,6 +192,7 @@ typedef struct SellLandSyncPacket	// SELL_LAND_SIGN_SYNC
 	char header;
 	int whosTurn;	// 누구 턴인지
 	int userMoney;	// 유저 돈
+	int goalPrice;	// 목표 금액
 	int sellLandCount;	// 판매하는 땅 개수
 	vector<int> landIndex; // 땅 번호
 }sellLandSyncPacket;

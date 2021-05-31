@@ -157,7 +157,7 @@ int GameManager::SelectModeInputKey()
 
 	if ((clock() - keyInputDelayTime) >= 200) // 딜레이 0.2초
 	{
-		if (GetAsyncKeyState(VK_SPACE) & 0x8000)	// 스페이스바
+		if (GetAsyncKeyState(VK_RETURN) & 0x8000)	// 엔터
 		{
 			keyInputDelayTime = clock();
 			return INPUT_SPACE;
