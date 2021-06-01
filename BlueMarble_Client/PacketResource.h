@@ -26,20 +26,21 @@ enum MessageCode
 	BUY_LANDMARK_SIGN = 9,
 	SELL_LAND_SIGN = 10,
 	CARD_SIGN = 11,
-	DESERT_ISLAND_SIGN = 12,
-	OLYMPIC_SIGN = 13,
-	OLYMPIC = 14,
-	WORLD_TRABLE_SIGN = 15,
-	WORLD_TRABLE_SIGN_SYNC = 16,
-	REVENUE_SIGN = 17,
-	BUY_LAND_SYNC = 18,
-	BUY_BUILDING_SYNC = 19,
-	PAY_TOLL_SIGN_SYNC = 20,
-	TAKE_OVER_SYNC = 21,
-	BUY_LANDMARK_SIGN_SYNC = 22,
-	SELL_LAND_SIGN_SYNC = 23,
-	REVENUE_SIGN_SYNC = 24,
-	FINISH_THIS_TURN_PROCESS = 25,
+	CARD_SIGN_SYNC = 12,
+	DESERT_ISLAND_SIGN = 13,
+	OLYMPIC_SIGN = 14,
+	OLYMPIC = 15,
+	WORLD_TRABLE_SIGN = 16,
+	WORLD_TRABLE_SIGN_SYNC = 17,
+	REVENUE_SIGN = 18,
+	BUY_LAND_SYNC = 19,
+	BUY_BUILDING_SYNC = 20,
+	PAY_TOLL_SIGN_SYNC = 21,
+	TAKE_OVER_SYNC = 22,
+	BUY_LANDMARK_SIGN_SYNC = 23,
+	SELL_LAND_SIGN_SYNC = 24,
+	REVENUE_SIGN_SYNC = 25,
+	FINISH_THIS_TURN_PROCESS = 26,
 	SEND_SELECT_MODE_INPUT_KEY = 30,
 	SELECT_MODE_BTN = 31,
 };
@@ -137,6 +138,22 @@ typedef struct SellLandSignPacket	// SELL_LAND_SIGN
 	int landSize = 0; // 땅 개수
 	vector<int> landPosition;	// 땅 위치
 }sellLandSignPacket;
+
+typedef struct CardSignPacket	// CARD_SIGN
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int cardId;		// 카드 ID
+}cardSignPacket;
+
+typedef struct CardSignSyncPacket	// CARD_SIGN_SYNC
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int cardId;		// 카드 ID
+	int userMoney;	// 유저 돈
+	int userPosition;	//유저 위치
+}cardSignSyncPacket;
 
 typedef struct OlympicSignPacket	// OLYMPIC_SIGN
 {

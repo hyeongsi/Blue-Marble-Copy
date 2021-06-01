@@ -65,6 +65,12 @@ private:
 	static void SellLandSignMethod(char* packet);
 	void SellLandSign(char* packet);
 
+	static void GetCardSignMethod(char* packet);
+	void GetCardSign(char* packet);
+
+	static void GetCardSignSyncMethod(char* packet);
+	void GetCardSignSync(char* packet);
+
 	static void GetOlympicSignMethod(char* packet);
 	void GetOlympicSign(char* packet);
 

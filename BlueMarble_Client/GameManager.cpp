@@ -1,5 +1,6 @@
 ﻿#include "GameManager.h"
 #include "RenderManager.h"
+#include <fstream>
 
 GameManager* GameManager::instance = nullptr;
 
@@ -12,6 +13,7 @@ GameManager* GameManager::GetInstance()
 	{
 		instance = new GameManager();
 		instance->keyInputDelayTime = clock();
+		instance->LoadCardMessage();
 	}
 
 	return instance;
@@ -21,6 +23,35 @@ void GameManager::ReleaseInstance()
 {
 	delete instance;
 	instance = nullptr;
+}
+
+void GameManager::LoadCardMessage()
+{
+	const char* cardDataPath = "card/original.txt";
+
+	ifstream readFile;
+	int cardId;
+
+	readFile.open(cardDataPath);
+	if (readFile.is_open())
+	{
+		while (!readFile.eof())
+		{
+			char cardMessage[300];
+			string cardMsgString;
+
+			readFile >> cardId;		// 카드 ID
+			readFile >> cardMessage;	// 지급,지불 금액
+
+			cardMsgString = cardMessage;
+			cardMsgString = replaceAll(cardMsgString, "-", "\n");
+			cardMsgString = replaceAll(cardMsgString, "_", " ");
+
+			cardMessageVector.emplace_back(cardMsgString);
+		}
+	}
+
+	readFile.close();
 }
 
 void GameManager::Init()
@@ -52,6 +83,11 @@ vector<int>* GameManager::GetUserPositionVector()
 vector<int>* GameManager::GetUserMoneyVector()
 {
 	return &userMoneyVector;
+}
+
+vector<string> GameManager::GetCardMsgVector()
+{
+	return cardMessageVector;
 }
 
 void GameManager::SetGameMessage(string msg)
@@ -136,6 +172,19 @@ void GameManager::SetSelectMapMode(bool isMyTurn, int goalPrice)
 
 	if(!isHaveLand)
 		RenderManager::GetInstance()->selectPosition = -1; // 초기 선택 땅 초기화
+}
+
+string GameManager::replaceAll(const string& str, const string& pattern, const string& replace)
+{
+	string result = str;
+	size_t pos = 0;
+	size_t offset = 0;
+	while ((pos = result.find(pattern, offset)) != string::npos)
+	{
+		result.replace(result.begin() + pos, result.begin() + pos + pattern.size(), replace);
+		offset = pos + replace.size();
+	}
+	return result;
 }
 
 void GameManager::MoveUserPosition(int userIndex, int diceValue)

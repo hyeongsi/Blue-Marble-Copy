@@ -2,6 +2,7 @@
 #include "GameManager.h"
 #include "GameServer.h"
 #include <random>
+#include "CardManager.h"
 
 GameManager* GameManager::instance = nullptr;
 
@@ -129,7 +130,7 @@ void GameManager::RoomLogicThreadMethod(GameRoom* room)
 			ArriveLandTileMethod(room);
 			break;
 		case GameState::CARD_TILE:
-			room->EndTurn();
+			CardManager::GetInstance()->DrawCard().UseCard(room);	// 카드 뽑고 카드 사용
 			break;
 		case GameState::DESERT_ISLAND_TILE:
 			room->DesertIslandMethod();
@@ -336,7 +337,7 @@ void GameManager::PayToll(GameRoom* room, char* data)
 	}
 
 	if (room->GetLandBoardData().olympic[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] != 0)
-		tollPrice *= pow(2, room->GetLandBoardData().olympic[room->GetUserPositionVector()[room->GetTakeControlPlayer()]]); // 올림픽 적용
+		tollPrice *= (int)pow(2, room->GetLandBoardData().olympic[room->GetUserPositionVector()[room->GetTakeControlPlayer()]]); // 올림픽 적용
 
 	if (tollPrice <= (*room->GetPUserMoneyVector())[payTollSignPkt.whosTurn])
 	{
@@ -440,6 +441,25 @@ void GameManager::BuyLandMark(GameRoom* room, char* data)
 	else
 	{
 		room->EndTurn();
+	}
+}
+
+void GameManager::GetCardSignSyncMethod(GameRoom* room)
+{
+	instance->GetCardSignSync(room);
+}
+
+void GameManager::GetCardSignSync(GameRoom* room)
+{
+	Card preCard = CardManager::GetInstance()->GetCardDataVector()[room->preCardId];
+
+	if (preCard.movePosition == 0 || preCard.moveIndex == -1)	// 이동 안하는 카드라면
+	{
+		room->EndTurn();
+	}
+	else   // 이동 하는 카드라면
+	{
+		room->MoveTileProcess();	// 도착 타일 처리
 	}
 }
 

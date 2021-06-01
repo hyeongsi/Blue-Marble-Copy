@@ -55,6 +55,7 @@ private:
 
 	vector<int> userPositionVector;	// 유저 위치
 	vector<int> userMoneyVector;	// 유저 돈 텍스트
+	vector<string> cardMessageVector;	// 카드 메시지
 
 	bool isMyDiceTurn = false;
 	int playerCount = 0;	// 총 플레이 유저 수
@@ -74,6 +75,7 @@ public:
 	static GameManager* GetInstance();
 	static void ReleaseInstance();
 
+	void LoadCardMessage();
 	void Init();
 
 	void SetGameState(GameState state);
@@ -81,6 +83,7 @@ public:
 
 	vector<int>* GetUserPositionVector();
 	vector<int>* GetUserMoneyVector();
+	vector<string> GetCardMsgVector();
 
 	void SetIsMyDiceTurn(bool turn);
 	bool GetIsMyDiceTurn();
@@ -99,6 +102,8 @@ public:
 
 	buildData* GetAddressBoardBuildData();
 	buildData GetBoarBuildData();
+
+	string replaceAll(const string& str, const string& pattern, const string& replace);
 
 	void SetSelectMapMode(bool isMyTurn, int goalPrice);
 

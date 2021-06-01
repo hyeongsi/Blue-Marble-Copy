@@ -74,6 +74,12 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case SELL_LAND_SIGN:
 				SellLandSignMethod(cBuffer);
 				break;
+			case CARD_SIGN:
+				GetCardSignMethod(cBuffer);
+				break;
+			case CARD_SIGN_SYNC:
+				GetCardSignSyncMethod(cBuffer);
+				break;
 			case OLYMPIC_SIGN:
 				GetOlympicSignMethod(cBuffer);
 				break;
@@ -557,6 +563,59 @@ void SocketTransfer::SellLandSign(char* packet)
 		"을 충족해야 합니다. \n매각 지역 합계 : " + to_string(GameManager::GetInstance()->totalSelectLandSellPrice));	// 메시지 갱신
 
 	GameWindow::GetInstance()->ShowButton(SELECT_UI_BTN);
+}
+
+void SocketTransfer::GetCardSignMethod(char* packet)
+{
+	instance->GetCardSign(packet);
+}
+
+void SocketTransfer::GetCardSign(char* packet)
+{
+	cardSignPacket cardSignPkt;
+	int accumDataSize = 1;
+
+	memcpy(&cardSignPkt.whosTurn, &packet[accumDataSize], sizeof(cardSignPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(cardSignPkt.whosTurn);
+	memcpy(&cardSignPkt.cardId, &packet[accumDataSize], sizeof(cardSignPkt.cardId));  // get cardId
+
+	// 카드 메시지 불러온거 카드ID 통해서 출력하도록 만들자.
+	MessageBox(GameWindow::GetInstance()->g_hWnd, GameManager::GetInstance()->GetCardMsgVector()[cardSignPkt.cardId].c_str(), 
+		"황금 열쇠", MB_OK);
+
+	MakePacket(CARD_SIGN);
+	SendMessageToGameServer();
+}
+
+void SocketTransfer::GetCardSignSyncMethod(char* packet)
+{
+	instance->GetCardSignSync(packet);
+}
+
+void SocketTransfer::GetCardSignSync(char* packet)
+{
+	cardSignSyncPacket cardSignSyncPkt;
+	int accumDataSize = 1;
+
+	memcpy(&cardSignSyncPkt.whosTurn, &packet[accumDataSize], sizeof(cardSignSyncPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(cardSignSyncPkt.whosTurn);
+	memcpy(&cardSignSyncPkt.cardId, &packet[accumDataSize], sizeof(cardSignSyncPkt.cardId));  // get cardId
+	accumDataSize += sizeof(cardSignSyncPkt.whosTurn);
+	memcpy(&cardSignSyncPkt.userMoney, &packet[accumDataSize], sizeof(cardSignSyncPkt.userMoney));  // get userMoney
+	accumDataSize += sizeof(cardSignSyncPkt.userMoney);
+	memcpy(&cardSignSyncPkt.userPosition, &packet[accumDataSize], sizeof(cardSignSyncPkt.userPosition));  // get causerPositionrdId
+
+	(*GameManager::GetInstance()->GetUserPositionVector())[cardSignSyncPkt.whosTurn] = cardSignSyncPkt.userPosition; // 위치 갱신
+	RenderManager::GetInstance()->SetPlayerBitmapLocation(cardSignSyncPkt.whosTurn, cardSignSyncPkt.userPosition);	// 해당 위치로 UI 갱신
+
+	GameManager::GetInstance()->SetGameMessage(GameManager::GetInstance()->GetCardMsgVector()[cardSignSyncPkt.cardId].c_str());	// 메시지 갱신
+	(*GameManager::GetInstance()->GetUserMoneyVector())[cardSignSyncPkt.whosTurn] = cardSignSyncPkt.userMoney;	// 돈 갱신
+
+	if (cardSignSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
+	{
+		MakePacket(CARD_SIGN_SYNC);
+		SendMessageToGameServer();
+	}
 }
 
 void SocketTransfer::GetOlympicSignMethod(char* packet)

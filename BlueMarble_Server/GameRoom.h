@@ -4,6 +4,7 @@
 #include <vector>
 #include <time.h>
 #include "commonGameResource.h"
+#include "Card.h"
 
 constexpr const int MAX_PLAYER = 2;
 
@@ -42,6 +43,8 @@ private:
 	int takeControlPlayer = 0;	// 누구 차례인지 구분 변수
 	int diceDoubleCount = 0;	// 주사위 더블 카운트 변수,
 
+	vector<Card> holdCard;		// 소지 카드들
+
 	vector<bool> isDesertIsland; // 감옥 여부
 	vector<int> desertIslandCount;	// 감옥 카운트
 
@@ -58,6 +61,7 @@ public:
 	clock_t startTime = 0;
 	clock_t finishTime = 0;
 	int beforeSellSign = -1;
+	int preCardId = -1;
 
 	int goalPrice = 0;
 
@@ -70,6 +74,8 @@ public:
 	vector<SOCKET> GetUserVector();
 	vector<int>* GetPUserMoneyVector();
 	vector<int> GetUserPositionVector();
+
+	vector<Card>* GetPHoldCard();
 
 	void NextTurn();	// 차례 넘겨주기
 	int GetTakeControlPlayer();	// 누구 차례인지 값 전송
@@ -102,7 +108,7 @@ public:
 	void OlympicSyncMethod(int selectIndex);
 
 	void SendRollTheDice(int value1, int value2, bool isDesertIsland);	// 주사위 눈 전송
-	void MoveUserPosition(int diceValue);	// 캐릭터 보드판 위치 이동
+	int MoveUserPosition(int diceValue);	// 캐릭터 보드판 위치 이동
 	void MoveTileProcess();
 
 	void SendPayTollSign();	// 통행료 지불
@@ -115,6 +121,8 @@ public:
 	void SendTakeOverSign(int landOwner);
 	void SendTakeOverSignSync(int takeOverPrice, int owner);
 
+	void SendCardSignSync();
+
 	void SendRevenueSign();
 	void SendRevenueSignSync();
 
@@ -123,6 +131,9 @@ public:
 
 	void SendSellLandSign(int goalPrice, int state); // 매각 메시지 보내기
 	void SendSellLandSignSync();
+
+	void SendCardSign(Card card); // 카드 사용 메시지 전송
+	//void SendSellLandSignSync();
 
 	void CheckLandKindNSendMessage();
 	void CheckPassNSellMessage();

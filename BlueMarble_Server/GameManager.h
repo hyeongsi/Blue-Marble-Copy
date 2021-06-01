@@ -51,6 +51,9 @@ public:
 	static void BuyLandMarkMethod(GameRoom* room, char* data);
 	void BuyLandMark(GameRoom* room, char* data);
 
+	static void GetCardSignSyncMethod(GameRoom* room);
+	void GetCardSignSync(GameRoom* room);
+
 	static void GetSelectIndexMethod(GameRoom* room, char* data, char header);
 	void GetSelectIndex(GameRoom* room, char* data, char header);
 

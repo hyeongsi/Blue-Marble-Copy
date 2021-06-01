@@ -55,6 +55,11 @@ vector<int> GameRoom::GetUserPositionVector()
 	return userPositionVector;
 }
 
+vector<Card>* GameRoom::GetPHoldCard()
+{
+	return &holdCard;
+}
+
 void GameRoom::NextTurn()
 {
 	takeControlPlayer++;
@@ -277,15 +282,20 @@ void GameRoom::SendRollTheDice(int value1, int value2, bool isDesertIsland)
 	}
 }
 
-void GameRoom::MoveUserPosition(int diceValue)
+int GameRoom::MoveUserPosition(int diceValue)
 {
+	bool isPassStartTile = false;
+
 	userPositionVector[takeControlPlayer] += diceValue;
 
 	if (userPositionVector[takeControlPlayer] >= (int)board.mapSize * DIRECTION)
 	{
 		userPositionVector[takeControlPlayer] -= board.mapSize * DIRECTION;
 		userMoneyVector[takeControlPlayer] += SALARY;	// START 지점 통과, 30만원 지급
+		isPassStartTile = true;
 	}
+
+	return isPassStartTile;
 }
 
 void GameRoom::MoveTileProcess()
@@ -338,7 +348,7 @@ void GameRoom::SendPayTollSign()
 	}
 
 	if (landBoardData.olympic[userPositionVector[takeControlPlayer]] != 0)
-		toll *= pow(2, landBoardData.olympic[userPositionVector[takeControlPlayer]]);	// 올림픽 가격 적용
+		toll *= (int)pow(2, landBoardData.olympic[userPositionVector[takeControlPlayer]]);	// 올림픽 가격 적용
 
 	gameServer->MakePacket(sendPacket, &packetLastIndex, PAY_TOLL_SIGN);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
@@ -482,6 +492,30 @@ void GameRoom::SendTakeOverSignSync(int takeOverPrice, int owner)
 	}
 }
 
+void GameRoom::SendCardSignSync()
+{
+	switch (preCardId)	// 나중에 발동하는 카드라면, 턴 넘김
+	{
+	case ESCAPE:
+		EndTurn();
+		return;
+	}
+
+	gameServer->MakePacket(sendPacket, &packetLastIndex, CARD_SIGN_SYNC);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, preCardId, sizeof(preCardId));	// 카드 id
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex,
+		userMoneyVector[takeControlPlayer], sizeof(userMoneyVector[takeControlPlayer]));		// 유저 돈
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex,
+		userPositionVector[takeControlPlayer], sizeof(userPositionVector[takeControlPlayer]));	// 유저 위치
+
+	for (auto& socketIterator : userVector)
+	{
+		gameServer->PacektSendMethod(sendPacket, socketIterator);
+		printf("%s %d\n", "send CardSignSync - ", socketIterator);
+	}
+}
+
 void GameRoom::SendRevenueSign()
 {
 	state = GameState::WAIT;
@@ -545,6 +579,14 @@ void GameRoom::SendSellLandSign(int goalPrice, int state)
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
 }
 
+void GameRoom::SendCardSign(Card card)
+{
+	gameServer->MakePacket(sendPacket, &packetLastIndex, CARD_SIGN);	// 매각 메시지
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, card.cardId, sizeof(card.cardId));	// 카드 id
+	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+}
+
 void GameRoom::SendSellLandSignSync()
 {
 	int sellLandSize = (int)selectLandIndex.size();
@@ -594,7 +636,7 @@ void GameRoom::CheckPassNSellMessage()
 	}
 
 	if (landBoardData.olympic[userPositionVector[takeControlPlayer]] != 0)
-		tollPrice *= pow(2, landBoardData.olympic[userPositionVector[takeControlPlayer]]);	// 올림픽 가격 적용
+		tollPrice *= (int)pow(2, landBoardData.olympic[userPositionVector[takeControlPlayer]]);	// 올림픽 가격 적용
 
 	if (tollPrice <= userMoneyVector[takeControlPlayer])
 	{

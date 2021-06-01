@@ -6,6 +6,7 @@
 #include <WS2tcpip.h>	// inet_ntop()
 #include "MapManager.h"
 #include "GameManager.h"
+#include "CardManager.h"
 
 GameServer* GameServer::instance = nullptr;
 
@@ -120,6 +121,12 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case BUY_LANDMARK_SIGN:
 				GameManager::GetInstance()->BuyLandMarkMethod(myRoom, cBuffer);
 				break;
+			case CARD_SIGN:
+				myRoom->SendCardSignSync();
+				break;
+			case CARD_SIGN_SYNC:
+				GameManager::GetInstance()->GetCardSignSyncMethod(myRoom);
+				break;
 			case OLYMPIC_SIGN:
 			case WORLD_TRABLE_SIGN:
 				GameManager::GetInstance()->GetSelectIndexMethod(myRoom, cBuffer, header);
@@ -231,15 +238,14 @@ void GameServer::StartServer()
 {
 	GetInstance();
 	MapManager::GetInstance()->LoadMapData();
+	CardManager::GetInstance()->LoadCardData();
+
 	MatchingClient::GetInstance()->ConnectMathchServer();	// 매칭서버 연결
 
 	if (!InitServer())
 		return;
 
 	AcceptMethod();
-
-	MapManager::ReleaseInstance();
-	ReleaseInstance();
 }
 
 list<SOCKET> GameServer::GetClientSocketList()
