@@ -24,6 +24,7 @@ typedef struct BuildData
 	map<int, bool> building;
 	map<int, bool> hotel;
 	map<int, bool> landMark;
+	map<int, int> olympic;
 } buildData;
 
 enum class GameState

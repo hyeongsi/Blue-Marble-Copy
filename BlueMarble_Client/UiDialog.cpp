@@ -288,13 +288,17 @@ BOOL UiDialog::BuyLandMarkDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARA
 	case WM_INITDIALOG:
 		GetWindowRect(GameWindow::GetInstance()->g_hWnd, &instance->rect);
 		SetWindowPos(hDlg, HWND_TOP, instance->rect.left + 500, instance->rect.top + 300, 0, 0, SWP_NOSIZE);
-		SetDlgItemText(hDlg, IDC_STATIC_TAXTEXT, string("가격 : " + to_string(instance->landMarkPrice)).c_str());
+		SetDlgItemText(hDlg, IDC_STATIC_PRICE, string("가격 : " + to_string(instance->landMarkPrice)).c_str());
 		break;
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
 		case IDOK:
 			instance->BuyLandDlgState = IDOK;
+			EndDialog(hDlg, wParam);
+			return true;
+		case IDCANCEL:
+			instance->BuyLandDlgState = IDCANCEL;
 			EndDialog(hDlg, wParam);
 			return true;
 		}

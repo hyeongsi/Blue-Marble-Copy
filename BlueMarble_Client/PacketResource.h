@@ -138,6 +138,20 @@ typedef struct SellLandSignPacket	// SELL_LAND_SIGN
 	vector<int> landPosition;	// 땅 위치
 }sellLandSignPacket;
 
+typedef struct OlympicSignPacket	// OLYMPIC_SIGN
+{
+	char header;
+	int userPosition;	// 현재 위치
+}olympicSignPacket;
+
+typedef struct OlympicSignSyncPacket	// OLYMPIC
+{
+	char header;
+	int whosTurn;
+	int olympicPosition;	// 올림픽 위치
+	int olympicStack;	// 올림픽 열린 횟수
+}olympicSignSyncPacket;
+
 typedef struct WorldTrableSignPacket	// WORLD_TRABLE_SIGN
 {
 	char header;

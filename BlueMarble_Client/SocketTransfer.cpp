@@ -74,6 +74,12 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case SELL_LAND_SIGN:
 				SellLandSignMethod(cBuffer);
 				break;
+			case OLYMPIC_SIGN:
+				GetOlympicSignMethod(cBuffer);
+				break;
+			case OLYMPIC:
+				GetOlympicSignSyncMethod(cBuffer);
+				break;
 			case WORLD_TRABLE_SIGN:
 				GetWorldTrableSignMethod(cBuffer);
 				break;
@@ -551,6 +557,55 @@ void SocketTransfer::SellLandSign(char* packet)
 		"을 충족해야 합니다. \n매각 지역 합계 : " + to_string(GameManager::GetInstance()->totalSelectLandSellPrice));	// 메시지 갱신
 
 	GameWindow::GetInstance()->ShowButton(SELECT_UI_BTN);
+}
+
+void SocketTransfer::GetOlympicSignMethod(char* packet)
+{
+	instance->GetOlympicSign(packet);
+}
+
+void SocketTransfer::GetOlympicSign(char* packet)
+{
+	olympicSignPacket olympicSignPkt;
+	int accumDataSize = 1;
+
+	memcpy(&olympicSignPkt.userPosition, &packet[accumDataSize], sizeof(olympicSignPkt.userPosition));  // get position
+
+	RenderManager::GetInstance()->isSelectMapMode = OLYMPIC_MODE;
+	RenderManager::GetInstance()->selectPosition = olympicSignPkt.userPosition;
+
+	GameManager::GetInstance()->SetGameMessage("올림픽 장소를 선택해 주세요.\n특정 장소는 올림픽을 개최 할 수 없습니다.");	// 메시지 갱신
+}
+
+void SocketTransfer::GetOlympicSignSyncMethod(char* packet)
+{
+	instance->GetOlympicSignSync(packet);
+}
+
+void SocketTransfer::GetOlympicSignSync(char* packet)
+{
+	olympicSignSyncPacket olympicSignSyncPkt;
+	int accumDataSize = 1;
+
+	memcpy(&olympicSignSyncPkt.whosTurn, &packet[accumDataSize], sizeof(olympicSignSyncPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(olympicSignSyncPkt.whosTurn);
+	memcpy(&olympicSignSyncPkt.olympicPosition, &packet[accumDataSize], sizeof(olympicSignSyncPkt.olympicPosition));  // get position
+	accumDataSize += sizeof(olympicSignSyncPkt.whosTurn);
+	memcpy(&olympicSignSyncPkt.olympicStack, &packet[accumDataSize], sizeof(olympicSignSyncPkt.olympicStack));  // get olympicStack
+
+	RenderManager::GetInstance()->isSelectMapMode = IDLE_MODE;	// 선택 모드 해제
+	GameManager::GetInstance()->GetAddressBoardBuildData()->olympic[olympicSignSyncPkt.olympicPosition] = olympicSignSyncPkt.olympicStack;
+
+	GameManager::GetInstance()->SetGameMessage(GameManager::GetInstance()->GetBoardData().name[olympicSignSyncPkt.olympicPosition]
+		+ " 에 올림픽이 개최되었습니다.");	// 메시지 갱신
+
+	GameManager::GetInstance()->GetAddressBoardBuildData()->olympic[olympicSignSyncPkt.olympicPosition] = olympicSignSyncPkt.olympicStack; // 올림픽 스택 적용
+
+	if (olympicSignSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
+	{
+		MakePacket(OLYMPIC);
+		SendMessageToGameServer();
+	}
 }
 
 void SocketTransfer::GetWorldTrableSignMethod(char* packet)

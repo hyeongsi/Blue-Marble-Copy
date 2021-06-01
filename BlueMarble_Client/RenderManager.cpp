@@ -75,7 +75,7 @@ void RenderManager::MoveSelectPosition(bool isLeft)
     {
         selectPosition += 1;
 
-        if (GameManager::GetInstance()->GetBoardData().code.size() <= selectPosition)
+        if ((int)GameManager::GetInstance()->GetBoardData().code.size() <= selectPosition)
         {
             selectPosition -= GameManager::GetInstance()->GetBoardData().code.size();
         }
@@ -276,7 +276,17 @@ void RenderManager::DrawBoardMap()
             SetTextColor(memDC, RGB(0, 0, 0));     // 검은색
             break;
         }
-        DrawText(memDC, board.name[i].c_str(), -1, &rectVector[i], DT_NOCLIP | DT_CENTER);
+        
+        if (GameManager::GetInstance()->GetBoarBuildData().olympic[i] != 0)  // 올림픽 개최 장소라면
+        {
+            DrawText(memDC, ((board.name[i]) + " x"+ 
+                to_string((int)pow(2,GameManager::GetInstance()->GetBoarBuildData().olympic[i]))).c_str(),
+                -1, &rectVector[i], DT_NOCLIP | DT_CENTER);
+        }
+        else  // 개최 장소 아니면
+        {
+            DrawText(memDC, board.name[i].c_str(), -1, &rectVector[i], DT_NOCLIP | DT_CENTER);
+        }
         SetTextColor(memDC, RGB(0, 0, 0));     // 검은색
     }
 }

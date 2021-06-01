@@ -135,7 +135,7 @@ void GameManager::RoomLogicThreadMethod(GameRoom* room)
 			room->DesertIslandMethod();
 			break;
 		case GameState::OLYMPIC_TILE:
-			room->EndTurn();
+			room->OlympicMethod();
 			break;
 		case GameState::WORLD_TRABLE_TILE:
 			room->WorldTrableMethod();
@@ -335,6 +335,9 @@ void GameManager::PayToll(GameRoom* room, char* data)
 		}
 	}
 
+	if (room->GetLandBoardData().olympic[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] != 0)
+		tollPrice *= pow(2, room->GetLandBoardData().olympic[room->GetUserPositionVector()[room->GetTakeControlPlayer()]]); // 올림픽 적용
+
 	if (tollPrice <= (*room->GetPUserMoneyVector())[payTollSignPkt.whosTurn])
 	{
 		room->SendPayTollSignSync(payTollSignPkt.whosTurn, tollPrice, true, landOwner);
@@ -424,21 +427,11 @@ void GameManager::BuyLandMark(GameRoom* room, char* data)
 		}
 		else  // 랜드마크 구입 비용 없을 경우
 		{
-			bool isHaveLand = false;
-			for (int i = 0; i < (int)room->GetMapData().land.size(); i++)
-			{
-				if (room->GetTakeControlPlayer() == room->GetLandBoardData().land[i])
-				{
-					isHaveLand = true;
-					break;
-				}
-			}
-
-			if (isHaveLand)   // 땅을 하나라도 가지고 있다면
+			if ((*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] + room->TotalDisposalPrice() >= landMarkPrice)
 			{
 				room->SendSellLandSign(landMarkPrice, BUILD_LANDMARK);	// 땅 팔기
 			}
-			else    // 땅을 하나라도 가지고 있지 않으면
+			else
 			{
 				room->EndTurn();   // 인수 취소
 			}	
@@ -465,7 +458,15 @@ void GameManager::GetSelectIndex(GameRoom* room, char* data, char header)
 	switch (header)
 	{
 	case OLYMPIC_SIGN:
-		// 통행료 2배 처리
+		if (room->GetMapData().code[getSelectIndexPkt.selectIndex] == LAND_TILE ||
+			room->GetMapData().code[getSelectIndexPkt.selectIndex] == TOUR_TILE)	// 구입가능 지역이라면
+		{
+			room->OlympicSyncMethod(getSelectIndexPkt.selectIndex); // 올림픽 처리
+		}
+		else  // 올림픽 개최 불가 장소라면,
+		{
+			room->OlympicMethod();  // 다시 선택
+		}
 		break;
 	case WORLD_TRABLE_SIGN:
 		if (room->GetUserPositionVector()[room->GetTakeControlPlayer()] <= getSelectIndexPkt.selectIndex)
@@ -554,7 +555,10 @@ void GameManager::SellLandProcess(GameRoom* room, char* data)
 		switch (room->beforeSellSign)
 		{
 		case BUILD_LANDMARK:
-			room->SendBuyLandMarkSign();
+			if (room->GetLandBoardData().land[room->GetTakeControlPlayer()] != room->GetTakeControlPlayer()) // 랜드마크 구입하고자 하는 땅까지 팔아버렸으면
+				room->EndTurn();
+			else
+				room->SendBuyLandMarkSign();
 			break;
 		case PAY_TOLL:
 			room->SendPayTollSign();

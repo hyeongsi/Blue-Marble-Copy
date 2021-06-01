@@ -124,6 +124,9 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case WORLD_TRABLE_SIGN:
 				GameManager::GetInstance()->GetSelectIndexMethod(myRoom, cBuffer, header);
 				break;
+			case OLYMPIC:
+				myRoom->EndTurn();
+				break;
 			case WORLD_TRABLE_SIGN_SYNC:
 				myRoom->MoveTileProcess();
 				break;
@@ -146,13 +149,13 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 				myRoom->CheckCanBuild();
 				break;
 			case BUY_LANDMARK_SIGN_SYNC:
-				myRoom->NextTurn();
+				myRoom->EndTurn();
 				break;
 			case SELL_LAND_SIGN_SYNC:
 				GameManager::GetInstance()->AfterSellLandSyncMethod(myRoom);
 				break;
 			case REVENUE_SIGN_SYNC:
-				myRoom->NextTurn();
+				myRoom->EndTurn();
 				break;
 			case FINISH_THIS_TURN_PROCESS:
 				myRoom->CheckEndProcess(clientSocket);

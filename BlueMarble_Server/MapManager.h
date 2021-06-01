@@ -32,6 +32,7 @@ typedef struct LandData
 	map<int, int> building;
 	map<int, int> hotel;
 	map<int, int> landMark;
+	map<int, int> olympic;
 } landData;
 
 enum MapData

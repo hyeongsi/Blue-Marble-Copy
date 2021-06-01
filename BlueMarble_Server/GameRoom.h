@@ -98,6 +98,9 @@ public:
 	void WorldTrableMethod();	// 세계여행 처리
 	void WorldTrableSignSyncMethod();
 
+	void OlympicMethod();	// 올림픽 처리
+	void OlympicSyncMethod(int selectIndex);
+
 	void SendRollTheDice(int value1, int value2, bool isDesertIsland);	// 주사위 눈 전송
 	void MoveUserPosition(int diceValue);	// 캐릭터 보드판 위치 이동
 	void MoveTileProcess();

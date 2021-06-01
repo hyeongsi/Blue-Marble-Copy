@@ -34,6 +34,7 @@ GameRoom::GameRoom(SOCKET user1, SOCKET user2)
 		landBoardData.building[i] = -1;
 		landBoardData.hotel[i] = -1;
 		landBoardData.landMark[i] = -1;
+		landBoardData.olympic[i] = 0;
 	}
 
 	gameServer = GameServer::GetInstance();
@@ -225,6 +226,32 @@ void GameRoom::WorldTrableSignSyncMethod()
 	}
 }
 
+void GameRoom::OlympicMethod()
+{
+	state = GameState::WAIT;
+	gameServer->MakePacket(sendPacket, &packetLastIndex, OLYMPIC_SIGN);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userPositionVector[takeControlPlayer], sizeof(userPositionVector[takeControlPlayer]));	// 위치
+	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+}
+
+void GameRoom::OlympicSyncMethod(int selectIndex)
+{
+	landBoardData.olympic[selectIndex] += 1;	// 올림픽 개최 여부 및 중첩 변경
+
+	gameServer->MakePacket(sendPacket, &packetLastIndex, OLYMPIC);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(int));	// 차례
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, selectIndex,
+		sizeof(selectIndex)); // 위치
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, landBoardData.olympic[selectIndex],
+		sizeof(landBoardData.olympic[selectIndex])); // 위치
+
+	for (auto& socketIterator : userVector)
+	{
+		gameServer->PacektSendMethod(sendPacket, socketIterator);
+		printf("%s %d\n", "send OLYMPIC SYNC - ", socketIterator);
+	}
+}
+
 void GameRoom::SendRollTheDice(int value1, int value2, bool isDesertIsland)
 {
 	int salary = SALARY;
@@ -309,6 +336,9 @@ void GameRoom::SendPayTollSign()
 		if (landBoardData.hotel[userPositionVector[takeControlPlayer]] != -1)	// 호텔
 			toll += board.tollHotel[userPositionVector[takeControlPlayer]];
 	}
+
+	if (landBoardData.olympic[userPositionVector[takeControlPlayer]] != 0)
+		toll *= pow(2, landBoardData.olympic[userPositionVector[takeControlPlayer]]);	// 올림픽 가격 적용
 
 	gameServer->MakePacket(sendPacket, &packetLastIndex, PAY_TOLL_SIGN);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
@@ -563,6 +593,9 @@ void GameRoom::CheckPassNSellMessage()
 		}
 	}
 
+	if (landBoardData.olympic[userPositionVector[takeControlPlayer]] != 0)
+		tollPrice *= pow(2, landBoardData.olympic[userPositionVector[takeControlPlayer]]);	// 올림픽 가격 적용
+
 	if (tollPrice <= userMoneyVector[takeControlPlayer])
 	{
 		userMoneyVector[takeControlPlayer] -= tollPrice;
@@ -801,6 +834,7 @@ int GameRoom::SellLand()
 		landBoardData.hotel[it] = -1;
 		landBoardData.building[it] = -1;
 		landBoardData.landMark[it] = -1;
+		landBoardData.olympic[it] = 0;
 	}
 
 	userMoneyVector[takeControlPlayer] += accumPrice;	// 돈 증가
