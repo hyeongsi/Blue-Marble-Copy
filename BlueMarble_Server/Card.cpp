@@ -7,6 +7,8 @@ void Card::UseCard(GameRoom* room)
 	owner = room->GetTakeControlPlayer();	// 카드 소유자 등록
 	room->preCardId = cardId;
 
+	printf("%s %d\n", "UseCard - ", cardId);
+
 	switch (cardId)
 	{
 	case ESCAPE:
@@ -31,7 +33,7 @@ void Card::UseCard(GameRoom* room)
 	// 목표 좌표 가 될 때 까지 이동
 	while (room->GetUserPositionVector()[room->GetTakeControlPlayer()] != moveIndex)
 	{
-		if (room->MoveUserPosition(movePosition))	// 시작점 통과 시
+		if (room->MoveUserPosition(1))	// 1칸씩 이동하면서, 지정 좌표 도달 하면 탈출, 시작점 통과 시
 		{
 			if (!isPaySalary) // 월급 지불 하면 안 될 경우
 				(*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] -= SALARY; // 월급 압수

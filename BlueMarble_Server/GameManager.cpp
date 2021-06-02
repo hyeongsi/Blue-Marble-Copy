@@ -453,13 +453,13 @@ void GameManager::GetCardSignSync(GameRoom* room)
 {
 	Card preCard = CardManager::GetInstance()->GetCardDataVector()[room->preCardId];
 
-	if (preCard.movePosition == 0 || preCard.moveIndex == -1)	// 이동 안하는 카드라면
-	{
-		room->EndTurn();
-	}
-	else   // 이동 하는 카드라면
+	if (preCard.movePosition != 0 || preCard.moveIndex != -1)	  // 이동 하는 카드라면
 	{
 		room->MoveTileProcess();	// 도착 타일 처리
+	}
+	else    // 이동 안하는 카드라면
+	{
+		room->EndTurn();
 	}
 }
 

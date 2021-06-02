@@ -279,6 +279,7 @@ void GameRoom::SendRollTheDice(int value1, int value2, bool isDesertIsland)
 
 		gameServer->AppendPacketData(sendPacket, &packetLastIndex, isDesertIsland, sizeof(isDesertIsland));
 		gameServer->PacektSendMethod(sendPacket, userVector[i]);
+		printf("%s %d\n", "send ROLL_DICE - ", userVector[i]);
 	}
 }
 
