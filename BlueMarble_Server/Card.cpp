@@ -42,10 +42,3 @@ void Card::UseCard(GameRoom* room)
 
 	room->SendCardSign(*this);
 }
-
-void Card::ActivatedMyTrapCard(GameRoom* room)
-{
-	// 카드 사용 처리 후
-	room->isDouble = true;	// 더블로 만들어서 탈출,
-	room->EndTurn();
-}

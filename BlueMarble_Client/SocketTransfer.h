@@ -71,6 +71,9 @@ private:
 	static void GetCardSignSyncMethod(char* packet);
 	void GetCardSignSync(char* packet);
 
+	static void GetTrapCardSyncMethod(char* packet);
+	void GetTrapCardSync(char* packet);
+
 	static void GetOlympicSignMethod(char* packet);
 	void GetOlympicSign(char* packet);
 

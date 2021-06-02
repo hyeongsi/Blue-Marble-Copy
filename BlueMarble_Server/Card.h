@@ -29,6 +29,5 @@ public:
 	int owner = -1;
 
 	void UseCard(GameRoom* room);
-	void ActivatedMyTrapCard(GameRoom* room);	// 함정카드 발동!
 };
 

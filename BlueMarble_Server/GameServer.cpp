@@ -122,10 +122,13 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 				GameManager::GetInstance()->BuyLandMarkMethod(myRoom, cBuffer);
 				break;
 			case CARD_SIGN:
-				myRoom->SendCardSignSync();
+				myRoom->SendCardSignSync(cBuffer);
 				break;
 			case CARD_SIGN_SYNC:
 				GameManager::GetInstance()->GetCardSignSyncMethod(myRoom);
+				break;
+			case TRAP_CARD_SYNC:
+				GameManager::GetInstance()->GetTrapCardSyncMethod(myRoom);
 				break;
 			case OLYMPIC_SIGN:
 			case WORLD_TRABLE_SIGN:

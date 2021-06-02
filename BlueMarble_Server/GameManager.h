@@ -54,6 +54,9 @@ public:
 	static void GetCardSignSyncMethod(GameRoom* room);
 	void GetCardSignSync(GameRoom* room);
 
+	static void GetTrapCardSyncMethod(GameRoom* room);
+	void GetTrapCardSync(GameRoom* room);
+
 	static void GetSelectIndexMethod(GameRoom* room, char* data, char header);
 	void GetSelectIndex(GameRoom* room, char* data, char header);
 

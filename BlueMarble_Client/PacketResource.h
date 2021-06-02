@@ -27,20 +27,21 @@ enum MessageCode
 	SELL_LAND_SIGN = 10,
 	CARD_SIGN = 11,
 	CARD_SIGN_SYNC = 12,
-	DESERT_ISLAND_SIGN = 13,
-	OLYMPIC_SIGN = 14,
-	OLYMPIC = 15,
-	WORLD_TRABLE_SIGN = 16,
-	WORLD_TRABLE_SIGN_SYNC = 17,
-	REVENUE_SIGN = 18,
-	BUY_LAND_SYNC = 19,
-	BUY_BUILDING_SYNC = 20,
-	PAY_TOLL_SIGN_SYNC = 21,
-	TAKE_OVER_SYNC = 22,
-	BUY_LANDMARK_SIGN_SYNC = 23,
-	SELL_LAND_SIGN_SYNC = 24,
-	REVENUE_SIGN_SYNC = 25,
-	FINISH_THIS_TURN_PROCESS = 26,
+	TRAP_CARD_SYNC = 13,
+	DESERT_ISLAND_SIGN = 14,
+	OLYMPIC_SIGN = 15,
+	OLYMPIC = 16,
+	WORLD_TRABLE_SIGN = 17,
+	WORLD_TRABLE_SIGN_SYNC = 18,
+	REVENUE_SIGN = 19,
+	BUY_LAND_SYNC = 20,
+	BUY_BUILDING_SYNC = 21,
+	PAY_TOLL_SIGN_SYNC = 22,
+	TAKE_OVER_SYNC = 23,
+	BUY_LANDMARK_SIGN_SYNC = 24,
+	SELL_LAND_SIGN_SYNC = 25,
+	REVENUE_SIGN_SYNC = 26,
+	FINISH_THIS_TURN_PROCESS = 27,
 	SEND_SELECT_MODE_INPUT_KEY = 30,
 	SELECT_MODE_BTN = 31,
 };
@@ -144,6 +145,7 @@ typedef struct CardSignPacket	// CARD_SIGN
 	char header;
 	int whosTurn;	// 누구 턴인지
 	int cardId;		// 카드 ID
+	bool isTrapCard;// 발동카드 유무
 }cardSignPacket;
 
 typedef struct CardSignSyncPacket	// CARD_SIGN_SYNC
@@ -154,6 +156,13 @@ typedef struct CardSignSyncPacket	// CARD_SIGN_SYNC
 	int userMoney;	// 유저 돈
 	int userPosition;	//유저 위치
 }cardSignSyncPacket;
+
+typedef struct TrapCardSyncPacket	// TRAP_CARD_SYNC
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+	int cardId;		// 카드 ID
+}trapCardSyncPacket;
 
 typedef struct OlympicSignPacket	// OLYMPIC_SIGN
 {

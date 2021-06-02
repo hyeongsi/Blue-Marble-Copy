@@ -80,6 +80,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case CARD_SIGN_SYNC:
 				GetCardSignSyncMethod(cBuffer);
 				break;
+			case TRAP_CARD_SYNC:
+				GetTrapCardSyncMethod(cBuffer);
+				break;
 			case OLYMPIC_SIGN:
 				GetOlympicSignMethod(cBuffer);
 				break;
@@ -578,13 +581,35 @@ void SocketTransfer::GetCardSign(char* packet)
 	memcpy(&cardSignPkt.whosTurn, &packet[accumDataSize], sizeof(cardSignPkt.whosTurn));  // get turn
 	accumDataSize += sizeof(cardSignPkt.whosTurn);
 	memcpy(&cardSignPkt.cardId, &packet[accumDataSize], sizeof(cardSignPkt.cardId));  // get cardId
+	accumDataSize += sizeof(cardSignPkt.cardId);
+	memcpy(&cardSignPkt.isTrapCard, &packet[accumDataSize], sizeof(cardSignPkt.isTrapCard));  // get isTrapCard
 
-	// 카드 메시지 불러온거 카드ID 통해서 출력하도록 만들자.
-	MessageBox(GameWindow::GetInstance()->g_hWnd, GameManager::GetInstance()->GetCardMsgVector()[cardSignPkt.cardId].c_str(), 
-		"황금 열쇠", MB_OK);
+	
+	if (cardSignPkt.isTrapCard)
+	{
+		int result = MessageBox(GameWindow::GetInstance()->g_hWnd,
+			("해당 카드를 사용하시겠습니까??\n\n" 
+				+ GameManager::GetInstance()->GetCardMsgVector()[cardSignPkt.cardId]).c_str(),
+			"카드 사용 유무", MB_OKCANCEL); // 카드 메시지 불러온거 카드ID 통해서 출력하도록 만들자.
 
-	MakePacket(CARD_SIGN);
-	SendMessageToGameServer();
+		MakePacket(CARD_SIGN);
+		AppendPacketData(true, sizeof(true));	// isTrapCard
+		if(result == IDOK)
+			AppendPacketData(true, sizeof(true));	// isUseCard
+		else
+			AppendPacketData(false, sizeof(false));	// isUseCard
+		SendMessageToGameServer();
+	}
+	else
+	{
+		MessageBox(GameWindow::GetInstance()->g_hWnd, 
+			GameManager::GetInstance()->GetCardMsgVector()[cardSignPkt.cardId].c_str(),
+			"황금 열쇠", MB_OK); // 카드 메시지 불러온거 카드ID 통해서 출력하도록 만들자.
+
+		MakePacket(CARD_SIGN);
+		AppendPacketData(false, sizeof(false));	// isTrapCard
+		SendMessageToGameServer();
+	}
 }
 
 void SocketTransfer::GetCardSignSyncMethod(char* packet)
@@ -614,6 +639,30 @@ void SocketTransfer::GetCardSignSync(char* packet)
 	if (cardSignSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
 	{
 		MakePacket(CARD_SIGN_SYNC);
+		SendMessageToGameServer();
+	}
+}
+
+void SocketTransfer::GetTrapCardSyncMethod(char* packet)
+{
+	instance->GetTrapCardSync(packet);
+}
+
+void SocketTransfer::GetTrapCardSync(char* packet)
+{
+	trapCardSyncPacket trapCardSyncPkt;
+	int accumDataSize = 1;
+
+	memcpy(&trapCardSyncPkt.whosTurn, &packet[accumDataSize], sizeof(trapCardSyncPkt.whosTurn));  // get turn
+	accumDataSize += sizeof(trapCardSyncPkt.whosTurn);
+	memcpy(&trapCardSyncPkt.cardId, &packet[accumDataSize], sizeof(trapCardSyncPkt.cardId));  // get cardId
+
+	GameManager::GetInstance()->SetGameMessage(
+		("!! 카드 사용 !!\n" + GameManager::GetInstance()->GetCardMsgVector()[trapCardSyncPkt.cardId]).c_str());	// 메시지 갱신
+
+	if (trapCardSyncPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
+	{
+		MakePacket(TRAP_CARD_SYNC);
 		SendMessageToGameServer();
 	}
 }

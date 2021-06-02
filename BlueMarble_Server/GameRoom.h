@@ -62,6 +62,8 @@ public:
 	clock_t finishTime = 0;
 	int beforeSellSign = -1;
 	int preCardId = -1;
+	bool isCheckTrapCard = false;	// 카드 사용유무 물어봤는지 여부
+	int checkIsUsingTrapCardId = -1;	// 물어보기 전, 사용하고자 했던 카드 id
 
 	int goalPrice = 0;
 
@@ -121,7 +123,8 @@ public:
 	void SendTakeOverSign(int landOwner);
 	void SendTakeOverSignSync(int takeOverPrice, int owner);
 
-	void SendCardSignSync();
+	void SendCardSignSync(char* packet);
+	bool CheckTrapCard(int cardId);
 
 	void SendRevenueSign();
 	void SendRevenueSignSync();
@@ -133,7 +136,8 @@ public:
 	void SendSellLandSignSync();
 
 	void SendCardSign(Card card); // 카드 사용 메시지 전송
-	//void SendSellLandSignSync();
+	void SendIsUseCardSign(int cardId);	// 카드 사용 유무 물어보기
+	void DeleteUseTrapCard();	// 발동한 사용 카드 삭제시키기
 
 	void CheckLandKindNSendMessage();
 	void CheckPassNSellMessage();

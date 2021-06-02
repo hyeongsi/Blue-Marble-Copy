@@ -63,6 +63,9 @@ vector<Card>* GameRoom::GetPHoldCard()
 void GameRoom::NextTurn()
 {
 	takeControlPlayer++;
+	isCheckTrapCard = false;
+	checkIsUsingTrapCardId = -1;
+
 	if ((int)userVector.size() <= takeControlPlayer)
 	{
 		takeControlPlayer = 0;
@@ -189,6 +192,12 @@ void GameRoom::DesertIslandMethod()
 {
 	if (!isDesertIsland[takeControlPlayer])	// 처음 무인도 진입 시
 	{
+		if (CheckTrapCard(ESCAPE) && isCheckTrapCard == false)	// 사용할 탈출 카드가 있고, 카드 사용 여부 안물어봤으면
+		{
+			state = GameState::WAIT;
+			SendIsUseCardSign(ESCAPE);
+			return;
+		}
 		isDesertIsland[takeControlPlayer] = true;	// 무인도 집어넣고
 	}
 	else
@@ -493,28 +502,77 @@ void GameRoom::SendTakeOverSignSync(int takeOverPrice, int owner)
 	}
 }
 
-void GameRoom::SendCardSignSync()
+void GameRoom::SendCardSignSync(char* packet)
 {
-	switch (preCardId)	// 나중에 발동하는 카드라면, 턴 넘김
+	cardSignProcessPacket cardSignProcessPkt;
+	int accumDataSize = 1;
+	memcpy(&cardSignProcessPkt.isTrapCard, &packet[accumDataSize], sizeof(cardSignProcessPkt.isTrapCard));	// get isTrapCard
+	accumDataSize += sizeof(cardSignProcessPkt.isTrapCard);
+	
+	if (cardSignProcessPkt.isTrapCard)	// 발동카드 사용 유무 물어본거 였으면
 	{
-	case ESCAPE:
-		EndTurn();
-		return;
+		memcpy(&cardSignProcessPkt.isOk, &packet[accumDataSize], sizeof(cardSignProcessPkt.isOk));	// get isOk
+		isCheckTrapCard = true; // 카드 사용유무 메시지 전송 했으니 설정
+
+		if (cardSignProcessPkt.isOk)  // 카드 사용한다고 했으면
+		{
+			DeleteUseTrapCard();	// 사용 카드 삭제
+			gameServer->MakePacket(sendPacket, &packetLastIndex, TRAP_CARD_SYNC);
+			gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
+			gameServer->AppendPacketData(sendPacket, &packetLastIndex, checkIsUsingTrapCardId, sizeof(checkIsUsingTrapCardId));	// 카드 id
+
+			for (auto& socketIterator : userVector)
+			{
+				gameServer->PacektSendMethod(sendPacket, socketIterator);
+				printf("%s %d\n", "send TrapCardSync - ", socketIterator);
+			}
+		}
+		else  // 카드 사용 안하면
+		{
+			switch (checkIsUsingTrapCardId)
+			{
+			case ESCAPE:
+				DesertIslandMethod();	// 다시 감옥
+				break;
+			}
+		}
+	}
+	else    // 일반 카드 사용 메시지일 때
+	{
+		switch (preCardId)	// 나중에 발동하는 카드라면, 턴 넘김
+		{
+		case ESCAPE:
+			EndTurn();
+			return;
+		}
+
+		gameServer->MakePacket(sendPacket, &packetLastIndex, CARD_SIGN_SYNC);
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex, preCardId, sizeof(preCardId));	// 카드 id
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex,
+			userMoneyVector[takeControlPlayer], sizeof(userMoneyVector[takeControlPlayer]));		// 유저 돈
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex,
+			userPositionVector[takeControlPlayer], sizeof(userPositionVector[takeControlPlayer]));	// 유저 위치
+
+		for (auto& socketIterator : userVector)
+		{
+			gameServer->PacektSendMethod(sendPacket, socketIterator);
+			printf("%s %d\n", "send CardSignSync - ", socketIterator);
+		}
+	}
+}
+
+bool GameRoom::CheckTrapCard(int cardId)
+{
+	for (const auto& it : holdCard)
+	{
+		if (it.cardId == cardId && it.owner == takeControlPlayer)
+		{
+			return true;
+		}
 	}
 
-	gameServer->MakePacket(sendPacket, &packetLastIndex, CARD_SIGN_SYNC);
-	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
-	gameServer->AppendPacketData(sendPacket, &packetLastIndex, preCardId, sizeof(preCardId));	// 카드 id
-	gameServer->AppendPacketData(sendPacket, &packetLastIndex,
-		userMoneyVector[takeControlPlayer], sizeof(userMoneyVector[takeControlPlayer]));		// 유저 돈
-	gameServer->AppendPacketData(sendPacket, &packetLastIndex,
-		userPositionVector[takeControlPlayer], sizeof(userPositionVector[takeControlPlayer]));	// 유저 위치
-
-	for (auto& socketIterator : userVector)
-	{
-		gameServer->PacektSendMethod(sendPacket, socketIterator);
-		printf("%s %d\n", "send CardSignSync - ", socketIterator);
-	}
+	return false;
 }
 
 void GameRoom::SendRevenueSign()
@@ -585,7 +643,38 @@ void GameRoom::SendCardSign(Card card)
 	gameServer->MakePacket(sendPacket, &packetLastIndex, CARD_SIGN);	// 매각 메시지
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, card.cardId, sizeof(card.cardId));	// 카드 id
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, false, sizeof(false));	// 사용 여부 물어보는 카드 인지
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+}
+
+void GameRoom::SendIsUseCardSign(int cardId)
+{
+	switch (cardId)	// 지정한 카드가 아니면 호출 X
+	{
+	case ESCAPE:
+		checkIsUsingTrapCardId = ESCAPE;
+		break;
+	default:
+		return;
+	}
+	
+	gameServer->MakePacket(sendPacket, &packetLastIndex, CARD_SIGN);	// 매각 메시지
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, cardId, sizeof(cardId));	// 카드 id
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, true, sizeof(true));	// 사용 여부 물어보는 카드 인지
+	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+}
+
+void GameRoom::DeleteUseTrapCard()
+{
+	for (auto it = holdCard.begin(); it != holdCard.end(); it++)
+	{
+		if ((*it).cardId == checkIsUsingTrapCardId && (*it).owner == takeControlPlayer)
+		{
+			holdCard.erase(it);
+			return;
+		}
+	}
 }
 
 void GameRoom::SendSellLandSignSync()
@@ -650,7 +739,7 @@ void GameRoom::CheckPassNSellMessage()
 		}
 		else
 		{
-			if (landBoardData.landMark[userPositionVector[takeControlPlayer]] == takeControlPlayer) // 랜드마크 지어져 있으면
+			if (landBoardData.landMark[userPositionVector[takeControlPlayer]] != -1) // 랜드마크 지어져 있으면
 				EndTurn();	// 인수 못하니까 다음턴으로 넘기기
 			else  // 인수 처리
 			{

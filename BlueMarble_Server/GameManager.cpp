@@ -463,6 +463,21 @@ void GameManager::GetCardSignSync(GameRoom* room)
 	}
 }
 
+void GameManager::GetTrapCardSyncMethod(GameRoom* room)
+{
+	instance->GetTrapCardSync(room);
+}
+
+void GameManager::GetTrapCardSync(GameRoom* room)
+{
+	switch (room->checkIsUsingTrapCardId)
+	{
+	case ESCAPE:
+		room->EndTurn();
+		break;
+	}
+}
+
 void GameManager::GetSelectIndexMethod(GameRoom* room, char* data, char header)
 {
 	instance->GetSelectIndex(room, data, header);
