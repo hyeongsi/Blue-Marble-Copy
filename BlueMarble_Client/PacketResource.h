@@ -44,6 +44,7 @@ enum MessageCode
 	FINISH_THIS_TURN_PROCESS = 27,
 	SEND_SELECT_MODE_INPUT_KEY = 30,
 	SELECT_MODE_BTN = 31,
+	BANKRUPTCY_SIGN = 32,
 };
 
 enum SellState
@@ -275,3 +276,9 @@ typedef struct SelectInputKeyPacket	// SEND_SELECT_MODE_INPUT_KEY
 	bool isErase;		// 데이터 삭제 유무
 	int sellLandPrice;  // 매각 땅 가격
 }selectInputKeyPacket;
+
+typedef struct BankruptcySignPacket	// BANKRUPTCY_SIGN
+{
+	char header;
+	int whosTurn;	// 누구 턴인지
+}bankruptcySignPacket;

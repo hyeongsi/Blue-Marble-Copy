@@ -61,6 +61,7 @@ void GameManager::Init()
 	gameMessage = "매칭중";
 	userPositionVector.clear();
 	userMoneyVector.clear();
+	backruptcyVector.clear();
 	this->board = board;
 	playerCount = 0;
 }
@@ -83,6 +84,11 @@ vector<int>* GameManager::GetUserPositionVector()
 vector<int>* GameManager::GetUserMoneyVector()
 {
 	return &userMoneyVector;
+}
+
+vector<bool>* GameManager::GetBackruptcyVector()
+{
+	return &backruptcyVector;
 }
 
 vector<string> GameManager::GetCardMsgVector()

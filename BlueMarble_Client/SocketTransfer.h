@@ -109,6 +109,9 @@ private:
 
 	static void GetSelectValueMethod(char* packet);
 	void GetSelectValue(char* packet);
+
+	static void GetBankruptcySignMethod(char* packet);
+	void GetBankruptcySign(char* packet);
 public:
 	void PrintErrorCode(State state, const int errorCode);
 

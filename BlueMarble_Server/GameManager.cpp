@@ -451,6 +451,12 @@ void GameManager::GetCardSignSyncMethod(GameRoom* room)
 
 void GameManager::GetCardSignSync(GameRoom* room)
 {
+	if ((*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] <= 0)	// 카드 사용 후 돈 없으면
+	{
+		room->Bankruptcy();		// 파산 처리
+		return;
+	}
+
 	Card preCard = CardManager::GetInstance()->GetCardDataVector()[room->preCardId];
 
 	if (preCard.movePosition != 0 || preCard.moveIndex != -1)	  // 이동 하는 카드라면
@@ -533,8 +539,7 @@ void GameManager::RevenueSign(GameRoom* room)
 	}
 	else  // 세금 낼 돈이 아예 없으면
 	{
-		// 게임오버 처리
-		room->NextTurn();
+		room->Bankruptcy();	// 파산 처리
 	}
 }
 
@@ -606,6 +611,33 @@ void GameManager::SellLandProcess(GameRoom* room, char* data)
 			break;
 		}
 	}
+}
+
+void GameManager::GetBankruptcySignMethod(GameRoom* room)
+{
+	instance->GetBankruptcySign(room);
+}
+
+void GameManager::GetBankruptcySign(GameRoom* room)
+{
+	int alivePlayerCount = 0;
+
+	for (int i = 0; i < (int)room->GetBackruptcyVector().size(); i++)
+	{
+		if (room->GetBackruptcyVector()[i] == false)
+		{
+			alivePlayerCount++;
+		}
+	}
+	
+	if (alivePlayerCount < 2)	// 게임 진행에 필요한 최소 인원, 2명보다 작으면 게임 종료 처리
+	{
+		// 게임 종료 처리 하기!!
+		return;
+	}
+
+	// 최소인원보다 많을 경우
+	room->EndTurn();
 }
 
 void GameManager::AfterSellLandSyncMethod(GameRoom * room)

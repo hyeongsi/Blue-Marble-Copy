@@ -40,6 +40,8 @@ private:
 
 	vector<int> userPositionVector;	// 유저 위치
 	vector<int> userMoneyVector;	// 유저 소지 자금
+	vector<bool> bankruptcyVector;	// 파산 유무
+
 	int takeControlPlayer = 0;	// 누구 차례인지 구분 변수
 	int diceDoubleCount = 0;	// 주사위 더블 카운트 변수,
 
@@ -76,6 +78,7 @@ public:
 	vector<SOCKET> GetUserVector();
 	vector<int>* GetPUserMoneyVector();
 	vector<int> GetUserPositionVector();
+	vector<bool> GetBackruptcyVector();
 
 	vector<Card>* GetPHoldCard();
 
@@ -158,6 +161,8 @@ public:
 	int SellLand();	// 저장해놓은 땅 처분 처리
 
 	int FindNextLand(int selectValue, bool isLeft);	// 그다음 소지한 지역 찾기
+
+	void Bankruptcy();	// 파산 처리
 
 	void EndTurn();
 };

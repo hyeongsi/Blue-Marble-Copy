@@ -17,6 +17,9 @@ GameRoom::GameRoom(SOCKET user1, SOCKET user2)
 	userMoneyVector.emplace_back(2000);
 	userMoneyVector.emplace_back(2000);
 
+	bankruptcyVector.emplace_back(false);
+	bankruptcyVector.emplace_back(false);
+
 	isDesertIsland.emplace_back(false);
 	isDesertIsland.emplace_back(false);
 
@@ -55,6 +58,11 @@ vector<int> GameRoom::GetUserPositionVector()
 	return userPositionVector;
 }
 
+vector<bool> GameRoom::GetBackruptcyVector()
+{
+	return bankruptcyVector;
+}
+
 vector<Card>* GameRoom::GetPHoldCard()
 {
 	return &holdCard;
@@ -63,13 +71,22 @@ vector<Card>* GameRoom::GetPHoldCard()
 void GameRoom::NextTurn()
 {
 	takeControlPlayer++;
+	
+	while (true)	// 파산 당하지 않은 유저 차례면 탈출
+	{
+		if ((int)userVector.size() <= takeControlPlayer)
+		{
+			takeControlPlayer = 0;
+		}
+
+		if (!bankruptcyVector[takeControlPlayer])	// 파산 당하지 않았으면 탈출
+			break;
+
+		takeControlPlayer++;
+	}
+
 	isCheckTrapCard = false;
 	checkIsUsingTrapCardId = -1;
-
-	if ((int)userVector.size() <= takeControlPlayer)
-	{
-		takeControlPlayer = 0;
-	}
 
 	state = GameState::ROLL_DICE_SIGN;
 
@@ -758,7 +775,7 @@ void GameRoom::CheckPassNSellMessage()
 		}
 		else    // 판매금 + 소지금이 통행료보다 적을 경우
 		{
-			EndTurn(); // 게임 오버 처리
+			Bankruptcy();	// 파산 처리
 		}
 	}
 }
@@ -781,6 +798,9 @@ void GameRoom::SendFinishTurnSign()
 {
 	for (int i = 0; i < (int)userVector.size(); i++)
 	{
+		if (bankruptcyVector[i])
+			continue;
+
 		gameServer->MakePacket(sendPacket, &packetLastIndex, FINISH_THIS_TURN_PROCESS);
 		gameServer->PacektSendMethod(sendPacket, userVector[i]);
 	}
@@ -802,7 +822,14 @@ void GameRoom::CheckEndProcess(SOCKET clientSocket)
 		}
 	}
 
-	if (boolCount == (int)isFinishTurnProcessVector.size())
+	int bankruptcyCount = 0;
+	for (int i = 0; i < (int)bankruptcyVector.size(); i++)
+	{
+		if (bankruptcyVector[i])
+			bankruptcyCount++;
+	}
+
+	if (boolCount == (int)isFinishTurnProcessVector.size() - bankruptcyCount)
 	{
 		NextTurn();
 	}
@@ -1025,6 +1052,36 @@ int GameRoom::FindNextLand(int selectValue, bool isLeft)
 		}
 
 		return selectValue;
+	}
+}
+
+void GameRoom::Bankruptcy()
+{
+	bankruptcyVector[takeControlPlayer] = true;	// 파산 여부 변경
+	userMoneyVector[takeControlPlayer] = 0;		// 돈 없애기
+
+	for (int i = 0; i < (int)board.code.size(); i++)
+	{
+		if (landBoardData.land[i] == takeControlPlayer)	// 땅 없애기
+		{
+			if (landBoardData.villa[i] == takeControlPlayer)	
+				landBoardData.villa[i] = -1;
+			if (landBoardData.building[i] == takeControlPlayer)	
+				landBoardData.building[i] = -1;
+			if (landBoardData.hotel[i] == takeControlPlayer)	
+				landBoardData.hotel[i] = -1;
+			if (landBoardData.olympic[i] == takeControlPlayer)	
+				landBoardData.olympic[i] = -1;
+		}
+	}
+
+	// 해당 정보 보내서 파산 정보 동기화 시키기,
+	gameServer->MakePacket(sendPacket, &packetLastIndex, BANKRUPTCY_SIGN);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 파산 유저 번호
+	for (auto& socketIterator : userVector)
+	{
+		gameServer->PacektSendMethod(sendPacket, socketIterator);
+		printf("%s %d\n", "send Bankruptcy Sign - ", socketIterator);
 	}
 }
 

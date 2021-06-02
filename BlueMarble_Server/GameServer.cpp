@@ -176,6 +176,9 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case SELECT_MODE_BTN:
 				GameManager::GetInstance()->SellLandProcessMethod(myRoom, cBuffer);
 				break;
+			case BANKRUPTCY_SIGN:
+				GameManager::GetInstance()->GetBankruptcySignMethod(myRoom);
+				break;
 			default:
 				break;
 			}

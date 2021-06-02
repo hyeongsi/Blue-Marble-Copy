@@ -348,14 +348,28 @@ void RenderManager::DrawGameMessage(string message)
 
     for (int i = 0; i < (int)GameManager::GetInstance()->GetUserMoneyVector()->size(); i++)
     {
-        if (GameManager::GetInstance()->GetCharacterIndex() == i+1)
+        if ((*GameManager::GetInstance()->GetBackruptcyVector())[i] == true)
         {
-            DrawText(memDC, ("나 - " + to_string((*GameManager::GetInstance()->GetUserMoneyVector())[i])).c_str(), -1, &moneyRect[i], DT_NOCLIP | DT_CENTER);
+            if (GameManager::GetInstance()->GetCharacterIndex() == i + 1)
+            {
+                DrawText(memDC, "나 - 파산했습니다.", -1, &moneyRect[i], DT_NOCLIP | DT_CENTER);
+            }
+            else
+            {
+                DrawText(memDC, "파산했습니다.", -1, &moneyRect[i], DT_NOCLIP | DT_CENTER);
+            }
         }
         else
         {
-            DrawText(memDC, to_string((*GameManager::GetInstance()->GetUserMoneyVector())[i]).c_str(), -1, &moneyRect[i], DT_NOCLIP | DT_CENTER);
-        }
+            if (GameManager::GetInstance()->GetCharacterIndex() == i + 1)
+            {
+                DrawText(memDC, ("나 - " + to_string((*GameManager::GetInstance()->GetUserMoneyVector())[i])).c_str(), -1, &moneyRect[i], DT_NOCLIP | DT_CENTER);
+            }
+            else
+            {
+                DrawText(memDC, to_string((*GameManager::GetInstance()->GetUserMoneyVector())[i]).c_str(), -1, &moneyRect[i], DT_NOCLIP | DT_CENTER);
+            }
+        } 
     }
 }
 

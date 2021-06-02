@@ -55,6 +55,8 @@ private:
 
 	vector<int> userPositionVector;	// 유저 위치
 	vector<int> userMoneyVector;	// 유저 돈 텍스트
+	vector<bool> backruptcyVector;	// 유저 파산 유무
+
 	vector<string> cardMessageVector;	// 카드 메시지
 
 	bool isMyDiceTurn = false;
@@ -83,6 +85,7 @@ public:
 
 	vector<int>* GetUserPositionVector();
 	vector<int>* GetUserMoneyVector();
+	vector<bool>* GetBackruptcyVector();
 	vector<string> GetCardMsgVector();
 
 	void SetIsMyDiceTurn(bool turn);

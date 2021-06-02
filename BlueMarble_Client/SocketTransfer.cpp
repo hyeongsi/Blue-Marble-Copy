@@ -119,6 +119,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case SEND_SELECT_MODE_INPUT_KEY:
 				GetSelectValueMethod(cBuffer);
 				break;
+			case BANKRUPTCY_SIGN:
+				GetBankruptcySignMethod(cBuffer);
+				break;
 			default:
 				break;
 			}
@@ -199,6 +202,7 @@ void SocketTransfer::GetReadyMethod(char* packet)
 	{
 		GameManager::GetInstance()->GetUserPositionVector()->emplace_back(0);
 		GameManager::GetInstance()->GetUserMoneyVector()->emplace_back(rPacket.initMoney);
+		GameManager::GetInstance()->GetBackruptcyVector()->emplace_back(false);
 	}
 	GameManager::GetInstance()->SetCharacterIndex(rPacket.number);
 	GameManager::GetInstance()->SetPlayerCount(rPacket.playerCount);
@@ -1029,6 +1033,42 @@ void SocketTransfer::GetSelectValue(char* packet)
 				"을 충족해야 합니다. \n매각 지역 합계 : " + to_string(GameManager::GetInstance()->totalSelectLandSellPrice));	// 메시지 갱신
 			GameManager::GetInstance()->selectLandIndex.emplace_back(selectInputKeyPkt.selectLandIndex);
 		}
+	}
+}
+
+void SocketTransfer::GetBankruptcySignMethod(char* packet)
+{
+	instance->GetBankruptcySign(packet);
+}
+
+void SocketTransfer::GetBankruptcySign(char* packet)
+{
+	bankruptcySignPacket bankruptcySignPkt;
+	int accumDataSize = 1;
+
+	memcpy(&bankruptcySignPkt.whosTurn, &packet[accumDataSize], sizeof(bankruptcySignPkt.whosTurn));  // get whosTurn
+
+	(*GameManager::GetInstance()->GetBackruptcyVector())[bankruptcySignPkt.whosTurn] = true;
+	
+	for (int i = 0; i < (int)GameManager::GetInstance()->GetBoardData().code.size(); i++)	// 건물 철거
+	{
+		if (GameManager::GetInstance()->GetAddressBoardData()->owner[i] == bankruptcySignPkt.whosTurn + 1)	
+		{
+			GameManager::GetInstance()->GetAddressBoardData()->owner[i] = 0;
+			GameManager::GetInstance()->GetAddressBoardBuildData()->villa[i] = false;
+			GameManager::GetInstance()->GetAddressBoardBuildData()->building[i] = false;
+			GameManager::GetInstance()->GetAddressBoardBuildData()->hotel[i] = false;
+			GameManager::GetInstance()->GetAddressBoardBuildData()->landMark[i] = false;
+			GameManager::GetInstance()->GetAddressBoardBuildData()->olympic[i] = 0;
+		}
+	}
+	
+	GameManager::GetInstance()->SetGameMessage(to_string(bankruptcySignPkt.whosTurn+1) + "번이 파산했습니다.");	// 메시지 갱신
+
+	if (bankruptcySignPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
+	{
+		MakePacket(BANKRUPTCY_SIGN);
+		SendMessageToGameServer();
 	}
 }
 
