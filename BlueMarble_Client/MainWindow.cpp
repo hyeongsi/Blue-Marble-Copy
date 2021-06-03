@@ -5,10 +5,12 @@
 #include "BitmapManager.h"
 #include "HttpTransfer.h"
 #include <process.h>
+#include "GameWindow.h"
 
 MainWindow* MainWindow::instance = nullptr;
 bool MainWindow::isRunRankingThread = false;
 bool MainWindow::isRunStartThread = false;
+bool MainWindow::isReset = true;
 
 MainWindow::MainWindow() {}
 MainWindow::~MainWindow() {}
@@ -28,10 +30,14 @@ void MainWindow::InitMainMenu(HWND hWnd)
 
 void MainWindow::ReInitMainMenu(HWND hWnd)
 {
-    ShowButton();
+    if (isReset)
+    {
+        ShowButton();
 
-    instance->renderManager->Init(hWnd);  // MainMenu <- -> Game Render
-    MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
+        instance->renderManager->Init(hWnd);  // MainMenu <- -> Game Render
+        MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
+        isReset = false;
+    }
 }
 
 void MainWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd)
@@ -92,8 +98,9 @@ UINT WINAPI MainWindow::StartGame(void* arg)
     {
         SocketTransfer::GetInstance()->StartRecvDataThread();
 
-        ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::GAME), SW_SHOW);
+        GameWindow::GetInstance()->isReset = true;
         ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU), SW_HIDE);
+        ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::GAME), SW_SHOW);
     }
     isRunStartThread = false;
 
@@ -152,7 +159,7 @@ LRESULT MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
     case WM_CREATE:
         GetInstance()->InitMainMenu(hWnd);
         break;
-    case SW_SHOW:
+    case WM_SHOWWINDOW:
         GetInstance()->ReInitMainMenu(hWnd);
         break;
     case WM_COMMAND:

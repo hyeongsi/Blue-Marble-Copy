@@ -45,6 +45,8 @@ enum MessageCode
 	SEND_SELECT_MODE_INPUT_KEY = 30,
 	SELECT_MODE_BTN = 31,
 	BANKRUPTCY_SIGN = 32,
+	END_GAME = 33,
+	GAMEOVER_SIGN = 90,
 };
 
 enum SellState
@@ -282,3 +284,9 @@ typedef struct BankruptcySignPacket	// BANKRUPTCY_SIGN
 	char header;
 	int whosTurn;	// 누구 턴인지
 }bankruptcySignPacket;
+
+typedef struct GameOverSignPacket	// GAMEOVER_SIGN
+{
+	char header;
+	int winnerIndex;	// 우승자 번호
+}gameOverSignPacket;

@@ -2,6 +2,7 @@
 #include <vector>
 #include <WinSock2.h>
 #include "commonGameResource.h"
+#include <mutex>
 
 enum InputKey
 {
@@ -17,15 +18,19 @@ class GameManager
 private:
 	static GameManager* instance;
 	std::vector<GameRoom*> roomVector;
-
+	
 	GameManager();
 	~GameManager();
 public:
+	std::mutex gameRoomVectorMutex;
+
 	static GameManager* GetInstance();
 	static void ReleaseInstance();
 
 	void CreateRoom(SOCKET& user1, SOCKET& user2);
 	GameRoom* GetRoom(int index);
+	void DeleteGameRoom(GameRoom* room);
+
 	int FindBelongRoom(SOCKET& socket);	// 속한 게임방 찾기
 
 	void ArriveLandTileMethod(GameRoom* room);

@@ -27,7 +27,9 @@ void GameManager::ReleaseInstance()
 
 void GameManager::CreateRoom(SOCKET& user1, SOCKET& user2)
 {
+	gameRoomVectorMutex.lock();
 	roomVector.emplace_back(new GameRoom(user1, user2));
+	gameRoomVectorMutex.unlock();
 
 	char sendPacket[MAX_PACKET_SIZE] = {};
 	unsigned int packetLastIndex = 0;
@@ -50,6 +52,26 @@ GameRoom* GameManager::GetRoom(int index)
 		return nullptr;
 	else
 		return roomVector[index];
+}
+
+void GameManager::DeleteGameRoom(GameRoom* room)
+{
+	for (auto iterator = roomVector.begin(); iterator != roomVector.end(); iterator++)
+	{
+		if ((*iterator) == room)
+		{
+			roomVector.erase(iterator);
+			break;
+		}
+	}
+	
+	if (room != nullptr)	// nullptr을 넣었음에도 불구하고, 다른 신호가 들어왔을 때, nullptr로 인식을 못했음. 따라서 그걸 delete 하니 오류 발생
+	{
+		delete room;		// 방 없애기
+		room = nullptr;
+	}
+	
+	printf("%s\n", "delete Game Room");
 }
 
 int GameManager::FindBelongRoom(SOCKET& socket)
@@ -147,6 +169,8 @@ void GameManager::RoomLogicThreadMethod(GameRoom* room)
 		case GameState::NEXT_TURN:
 			room->SendFinishTurnSign();
 			break;
+		case GameState::GAME_OVER:
+			return;
 		default:
 			break;
 		}
@@ -632,11 +656,10 @@ void GameManager::GetBankruptcySign(GameRoom* room)
 	
 	if (alivePlayerCount < 2)	// 게임 진행에 필요한 최소 인원, 2명보다 작으면 게임 종료 처리
 	{
-		// 게임 종료 처리 하기!!
+		room->SendGameOverSign();
 		return;
 	}
 
-	// 최소인원보다 많을 경우
 	room->EndTurn();
 }
 

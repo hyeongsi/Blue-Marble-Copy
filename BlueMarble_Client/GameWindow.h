@@ -15,9 +15,6 @@ private:
 	static GameWindow* instance;
 	std::vector<HWND> hwndWindow;
 
-	RenderManager* renderManager = nullptr;
-	BitmapManager* bitmapManager = nullptr;
-
 	GameWindow();
 	~GameWindow();
 
@@ -32,6 +29,7 @@ private:
 	static void SendSelectBtnMsgMethod(bool isOK);
 	void SendSelectBtnMsg(bool isOK);
 public:
+	static bool isReset;
 	HWND g_hWnd = nullptr;
 
 	static GameWindow* GetInstance();

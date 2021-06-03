@@ -3,6 +3,7 @@
 #include "BitmapManager.h"
 #include "GameManager.h"
 
+bool GameWindow::isReset = false;
 GameWindow* GameWindow::instance = nullptr;
 
 GameWindow::GameWindow() {}
@@ -12,23 +13,24 @@ void GameWindow::InitClass(HWND hWnd)
 {
     instance->g_hWnd = hWnd;
 
-    instance->renderManager = RenderManager::GetInstance();
-    instance->bitmapManager = BitmapManager::GetInstance();
+    ResizeWindow(RenderManager::GetInstance()->GetClientSize()->cx, RenderManager::GetInstance()->GetClientSize()->cy, POINT(300, 100), hWnd);
 
-    ResizeWindow(instance->renderManager->GetClientSize()->cx, instance->renderManager->GetClientSize()->cy, POINT(300, 100), hWnd);
-
-    instance->bitmapManager->LoadHwndData(State::GAME);
-    instance->bitmapManager->LoadBitmapData(State::GAME);  // game bitmap loading
+    BitmapManager::GetInstance()->LoadHwndData(State::GAME);
+    BitmapManager::GetInstance()->LoadBitmapData(State::GAME);  // game bitmap loading
 
     instance->CreateButton(hWnd);
 }
 
 void GameWindow::ReInitGame(HWND hWnd)
 {
-    instance->renderManager->Init(hWnd);        // MainMenu <- -> Game Render
-    MainSystem::GetInstance()->RegistUpdateCallbackFunction(GameUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
-    HideButton(ROLL_DICE_BTN);
-    HideButton(SELECT_UI_BTN);
+    if (isReset)
+    {
+        RenderManager::GetInstance()->Init(hWnd);        // MainMenu <- -> Game Render
+        MainSystem::GetInstance()->RegistUpdateCallbackFunction(GameUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
+        HideButton(ROLL_DICE_BTN);
+        HideButton(SELECT_UI_BTN);
+        isReset = false;
+    }
 }
 
 void GameWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd)
@@ -44,7 +46,7 @@ void GameWindow::ResizeWindow(const LONG width, const LONG height, const POINT p
 
 void GameWindow::CreateButton(HWND hWnd)
 {
-    vector<HwndInfo>* hwndInfo = instance->bitmapManager->GetHwnd(State::GAME);
+    vector<HwndInfo>* hwndInfo = BitmapManager::GetInstance()->GetHwnd(State::GAME);
 
     if (hwndInfo == nullptr)
         return;
@@ -169,30 +171,30 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 void GameWindow::GameUpdate()
 {
-    instance->renderManager->RenderInitSetting();
-    instance->renderManager->DrawBoardMap();
-    instance->renderManager->DrawWindow(State::GAME);
+    RenderManager::GetInstance()->RenderInitSetting();
+    RenderManager::GetInstance()->DrawBoardMap();
+    RenderManager::GetInstance()->DrawWindow(State::GAME);
 
     if (GameManager::GetInstance()->GetIsMyDiceTurn() || GameManager::GetInstance()->GetGameState() == GameState::ROLL_DICE)
     {
-        instance->renderManager->DrawHwnd(instance->hwndWindow[ROLL_DICE_BTN_NUMBER],
-            (*instance->bitmapManager->GetHwnd(State::GAME))[ROLL_DICE_BTN_NUMBER].point,
-            (*instance->bitmapManager->GetHwnd(State::GAME))[ROLL_DICE_BTN_NUMBER].size);
+        RenderManager::GetInstance()->DrawHwnd(instance->hwndWindow[ROLL_DICE_BTN_NUMBER],
+            (*BitmapManager::GetInstance()->GetHwnd(State::GAME))[ROLL_DICE_BTN_NUMBER].point,
+            (*BitmapManager::GetInstance()->GetHwnd(State::GAME))[ROLL_DICE_BTN_NUMBER].size);
     }
 
     if (GameManager::GetInstance()->GetGameState() == GameState::SELECT_MODE)
     {
         for (int i = SELECT_MODE_OK_BTN_NUMBER; i <= SELECT_MODE_CANCEL_BTN_NUMBER; i++)
         {
-            instance->renderManager->DrawHwnd(instance->hwndWindow[i],
-                (*instance->bitmapManager->GetHwnd(State::GAME))[i].point,
-                (*instance->bitmapManager->GetHwnd(State::GAME))[i].size);
+            RenderManager::GetInstance()->DrawHwnd(instance->hwndWindow[i],
+                (*BitmapManager::GetInstance()->GetHwnd(State::GAME))[i].point,
+                (*BitmapManager::GetInstance()->GetHwnd(State::GAME))[i].size);
         }
     }
 
-    instance->renderManager->DrawGameMessage(GameManager::GetInstance()->GetGameMessage());
+    RenderManager::GetInstance()->DrawGameMessage(GameManager::GetInstance()->GetGameMessage());
 
     SocketTransfer::GetInstance()->SendSelectModeInput(GameManager::GetInstance()->SelectModeInputKey());     // 선택모드일 때 선택받은 키값 전달
 
-    instance->renderManager->Render();
+    RenderManager::GetInstance()->Render();
 }

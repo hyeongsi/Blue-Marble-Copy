@@ -19,6 +19,7 @@ enum class GameState
 	WORLD_TRABLE_TILE = 6,
 	REVENUE_TILE = 7,
 	NEXT_TURN = 9,
+	GAME_OVER = 10,
 };
 
 enum SellState
@@ -66,16 +67,14 @@ public:
 	int preCardId = -1;
 	bool isCheckTrapCard = false;	// 카드 사용유무 물어봤는지 여부
 	int checkIsUsingTrapCardId = -1;	// 물어보기 전, 사용하고자 했던 카드 id
-
 	int goalPrice = 0;
-
 	bool isDouble = false;	// 더블 유무
-
 	GameState state = GameState::ROLL_DICE_SIGN;
 
 	GameRoom(SOCKET user1, SOCKET user2);
 
 	vector<SOCKET> GetUserVector();
+	vector<SOCKET>* GetPUserVector();
 	vector<int>* GetPUserMoneyVector();
 	vector<int> GetUserPositionVector();
 	vector<bool> GetBackruptcyVector();
@@ -151,6 +150,8 @@ public:
 	void CheckEndProcess(SOCKET clientSocket);	// 다음턴으로 이동
 
 	void SendSelectLandIndex(int index, bool isSpaceBar);	// 선택한 지역인덱스 전송
+
+	void SendGameOverSign();	// 게임오버 신호 보내기
 
 	int GetBuildPrice(int turn);	// 유저 건축물 기준으로 건축 가격 리턴
 	int TakeOverLand(int turn, int takeOverPrice);	// 인수 처리

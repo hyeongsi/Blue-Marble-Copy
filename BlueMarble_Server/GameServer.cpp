@@ -74,6 +74,7 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 	char header = NULL;
 	GameRoom* myRoom = nullptr;
 	int tempRoomIndex = -1;
+	bool isGameover = false;
 
 	clientSocketMutex.lock();
 	clientSocketList.emplace_back(clientSocket);
@@ -179,17 +180,29 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case BANKRUPTCY_SIGN:
 				GameManager::GetInstance()->GetBankruptcySignMethod(myRoom);
 				break;
+			case END_GAME:
+				isGameover = true;
+				break;
 			default:
 				break;
 			}
 		}
+		if (isGameover)
+			break;
 	}
+
+	GameManager::GetInstance()->gameRoomVectorMutex.lock();
+	if (myRoom != nullptr)
+	{
+		GameManager::GetInstance()->DeleteGameRoom(myRoom);
+	}
+	GameManager::GetInstance()->gameRoomVectorMutex.unlock();
 
 	clientSocketMutex.lock();
 	clientSocketList.remove(clientSocket);
 	clientSocketMutex.unlock();
 
-	printf("%s %s\n", "lost connect : ", GetClientIp(clientAddress).c_str());
+	printf("%s\n", "lost connect");
 }
 
 UINT WINAPI GameServer::RecvDataThread(void* arg)

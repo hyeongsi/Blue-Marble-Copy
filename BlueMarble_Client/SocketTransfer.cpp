@@ -7,6 +7,7 @@
 #include "GameWindow.h"
 #include "UiDialog.h"
 #include "resource1.h"
+#include "MainWindow.h"
 
 SocketTransfer* SocketTransfer::instance = nullptr;
 
@@ -122,6 +123,10 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case BANKRUPTCY_SIGN:
 				GetBankruptcySignMethod(cBuffer);
 				break;
+			case GAMEOVER_SIGN:
+				GetGameOverSignMethod(cBuffer);
+				TerminateRecvDataThread();
+				return;
 			default:
 				break;
 			}
@@ -1072,6 +1077,42 @@ void SocketTransfer::GetBankruptcySign(char* packet)
 	}
 }
 
+void SocketTransfer::GetGameOverSignMethod(char* packet)
+{
+	instance->GetGameOverSign(packet);
+}
+
+void SocketTransfer::GetGameOverSign(char* packet)
+{
+	gameOverSignPacket gameOverSignPkt;
+	int accumDataSize = 1;
+
+	memcpy(&gameOverSignPkt.winnerIndex, &packet[accumDataSize], sizeof(gameOverSignPkt.winnerIndex));  // get GetGameOverSign
+
+	if (gameOverSignPkt.winnerIndex == GameManager::GetInstance()->GetCharacterIndex() - 1)
+	{
+		MessageBox(GameWindow::GetInstance()->g_hWnd,
+			"본인을 제외한 모두가 파산했습니다.\n 게임에서 승리했습니다.\n 게임이 종료됩니다.",
+			"우승", MB_OK); // 카드 메시지 불러온거 카드ID 통해서 출력하도록 만들자.
+
+		// 이름 입력받고 서버로 넘겨주기
+		MakePacket(END_GAME);
+		SendMessageToGameServer();
+		closesocket(clientSocket);
+		system("pause");
+		return;
+	}
+
+	MessageBox(GameWindow::GetInstance()->g_hWnd,
+		(to_string(gameOverSignPkt.winnerIndex+1) + "을 제외한 모두가 파산했습니다.\n 게임이 종료됩니다.").c_str(),
+		"패배", MB_OK); 
+
+	MakePacket(END_GAME);
+	SendMessageToGameServer();
+	closesocket(clientSocket);
+	system("pause");
+}
+
 void SocketTransfer::PrintErrorCode(State state, const int errorCode)
 {
 	switch (state)
@@ -1108,9 +1149,11 @@ SocketTransfer* SocketTransfer::GetInstance()
 
 void SocketTransfer::ReleaseInstance()
 {
-	delete instance;
-	instance = nullptr;
-	WSACleanup();
+	if (instance != nullptr)
+	{
+		delete instance;
+		instance = nullptr;
+	}
 }
 
 bool SocketTransfer::ConnectServer()
@@ -1146,6 +1189,11 @@ void SocketTransfer::TerminateRecvDataThread()
 	recvThreadMutex.lock();
 	recvThreadHandle = nullptr;
 	recvThreadMutex.unlock();
+
+	MainWindow::GetInstance()->isReset = true;
+
+	ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::GAME), SW_HIDE);
+	ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU), SW_SHOW);
 }
 
 void SocketTransfer::MakePacket(char header)
@@ -1174,6 +1222,7 @@ void SocketTransfer::SendMessageToGameServer()
 	if (send(clientSocket, sendPacket, MAX_PACKET_SIZE, 0) == -1)
 	{
 		PrintErrorCode(State::GAME, SEND_ERROR);
+		return;
 	}
 
 	switch (sendPacket[0])	// header check

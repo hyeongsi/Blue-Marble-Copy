@@ -14,8 +14,8 @@ GameRoom::GameRoom(SOCKET user1, SOCKET user2)
 	isFinishTurnProcessVector.emplace_back(false);
 	isFinishTurnProcessVector.emplace_back(false);
 
-	userMoneyVector.emplace_back(2000);
-	userMoneyVector.emplace_back(2000);
+	userMoneyVector.emplace_back(100);
+	userMoneyVector.emplace_back(100);
 
 	bankruptcyVector.emplace_back(false);
 	bankruptcyVector.emplace_back(false);
@@ -46,6 +46,11 @@ GameRoom::GameRoom(SOCKET user1, SOCKET user2)
 vector<SOCKET> GameRoom::GetUserVector()
 {
 	return userVector;
+}
+
+vector<SOCKET>* GameRoom::GetPUserVector()
+{
+	return &userVector;
 }
 
 vector<int>* GameRoom::GetPUserMoneyVector()
@@ -867,6 +872,27 @@ void GameRoom::SendSelectLandIndex(int index, bool isSpaceBar)
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, sellLandPrice, sizeof(sellLandPrice));	// 판매 금액
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
 	printf("%s %d\n", "send Data", SEND_SELECT_MODE_INPUT_KEY);
+}
+
+void GameRoom::SendGameOverSign()
+{
+	gameServer->MakePacket(sendPacket, &packetLastIndex, GAMEOVER_SIGN);
+	for (int i = 0; i < (int)bankruptcyVector.size(); i++)
+	{
+		if (!bankruptcyVector[i])
+		{
+			gameServer->AppendPacketData(sendPacket, &packetLastIndex, i, sizeof(i));	// 우승한 유저 인덱스
+			break;
+		}
+	}
+
+	for (auto& socketIterator : userVector)
+	{
+		gameServer->PacektSendMethod(sendPacket, socketIterator);
+		printf("%s %d\n", "send GameOverSign - ", socketIterator);
+	}
+
+	state = GameState::GAME_OVER;
 }
 
 int GameRoom::GetBuildPrice(int turn)

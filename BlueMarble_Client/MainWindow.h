@@ -30,6 +30,7 @@ private:
 	static void GetRankingDataMethod();	// 랭킹 정보 요청
 	static UINT WINAPI GetRankingData(void* arg);
 public:
+	static bool isReset;
 	static MainWindow* GetInstance();
 	static void ReleaseInstance();
 

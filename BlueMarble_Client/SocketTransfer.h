@@ -112,6 +112,9 @@ private:
 
 	static void GetBankruptcySignMethod(char* packet);
 	void GetBankruptcySign(char* packet);
+
+	static void GetGameOverSignMethod(char* packet);
+	void GetGameOverSign(char* packet);
 public:
 	void PrintErrorCode(State state, const int errorCode);
 
