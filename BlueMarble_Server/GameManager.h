@@ -27,7 +27,7 @@ public:
 	static GameManager* GetInstance();
 	static void ReleaseInstance();
 
-	void CreateRoom(SOCKET& user1, SOCKET& user2);
+	void CreateRoom(std::vector<unsigned int> userSocketVector);
 	GameRoom* GetRoom(int index);
 	void DeleteGameRoom(GameRoom* room);
 

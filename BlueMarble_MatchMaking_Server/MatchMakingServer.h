@@ -12,6 +12,7 @@ using namespace std;
 
 constexpr const int PORT = 4568;
 constexpr const int MAX_PACKET_SIZE = 1024;
+constexpr const int MAX_MATCH_QUEUE_SIZE = 4;
 
 typedef void(*CALLBACK_FUNC_PACKET)(char*);
 

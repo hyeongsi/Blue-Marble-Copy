@@ -71,7 +71,7 @@ public:
 	bool isDouble = false;	// 더블 유무
 	GameState state = GameState::ROLL_DICE_SIGN;
 
-	GameRoom(SOCKET user1, SOCKET user2);
+	GameRoom(vector<unsigned int> userSocketVector);
 
 	vector<SOCKET> GetUserVector();
 	vector<SOCKET>* GetPUserVector();

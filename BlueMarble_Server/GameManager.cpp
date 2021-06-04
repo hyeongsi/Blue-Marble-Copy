@@ -25,25 +25,23 @@ void GameManager::ReleaseInstance()
 	instance = nullptr;
 }
 
-void GameManager::CreateRoom(SOCKET& user1, SOCKET& user2)
+void GameManager::CreateRoom(std::vector<unsigned int> userSocketVector)
 {
 	gameRoomVectorMutex.lock();
-	roomVector.emplace_back(new GameRoom(user1, user2));
+	roomVector.emplace_back(new GameRoom(userSocketVector));
 	gameRoomVectorMutex.unlock();
 
 	char sendPacket[MAX_PACKET_SIZE] = {};
 	unsigned int packetLastIndex = 0;
-	GameServer::GetInstance()->MakePacket(sendPacket, &packetLastIndex, READY);
-	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 1, sizeof(int));
-	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2, sizeof(int));
-	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, START_MONEY, sizeof(int));
-	GameServer::GetInstance()->PacektSendMethod(sendPacket, user1);
 
-	GameServer::GetInstance()->MakePacket(sendPacket, &packetLastIndex, READY);
-	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2, sizeof(int));
-	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2, sizeof(int));
-	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, START_MONEY, sizeof(int));
-	GameServer::GetInstance()->PacektSendMethod(sendPacket, user2);
+	for (int i = 0; i < (int)userSocketVector.size(); i++)
+	{
+		GameServer::GetInstance()->MakePacket(sendPacket, &packetLastIndex, READY);
+		GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, i+1, sizeof(int));
+		GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, (int)userSocketVector.size(), sizeof(int));
+		GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, START_MONEY, sizeof(int));
+		GameServer::GetInstance()->PacektSendMethod(sendPacket, userSocketVector[i]);
+	}
 }
 
 GameRoom* GameManager::GetRoom(int index)

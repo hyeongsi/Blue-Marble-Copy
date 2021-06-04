@@ -76,11 +76,19 @@ void MatchingClient::SetMatchUserPacketMethod(char* packet)
 void MatchingClient::SetMatchUser(char* packet)
 {
 	matchMakingPacket userPacket;
+	int accumDataSize = 1;
+	unsigned int userSocket;
 
-	memcpy(&userPacket.user1Id, &packet[1], sizeof(unsigned int));	// get socket
-	memcpy(&userPacket.user2Id, &packet[1 + sizeof(unsigned int)], sizeof(unsigned int));	// get socket
+	memcpy(&userPacket.maxPlayerSize, &packet[accumDataSize], sizeof(userPacket.maxPlayerSize));// get maxPlayerSize
+	accumDataSize += sizeof(userPacket.maxPlayerSize);
+	for (int i = 0; i < userPacket.maxPlayerSize; i++)
+	{
+		memcpy(&userSocket, &packet[accumDataSize], sizeof(userSocket));	// get socket
+		accumDataSize += sizeof(userPacket.maxPlayerSize);
+		userPacket.userSocket.emplace_back(userSocket);
+	}
 
-	GameManager::GetInstance()->CreateRoom(userPacket.user1Id, userPacket.user2Id);
+	GameManager::GetInstance()->CreateRoom(userPacket.userSocket);
 }
 
 MatchingClient* MatchingClient::GetInstance()

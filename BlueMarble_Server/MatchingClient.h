@@ -1,10 +1,11 @@
 ﻿#pragma once
 #include "TransferResource.h"
+#include <vector>
 
 typedef struct MatchMakingPacket
 {
-	unsigned int user1Id;
-	unsigned int user2Id;
+	int maxPlayerSize;	// 플레이 인원 수
+	vector<unsigned int> userSocket;
 }matchMakingPacket;
 
 class MatchingClient

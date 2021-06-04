@@ -120,13 +120,16 @@ void MatchMakingServer::StartServer()
 	
 	while (true)
 	{
-		if (2 <= matchQueue.size())
+		if (MAX_MATCH_QUEUE_SIZE <= matchQueue.size())
 		{
 			MakePacket(SET_MATCHING_USER_PACKET);
-			AppendPacketData(matchQueue.front(), sizeof(unsigned int));
-			matchQueue.pop();
-			AppendPacketData(matchQueue.front(), sizeof(unsigned int));
-			matchQueue.pop();
+			AppendPacketData(MAX_MATCH_QUEUE_SIZE, sizeof(int));	// 플레이 인원
+
+			for (int i = 0; i < MAX_MATCH_QUEUE_SIZE; i++)
+			{
+				AppendPacketData(matchQueue.front(), sizeof(unsigned int));
+				matchQueue.pop();
+			}
 
 			PacektSendMethod(clientSocket);
 		}

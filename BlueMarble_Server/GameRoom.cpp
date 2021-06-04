@@ -3,28 +3,18 @@
 #include "GameServer.h"
 #include <stdio.h>
 
-GameRoom::GameRoom(SOCKET user1, SOCKET user2)
+GameRoom::GameRoom(vector<unsigned int> userSocketVector)
 {
-	userVector.emplace_back(user1);
-	userVector.emplace_back(user2);
-
-	userPositionVector.emplace_back(0);
-	userPositionVector.emplace_back(0);
-
-	isFinishTurnProcessVector.emplace_back(false);
-	isFinishTurnProcessVector.emplace_back(false);
-
-	userMoneyVector.emplace_back(START_MONEY);
-	userMoneyVector.emplace_back(START_MONEY);
-
-	bankruptcyVector.emplace_back(false);
-	bankruptcyVector.emplace_back(false);
-
-	isDesertIsland.emplace_back(false);
-	isDesertIsland.emplace_back(false);
-
-	desertIslandCount.emplace_back(0);
-	desertIslandCount.emplace_back(0);
+	for (int i = 0; i < (int)userSocketVector.size(); i++)
+	{
+		userVector.emplace_back(userSocketVector[i]);
+		userPositionVector.emplace_back(0);
+		isFinishTurnProcessVector.emplace_back(false);
+		userMoneyVector.emplace_back(START_MONEY);
+		bankruptcyVector.emplace_back(false);
+		isDesertIsland.emplace_back(false);
+		desertIslandCount.emplace_back(0);
+	}
 
 	isDouble = false;
 

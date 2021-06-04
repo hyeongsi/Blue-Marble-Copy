@@ -199,7 +199,7 @@ void SocketTransfer::GetReadyMethod(char* packet)
 {
 	readyPacket rPacket;
 	memcpy(&rPacket.header, &packet[0], sizeof(char));					// get ready sign
-	memcpy(&rPacket.number, &packet[1], sizeof(int));		// get number
+	memcpy(&rPacket.number, &packet[1], sizeof(int));					// get number
 	memcpy(&rPacket.playerCount, &packet[1 + sizeof(int)], sizeof(int));		// get playerCount
 	memcpy(&rPacket.initMoney, &packet[1 + sizeof(int) + sizeof(int)], sizeof(int));		// get initMoney
 
@@ -1069,12 +1069,6 @@ void SocketTransfer::GetBankruptcySign(char* packet)
 	}
 	
 	GameManager::GetInstance()->SetGameMessage(to_string(bankruptcySignPkt.whosTurn+1) + "번이 파산했습니다.");	// 메시지 갱신
-
-	if (bankruptcySignPkt.whosTurn == GameManager::GetInstance()->GetCharacterIndex() - 1)
-	{
-		MakePacket(BANKRUPTCY_SIGN);
-		SendMessageToGameServer();
-	}
 }
 
 void SocketTransfer::GetGameOverSignMethod(char* packet)
