@@ -163,7 +163,7 @@ public:
 
 	int FindNextLand(int selectValue, bool isLeft);	// 그다음 소지한 지역 찾기
 
-	void Bankruptcy();	// 파산 처리
+	void Bankruptcy(int index);	// 파산 처리
 
 	void EndTurn();
 };

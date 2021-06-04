@@ -177,13 +177,22 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case SELECT_MODE_BTN:
 				GameManager::GetInstance()->SellLandProcessMethod(myRoom, cBuffer);
 				break;
-			case BANKRUPTCY_SIGN:
-				GameManager::GetInstance()->GetBankruptcySignMethod(myRoom);
-				break;
 			default:
 				break;
 			}
 		}
+	}
+
+	if (myRoom != nullptr)
+	{
+		for (int i = 0; i < (int)(*myRoom->GetPUserVector()).size(); i++)
+		{
+			if (myRoom->GetUserVector()[i] != clientSocket)
+				continue;
+
+			myRoom->Bankruptcy(i);
+			break;
+		}	
 	}
 
 	clientSocketMutex.lock();

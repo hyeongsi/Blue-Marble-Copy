@@ -74,8 +74,7 @@ public:
 	static void SellLandProcessMethod(GameRoom* room, char* data);
 	void SellLandProcess(GameRoom* room, char* data);
 
-	static void GetBankruptcySignMethod(GameRoom* room);
-	void GetBankruptcySign(GameRoom* room);
+	void CheckGameOver(GameRoom* room);
 
 	static void AfterSellLandSyncMethod(GameRoom* room);
 	void AfterSellLandSync(GameRoom* room);
