@@ -1095,22 +1095,12 @@ void SocketTransfer::GetGameOverSign(char* packet)
 			"본인을 제외한 모두가 파산했습니다.\n 게임에서 승리했습니다.\n 게임이 종료됩니다.",
 			"우승", MB_OK); // 카드 메시지 불러온거 카드ID 통해서 출력하도록 만들자.
 
-		// 이름 입력받고 서버로 넘겨주기
-		MakePacket(END_GAME);
-		SendMessageToGameServer();
-		closesocket(clientSocket);
-		system("pause");
 		return;
 	}
 
 	MessageBox(GameWindow::GetInstance()->g_hWnd,
 		(to_string(gameOverSignPkt.winnerIndex+1) + "을 제외한 모두가 파산했습니다.\n 게임이 종료됩니다.").c_str(),
 		"패배", MB_OK); 
-
-	MakePacket(END_GAME);
-	SendMessageToGameServer();
-	closesocket(clientSocket);
-	system("pause");
 }
 
 void SocketTransfer::PrintErrorCode(State state, const int errorCode)
@@ -1186,6 +1176,9 @@ void SocketTransfer::StartRecvDataThread()
 
 void SocketTransfer::TerminateRecvDataThread()
 {
+	closesocket(clientSocket);
+	WSACleanup();
+
 	recvThreadMutex.lock();
 	recvThreadHandle = nullptr;
 	recvThreadMutex.unlock();

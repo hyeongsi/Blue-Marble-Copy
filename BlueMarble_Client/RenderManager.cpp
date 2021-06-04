@@ -192,6 +192,11 @@ void RenderManager::InitDrawBoardMap()
             POINT(PRINT_PLAYER_PIVOT_POINT[3].x,
                 PRINT_PLAYER_PIVOT_POINT[3].y + (i * tileHeight)));
     }
+
+    for (int i = 0; i < (int)(*BitmapManager::GetInstance()->GetBitmap(State::GAME)).size(); i++)
+    {
+        SetPlayerBitmapLocation(i, 0);
+    }
 }
 
 void RenderManager::DrawBoardMap()

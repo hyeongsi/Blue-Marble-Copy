@@ -94,6 +94,8 @@ void MainWindow::StartGameMethod()
 UINT WINAPI MainWindow::StartGame(void* arg)
 {
     isRunStartThread = true;
+    SocketTransfer::ReleaseInstance();
+    GameManager::ReleaseInstance();
     if (SocketTransfer::GetInstance()->ConnectServer())
     {
         SocketTransfer::GetInstance()->StartRecvDataThread();
