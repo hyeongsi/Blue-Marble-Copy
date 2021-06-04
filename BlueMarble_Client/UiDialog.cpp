@@ -50,7 +50,7 @@ void UiDialog::AccumNSetText(HWND hDlg, int state)
 			if ((userMoney - accumBuildPrice) < 0)
 			{
 				SendDlgItemMessage(hDlg, IDC_CHECK_BUILDING, BM_SETCHECK, BST_UNCHECKED, 0);
-				instance->accumBuildPrice -= *instance->buildInfoData.villaPrice;
+				instance->accumBuildPrice -= *instance->buildInfoData.buildingPrice;
 				buildInfoData.isBuyVilla = false;
 			}
 		}
@@ -70,7 +70,7 @@ void UiDialog::AccumNSetText(HWND hDlg, int state)
 			if ((userMoney - accumBuildPrice) < 0)
 			{
 				SendDlgItemMessage(hDlg, IDC_CHECK_HOTEL, BM_SETCHECK, BST_UNCHECKED, 0);
-				instance->accumBuildPrice -= *instance->buildInfoData.villaPrice;
+				instance->accumBuildPrice -= *instance->buildInfoData.hotelPrice;
 				buildInfoData.isBuyVilla = false;
 			}
 		}
