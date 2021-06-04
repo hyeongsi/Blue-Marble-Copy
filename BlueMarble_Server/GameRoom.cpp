@@ -14,8 +14,8 @@ GameRoom::GameRoom(SOCKET user1, SOCKET user2)
 	isFinishTurnProcessVector.emplace_back(false);
 	isFinishTurnProcessVector.emplace_back(false);
 
-	userMoneyVector.emplace_back(100);
-	userMoneyVector.emplace_back(100);
+	userMoneyVector.emplace_back(START_MONEY);
+	userMoneyVector.emplace_back(START_MONEY);
 
 	bankruptcyVector.emplace_back(false);
 	bankruptcyVector.emplace_back(false);

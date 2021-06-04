@@ -36,13 +36,13 @@ void GameManager::CreateRoom(SOCKET& user1, SOCKET& user2)
 	GameServer::GetInstance()->MakePacket(sendPacket, &packetLastIndex, READY);
 	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 1, sizeof(int));
 	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2, sizeof(int));
-	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2000, sizeof(int));
+	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, START_MONEY, sizeof(int));
 	GameServer::GetInstance()->PacektSendMethod(sendPacket, user1);
 
 	GameServer::GetInstance()->MakePacket(sendPacket, &packetLastIndex, READY);
 	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2, sizeof(int));
 	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2, sizeof(int));
-	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, 2000, sizeof(int));
+	GameServer::GetInstance()->AppendPacketData(sendPacket, &packetLastIndex, START_MONEY, sizeof(int));
 	GameServer::GetInstance()->PacektSendMethod(sendPacket, user2);
 }
 
