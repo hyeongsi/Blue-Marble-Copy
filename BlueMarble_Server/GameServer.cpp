@@ -180,23 +180,11 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			case BANKRUPTCY_SIGN:
 				GameManager::GetInstance()->GetBankruptcySignMethod(myRoom);
 				break;
-			case END_GAME:
-				isGameover = true;
-				break;
 			default:
 				break;
 			}
 		}
-		if (isGameover)
-			break;
 	}
-
-	GameManager::GetInstance()->gameRoomVectorMutex.lock();
-	if (myRoom != nullptr)
-	{
-		GameManager::GetInstance()->DeleteGameRoom(myRoom);
-	}
-	GameManager::GetInstance()->gameRoomVectorMutex.unlock();
 
 	clientSocketMutex.lock();
 	clientSocketList.remove(clientSocket);
@@ -270,6 +258,11 @@ void GameServer::StartServer()
 list<SOCKET> GameServer::GetClientSocketList()
 {
 	return clientSocketList;
+}
+
+list<SOCKET>* GameServer::GetPClientSocketList()
+{
+	return &clientSocketList;
 }
 
 void GameServer::MakePacket(char* sendPacket, unsigned int* packetLastIndex, char header)

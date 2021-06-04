@@ -58,17 +58,18 @@ void GameManager::DeleteGameRoom(GameRoom* room)
 {
 	for (auto iterator = roomVector.begin(); iterator != roomVector.end(); iterator++)
 	{
-		if ((*iterator) == room)
+		if ((*iterator) != room)
+			continue;
+
+		for (int i = 0; i < (int)room->GetUserVector().size(); i++)
 		{
-			roomVector.erase(iterator);
-			break;
+			closesocket((*room->GetPUserVector())[i]);
 		}
-	}
-	
-	if (room != nullptr)	// nullptr을 넣었음에도 불구하고, 다른 신호가 들어왔을 때, nullptr로 인식을 못했음. 따라서 그걸 delete 하니 오류 발생
-	{
+
+		roomVector.erase(iterator);
 		delete room;		// 방 없애기
 		room = nullptr;
+		break;
 	}
 	
 	printf("%s\n", "delete Game Room");
@@ -170,6 +171,12 @@ void GameManager::RoomLogicThreadMethod(GameRoom* room)
 			room->SendFinishTurnSign();
 			break;
 		case GameState::GAME_OVER:
+			gameRoomVectorMutex.lock();
+			if (room != nullptr)
+			{
+				DeleteGameRoom(room);
+			}
+			gameRoomVectorMutex.unlock();
 			return;
 		default:
 			break;

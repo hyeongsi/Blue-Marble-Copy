@@ -43,6 +43,7 @@ public:
 	void PacektSendMethod(char* sendPacket, SOCKET& socket);
 
 	list<SOCKET> GetClientSocketList();
+	list<SOCKET>* GetPClientSocketList();
 };
 
 template<class T>
