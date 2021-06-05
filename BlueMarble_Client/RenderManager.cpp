@@ -274,8 +274,10 @@ void RenderManager::DrawBoardMap()
             SetTextColor(memDC, RGB(63, 72, 204));     // 파란색
             break;
         case 3:     // 3p
+            SetTextColor(memDC, RGB(34, 177, 16));     // 초록색
             break;
         case 4:     // 4p
+            SetTextColor(memDC, RGB(255, 201, 14));     // 노란색
             break;
         default:    // 소유주 없음
             SetTextColor(memDC, RGB(0, 0, 0));     // 검은색
@@ -310,7 +312,8 @@ void RenderManager::DrawWindow(State state)
             if ((count < MAX_PLAYER) && (GameManager::GetInstance()->GetPlayerCount() <= count))
                 continue;   // 플레이어 숫자에 따라 출력되는 캐릭터 수 제한
 
-            DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);
+            if((*GameManager::GetInstance()->GetBackruptcyVector())[count] == false)
+                DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);
         }
         else
             DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);

@@ -164,6 +164,7 @@ void GameRoom::SendMapDataMethod(SOCKET& socekt)
 {
 	boardData* board = MapManager::GetInstance()->GetBoardData(ORIGINAL);
 
+	packetLastIndexMutex.lock();
 	if (nullptr != board)
 	{
 		gameServer->MakePacket(sendPacket, &packetLastIndex, GET_MAPDATA);
@@ -189,15 +190,18 @@ void GameRoom::SendMapDataMethod(SOCKET& socekt)
 	{
 		gameServer->PrintErrorCode(NOT_FOUND_BOARDDATA_ERROR);
 	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendRollDiceSignMethod(SOCKET& socket)
 {
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, ROLL_DICE_SIGN);
 	gameServer->PacektSendMethod(sendPacket, socket);
 	printf("%s %d\n", "send Roll Dice Msg - ", socket);
 
 	state = GameState::WAIT;
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::DesertIslandMethod()
@@ -230,14 +234,17 @@ void GameRoom::DesertIslandMethod()
 
 void GameRoom::WorldTrableMethod()
 {
+	packetLastIndexMutex.lock();
 	state = GameState::WAIT;
 	gameServer->MakePacket(sendPacket, &packetLastIndex, WORLD_TRABLE_SIGN);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userPositionVector[takeControlPlayer], sizeof(userPositionVector[takeControlPlayer]));	// 위치
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::WorldTrableSignSyncMethod()
 {
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, WORLD_TRABLE_SIGN_SYNC);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(int));	// 차례
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userPositionVector[takeControlPlayer], 
@@ -250,18 +257,22 @@ void GameRoom::WorldTrableSignSyncMethod()
 		gameServer->PacektSendMethod(sendPacket, socketIterator);
 		printf("%s %d\n", "send WorldTrableSignSync - ", socketIterator);
 	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::OlympicMethod()
 {
+	packetLastIndexMutex.lock();
 	state = GameState::WAIT;
 	gameServer->MakePacket(sendPacket, &packetLastIndex, OLYMPIC_SIGN);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userPositionVector[takeControlPlayer], sizeof(userPositionVector[takeControlPlayer]));	// 위치
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::OlympicSyncMethod(int selectIndex)
 {
+	packetLastIndexMutex.lock();
 	landBoardData.olympic[selectIndex] += 1;	// 올림픽 개최 여부 및 중첩 변경
 
 	gameServer->MakePacket(sendPacket, &packetLastIndex, OLYMPIC);
@@ -276,6 +287,7 @@ void GameRoom::OlympicSyncMethod(int selectIndex)
 		gameServer->PacektSendMethod(sendPacket, socketIterator);
 		printf("%s %d\n", "send OLYMPIC SYNC - ", socketIterator);
 	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendRollTheDice(int value1, int value2, bool isDesertIsland)
@@ -372,25 +384,30 @@ void GameRoom::SendPayTollSign()
 	if (landBoardData.olympic[userPositionVector[takeControlPlayer]] != 0)
 		toll *= (int)pow(2, landBoardData.olympic[userPositionVector[takeControlPlayer]]);	// 올림픽 가격 적용
 
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, PAY_TOLL_SIGN);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, toll, sizeof(toll));	// 통행료 가격
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
 	printf("%s %d\n", "send Pay_Toll_Sign - ", userVector[takeControlPlayer]);
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendBuyLandSign()
 {
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_LAND_SIGN);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(int));	// 유저
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex,
 		board.land[userPositionVector[takeControlPlayer]], sizeof(int));	// 땅 가격
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
 	printf("%s %d\n", "send Buy_Land_Sign - ", userVector[takeControlPlayer]);
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendLandSyncSign(int turn, bool isBuy)
 {
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_LAND_SYNC);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isBuy, sizeof(bool));		// 구매 유무
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, turn, sizeof(int));		// 유저
@@ -402,10 +419,12 @@ void GameRoom::SendLandSyncSign(int turn, bool isBuy)
 		gameServer->PacektSendMethod(sendPacket, socketIterator);
 		printf("%s %d\n", "send Buy_Land_Sync - ", socketIterator);
 	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendBuildingSyncSign(int turn, bool isBuy, bool isBuyVilla, bool isBuyBuilding, bool isBuyHotel, int accumPrice)
 {
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_BUILDING_SYNC);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isBuy, sizeof(isBuy));	// 구매 유무
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, turn, sizeof(turn));		// 유저
@@ -422,10 +441,12 @@ void GameRoom::SendBuildingSyncSign(int turn, bool isBuy, bool isBuyVilla, bool 
 		gameServer->PacektSendMethod(sendPacket, socketIterator);
 		printf("%s %d\n", "send Buy_Build_Sync - ", socketIterator);
 	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendPayTollSignSync(int turn, int tollPrice, bool isPass, int landOwner)
 {
+	packetLastIndexMutex.lock();
 	int userMoney = userMoneyVector[turn] - tollPrice;
 	int ownerMoney = userMoneyVector[landOwner] + tollPrice;
 
@@ -451,6 +472,7 @@ void GameRoom::SendPayTollSignSync(int turn, int tollPrice, bool isPass, int lan
 		gameServer->PacektSendMethod(sendPacket, socketIterator);
 		printf("%s %d\n", "send PayTollSignSync - ", socketIterator);
 	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::CheckLandKindNSendMessage()
@@ -459,6 +481,7 @@ void GameRoom::CheckLandKindNSendMessage()
 	bool isBuyBuilding;
 	bool isBuyHotel;
 
+	packetLastIndexMutex.lock();
 	if (board.code[userPositionVector[takeControlPlayer]] == LAND_TILE) // Land
 	{
 		gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_BUILDING_SIGN);
@@ -482,6 +505,7 @@ void GameRoom::CheckLandKindNSendMessage()
 	{
 		EndTurn();
 	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendTakeOverSign(int landOwner)
@@ -490,14 +514,17 @@ void GameRoom::SendTakeOverSign(int landOwner)
 
 	takeOverPrice *= 2;	// 인수 비용은 구입 비용의 2배
 
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, TAKE_OVER_SIGN);	// 인수 메시지
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeOverPrice, sizeof(takeOverPrice));	// 인수비용
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendTakeOverSignSync(int takeOverPrice, int owner)
 {
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, TAKE_OVER_SYNC);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeOverPrice, sizeof(takeOverPrice));	// 인수비용
@@ -512,6 +539,7 @@ void GameRoom::SendTakeOverSignSync(int takeOverPrice, int owner)
 		gameServer->PacektSendMethod(sendPacket, socketIterator);
 		printf("%s %d\n", "send PayTakeOverSync - ", socketIterator);
 	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendCardSignSync(char* packet)
@@ -528,6 +556,7 @@ void GameRoom::SendCardSignSync(char* packet)
 
 		if (cardSignProcessPkt.isOk)  // 카드 사용한다고 했으면
 		{
+			packetLastIndexMutex.lock();
 			DeleteUseTrapCard();	// 사용 카드 삭제
 			gameServer->MakePacket(sendPacket, &packetLastIndex, TRAP_CARD_SYNC);
 			gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
@@ -538,6 +567,7 @@ void GameRoom::SendCardSignSync(char* packet)
 				gameServer->PacektSendMethod(sendPacket, socketIterator);
 				printf("%s %d\n", "send TrapCardSync - ", socketIterator);
 			}
+			packetLastIndexMutex.unlock();
 		}
 		else  // 카드 사용 안하면
 		{
@@ -558,6 +588,7 @@ void GameRoom::SendCardSignSync(char* packet)
 			return;
 		}
 
+		packetLastIndexMutex.lock();
 		gameServer->MakePacket(sendPacket, &packetLastIndex, CARD_SIGN_SYNC);
 		gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
 		gameServer->AppendPacketData(sendPacket, &packetLastIndex, preCardId, sizeof(preCardId));	// 카드 id
@@ -571,6 +602,7 @@ void GameRoom::SendCardSignSync(char* packet)
 			gameServer->PacektSendMethod(sendPacket, socketIterator);
 			printf("%s %d\n", "send CardSignSync - ", socketIterator);
 		}
+		packetLastIndexMutex.unlock();
 	}
 }
 
@@ -589,15 +621,18 @@ bool GameRoom::CheckTrapCard(int cardId)
 
 void GameRoom::SendRevenueSign()
 {
+	packetLastIndexMutex.lock();
 	state = GameState::WAIT;
 	gameServer->MakePacket(sendPacket, &packetLastIndex, REVENUE_SIGN);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, TAX, sizeof(TAX));	// 세금
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendRevenueSignSync()
 {
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, REVENUE_SIGN_SYNC);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 유저
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, TAX, sizeof(TAX));	// 세금
@@ -607,20 +642,24 @@ void GameRoom::SendRevenueSignSync()
 		gameServer->PacektSendMethod(sendPacket, socketIterator);
 		printf("%s %d\n", "send RevenueSignSync - ", socketIterator);
 	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendBuyLandMarkSign()
 {
 	int landMarkPrice = board.landMark[userPositionVector[takeControlPlayer]];
 	
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_LANDMARK_SIGN);	// 인수 메시지
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, landMarkPrice, sizeof(landMarkPrice));	// 랜드마크 건설비용
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendBuyLandMarkSignSync(int landMarkPrice)
 {
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, BUY_LANDMARK_SIGN_SYNC);	// 인수 메시지
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, landMarkPrice, sizeof(landMarkPrice));	// 구입가격
@@ -632,6 +671,7 @@ void GameRoom::SendBuyLandMarkSignSync(int landMarkPrice)
 		gameServer->PacektSendMethod(sendPacket, socketIterator);
 		printf("%s %d\n", "send BuyLandMarkSync - ", socketIterator);
 	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendSellLandSign(int goalPrice, int state)
@@ -639,6 +679,7 @@ void GameRoom::SendSellLandSign(int goalPrice, int state)
 	beforeSellSign = state;
 	this->goalPrice = goalPrice;
 
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, SELL_LAND_SIGN);	// 매각 메시지
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, goalPrice, sizeof(goalPrice));	// 필요 금액
@@ -648,15 +689,18 @@ void GameRoom::SendSellLandSign(int goalPrice, int state)
 	selectLandIndex.clear();
 
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendCardSign(Card card)
 {
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, CARD_SIGN);	// 매각 메시지
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, card.cardId, sizeof(card.cardId));	// 카드 id
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, false, sizeof(false));	// 사용 여부 물어보는 카드 인지
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendIsUseCardSign(int cardId)
@@ -670,11 +714,13 @@ void GameRoom::SendIsUseCardSign(int cardId)
 		return;
 	}
 	
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, CARD_SIGN);	// 매각 메시지
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, cardId, sizeof(cardId));	// 카드 id
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, true, sizeof(true));	// 사용 여부 물어보는 카드 인지
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::DeleteUseTrapCard()
@@ -693,6 +739,7 @@ void GameRoom::SendSellLandSignSync()
 {
 	int sellLandSize = (int)selectLandIndex.size();
 
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, SELL_LAND_SIGN_SYNC);	// 매각 동기화 메시지
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex,
@@ -709,6 +756,7 @@ void GameRoom::SendSellLandSignSync()
 		gameServer->PacektSendMethod(sendPacket, socketIterator);
 		printf("%s %d\n", "send SellLandSignSync - ", socketIterator);
 	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::CheckPassNSellMessage()
@@ -792,6 +840,7 @@ void GameRoom::CheckCanBuild()
 
 void GameRoom::SendFinishTurnSign()
 {
+	packetLastIndexMutex.lock();
 	for (int i = 0; i < (int)userVector.size(); i++)
 	{
 		if (bankruptcyVector[i])
@@ -800,6 +849,7 @@ void GameRoom::SendFinishTurnSign()
 		gameServer->MakePacket(sendPacket, &packetLastIndex, FINISH_THIS_TURN_PROCESS);
 		gameServer->PacektSendMethod(sendPacket, userVector[i]);
 	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::CheckEndProcess(SOCKET clientSocket)
@@ -833,6 +883,7 @@ void GameRoom::CheckEndProcess(SOCKET clientSocket)
 
 void GameRoom::SendSelectLandIndex(int index, bool isSpaceBar)
 {
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, SEND_SELECT_MODE_INPUT_KEY);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, index, sizeof(index));	// 선택 지역 인덱스
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, isSpaceBar, sizeof(isSpaceBar));	// 스페이스바 동작인지
@@ -863,10 +914,12 @@ void GameRoom::SendSelectLandIndex(int index, bool isSpaceBar)
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, sellLandPrice, sizeof(sellLandPrice));	// 판매 금액
 	gameServer->PacektSendMethod(sendPacket, userVector[takeControlPlayer]);
 	printf("%s %d\n", "send Data", SEND_SELECT_MODE_INPUT_KEY);
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::SendGameOverSign()
 {
+	packetLastIndexMutex.lock();
 	gameServer->MakePacket(sendPacket, &packetLastIndex, GAMEOVER_SIGN);
 	for (int i = 0; i < (int)bankruptcyVector.size(); i++)
 	{
@@ -884,6 +937,7 @@ void GameRoom::SendGameOverSign()
 	}
 
 	state = GameState::GAME_OVER;
+	packetLastIndexMutex.unlock();
 }
 
 int GameRoom::GetBuildPrice(int turn)
@@ -1092,6 +1146,7 @@ void GameRoom::Bankruptcy(int index)
 		}
 	}
 
+	packetLastIndexMutex.lock();
 	// 해당 정보 보내서 파산 정보 동기화 시키기,
 	gameServer->MakePacket(sendPacket, &packetLastIndex, BANKRUPTCY_SIGN);
 	gameServer->AppendPacketData(sendPacket, &packetLastIndex, index, sizeof(index));	// 파산 유저 번호
@@ -1100,6 +1155,12 @@ void GameRoom::Bankruptcy(int index)
 		gameServer->PacektSendMethod(sendPacket, socketIterator);
 		printf("%s %d\n", "send Bankruptcy Sign - ", socketIterator);
 	}
+
+	if (index == takeControlPlayer)	// 탈주한 인원 차례였던 경우,
+	{
+		EndTurn();	// 해당 턴 종료
+	}
+	packetLastIndexMutex.unlock();
 }
 
 void GameRoom::EndTurn()

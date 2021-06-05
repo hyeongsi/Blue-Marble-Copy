@@ -173,7 +173,7 @@ void GameWindow::GameUpdate()
 {
     RenderManager::GetInstance()->RenderInitSetting();
     RenderManager::GetInstance()->DrawBoardMap();
-    RenderManager::GetInstance()->DrawWindow(State::GAME);
+    RenderManager::GetInstance()->DrawWindow(State::GAME);  // 이미지 출력
 
     if (GameManager::GetInstance()->GetIsMyDiceTurn() || GameManager::GetInstance()->GetGameState() == GameState::ROLL_DICE)
     {

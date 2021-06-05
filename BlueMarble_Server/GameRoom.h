@@ -5,6 +5,7 @@
 #include <time.h>
 #include "commonGameResource.h"
 #include "Card.h"
+#include <mutex>
 
 constexpr const int MAX_PLAYER = 2;
 
@@ -56,7 +57,9 @@ private:
 	boardData board;		// 지역 정보 및 건물 가격 데이터
 
 	char sendPacket[MAX_PACKET_SIZE] = {};
-	unsigned int packetLastIndex = 0;
+
+	mutex packetLastIndexMutex;
+	unsigned int packetLastIndex = 0;	// 같은 게임에서 동시에 데이터를 보낼 경우, 같이 참조해서 문제점이 생겨서 뮤텍스 사용
 
 	vector<int> selectLandIndex;
 public:
