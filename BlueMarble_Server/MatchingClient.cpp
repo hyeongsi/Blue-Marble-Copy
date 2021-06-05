@@ -120,7 +120,7 @@ void MatchingClient::ConnectMathchServer()
 	}
 }
 
-void MatchingClient::MakePacket(char header)
+void MatchingClient::MakePacket(char header, int& packetLastIndex)
 {
 	if (NULL != header)
 	{
@@ -135,13 +135,13 @@ void MatchingClient::MakePacket(char header)
 	}
 }
 
-void MatchingClient::AppendPacketDataMethod(unsigned int data, unsigned int dataSize)
+void MatchingClient::AppendPacketDataMethod(unsigned int data, unsigned int dataSize, int& packetLastIndex)
 {
-	memcpy(&instance->sendPacket[instance->packetLastIndex], &data, dataSize);
-	instance->packetLastIndex += dataSize;
+	memcpy(&instance->sendPacket[packetLastIndex], &data, dataSize);
+	packetLastIndex += dataSize;
 }
 
-void MatchingClient::AppendPacketPointerData(char* data, unsigned int dataSize)
+void MatchingClient::AppendPacketPointerData(char* data, unsigned int dataSize, int& packetLastIndex)
 {
 	memcpy(&sendPacket[packetLastIndex], data, dataSize);
 	packetLastIndex += dataSize;

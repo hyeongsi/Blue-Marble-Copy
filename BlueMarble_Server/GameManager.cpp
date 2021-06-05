@@ -65,11 +65,11 @@ void GameManager::DeleteGameRoom(GameRoom* room)
 		}
 
 		roomVector.erase(iterator);
-		delete room;		// 방 없애기
-		room = nullptr;
 		break;
 	}
-	
+
+	delete room;		// 방 없애기
+	room = nullptr;
 	printf("%s\n", "delete Game Room");
 }
 

@@ -32,10 +32,9 @@ void MainWindow::ReInitMainMenu(HWND hWnd)
 {
     if (isReset)
     {
-        ShowButton();
-
         instance->renderManager->Init(hWnd);  // MainMenu <- -> Game Render
         MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
+        ShowButton();
         isReset = false;
     }
 }
@@ -189,11 +188,11 @@ void MainWindow::MainMenuUpdate()
     instance->renderManager->RenderInitSetting();
     instance->renderManager->DrawWindow(State::MAIN_MENU);
 
-    for (int i = 0; i < (int)instance->hwndWindow.size()-1; i++)
+    for (int i = 0; i < (int)instance->hwndWindow.size(); i++)
     {
         instance->renderManager->DrawHwnd(instance->hwndWindow[i],
             (*instance->bitmapManager->GetHwnd(State::MAIN_MENU))[i].point, 
-            { 100,100 });
+            (*instance->bitmapManager->GetHwnd(State::MAIN_MENU))[i].size);
     }
 
     instance->renderManager->Render();

@@ -14,7 +14,6 @@ private:
 	static MatchingClient* instance;
 
 	char sendPacket[MAX_PACKET_SIZE] = {};
-	unsigned int packetLastIndex = 0;
 
 	WSADATA wsaData;
 	SOCKET clientSocket;
@@ -41,9 +40,9 @@ public:
 
 	void ConnectMathchServer();
 
-	void MakePacket(char header);
-	void AppendPacketDataMethod(unsigned int data, unsigned int dataSize);
-	void AppendPacketPointerData(char* data, unsigned int dataSize);
+	void MakePacket(char header, int& packetLastIndex);
+	void AppendPacketDataMethod(unsigned int data, unsigned int dataSize, int& packetLastIndex);
+	void AppendPacketPointerData(char* data, unsigned int dataSize, int& packetLastIndex);
 	void SendMessageToMatchServer();
 };
 

@@ -7,7 +7,7 @@
 #include "Card.h"
 #include <mutex>
 
-constexpr const int MAX_PLAYER = 2;
+constexpr const int MAX_PLAYER = 4;
 
 enum class GameState
 {

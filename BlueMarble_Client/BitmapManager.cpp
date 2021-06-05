@@ -125,6 +125,7 @@ void BitmapManager::LoadBitmapData(State state)
 				mainMenuBitmap.emplace_back(bitmapInfo);
 				break;
 			case State::RANK_MENU:
+				readFile.close();
 				return;
 			case State::GAME:
 				gameBitmap.emplace_back(bitmapInfo);

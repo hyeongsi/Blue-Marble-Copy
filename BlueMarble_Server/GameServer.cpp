@@ -80,8 +80,9 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 	clientSocketList.emplace_back(clientSocket);
 	clientSocketMutex.unlock();
 
-	MatchingClient::GetInstance()->MakePacket(SET_MATCHING_USER_PACKET);
-	MatchingClient::GetInstance()->AppendPacketDataMethod(clientSocket, sizeof(unsigned int));
+	int matchingClientPacketLastIndex = 0;
+	MatchingClient::GetInstance()->MakePacket(SET_MATCHING_USER_PACKET, matchingClientPacketLastIndex);
+	MatchingClient::GetInstance()->AppendPacketDataMethod(clientSocket, sizeof(unsigned int), matchingClientPacketLastIndex);
 	MatchingClient::GetInstance()->SendMessageToMatchServer();
 
 	while ((recv(clientSocket, cBuffer, MAX_PACKET_SIZE, 0)) != -1)

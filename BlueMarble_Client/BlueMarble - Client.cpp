@@ -105,9 +105,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    {
        return FALSE;
    }
-
-   ShowWindow(mainWindowHwnd, nCmdShow);
+   
    ShowWindow(gameWindowHwnd, SW_HIDE);
+   ShowWindow(mainWindowHwnd, nCmdShow);
 
    MainSystem::GetInstance()->SetWindowHwnd(State::MAIN_MENU, mainWindowHwnd);
    MainSystem::GetInstance()->SetWindowHwnd(State::GAME, gameWindowHwnd);

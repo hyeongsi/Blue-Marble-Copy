@@ -1,1 +1,1 @@
-sprites/MainMenu/mainBackground.bmp 440 60
+sprites/MainMenu/mainBackground.bmp 480 90

@@ -157,11 +157,11 @@ void RenderManager::InitDrawBoardMap()
 
     PRINT_PLAYER_PIVOT_POINT[0] = POINT(970, 640);
     PRINT_PLAYER_PIVOT_POINT[1] = 
-        POINT(PRINT_PLAYER_PIVOT_POINT[0].x - (tileWidth * (boardSize+1)),
+        POINT(PRINT_PLAYER_PIVOT_POINT[0].x - (tileWidth * (boardSize+1)) - 10,
             PRINT_PLAYER_PIVOT_POINT[0].y - tileHeight);
     PRINT_PLAYER_PIVOT_POINT[2] =
         POINT(PRINT_PLAYER_PIVOT_POINT[1].x + tileWidth,
-            PRINT_PLAYER_PIVOT_POINT[1].y - (tileHeight * (boardSize + 1)));
+            PRINT_PLAYER_PIVOT_POINT[1].y - (tileHeight * (boardSize + 1)) - 5);
     PRINT_PLAYER_PIVOT_POINT[3] =
         POINT(PRINT_PLAYER_PIVOT_POINT[2].x + (tileWidth * (boardSize + 1)),
             PRINT_PLAYER_PIVOT_POINT[2].y + tileHeight);
