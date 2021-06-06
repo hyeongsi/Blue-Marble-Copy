@@ -10,7 +10,7 @@ private:
 	static HttpTransfer* instance;
 	CURL* curl = nullptr;
 	CURLcode rc;
-	
+
 	HttpTransfer();
 	~HttpTransfer();
 

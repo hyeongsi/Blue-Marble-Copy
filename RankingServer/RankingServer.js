@@ -19,8 +19,7 @@ var app = http.createServer(function(request,response){
 
     var result = "";
     if(_url == '/ranking')
-    {
-        connection.connect();
+    { 
         connection.query('SELECT * FROM ranking', function(err, rows, fields)
         {
             if(err)
@@ -45,7 +44,6 @@ var app = http.createServer(function(request,response){
                 }
                 response.writeHead(200);
                 response.end(result);
-                connection.end();
             }
         });
     }
@@ -62,12 +60,27 @@ var app = http.createServer(function(request,response){
         var post = qs.parse(body);
         title = post.title;
 
-        // console.log(post['name']);  //post[key] 로 해당 key의 value를 가져올 수 있음.
-        // console.log(post['score']);
-      })
+        var name = post['name'];  //post[key] 로 해당 key의 value를 가져올 수 있음.
+        var score = post['score'];
+        console.log(name);  
+        console.log(score);
 
-      response.writeHead(200);
-      response.end(result);
+        connection.query('INSERT INTO ranking (name, score) VALUES (?, ?)',
+        [name, score],
+         function(err, rows, fields)
+        {
+            if(err)
+            {
+                console.log(err);
+                connection.end();
+            }
+            else
+            {
+                response.writeHead(200);
+                response.end(result);
+            }
+        });
+      })
     }
     else
     {

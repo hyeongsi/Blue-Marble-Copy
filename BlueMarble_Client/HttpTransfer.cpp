@@ -21,22 +21,26 @@ HttpTransfer* HttpTransfer::GetInstance()
 	if (nullptr == instance)
 	{
 		instance = new HttpTransfer();
+		curl_global_init(CURL_GLOBAL_ALL);
+		instance->curl = curl_easy_init();
 	}
 
-	return nullptr;
+	return instance;
 }
 
 void HttpTransfer::ReleaseInstance()
 {
+	if (instance->curl)
+		curl_easy_cleanup(instance->curl);
+
+	curl_global_cleanup();
+
 	delete instance;
 	instance = nullptr;
 }
 
 string HttpTransfer::GetRanking()
 {
-	curl_global_init(CURL_GLOBAL_ALL);
-	instance->curl = curl_easy_init();
-
 	string readBuffer;
 	curl_easy_setopt(instance->curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(instance->curl, CURLOPT_WRITEDATA, &readBuffer);
@@ -47,11 +51,6 @@ string HttpTransfer::GetRanking()
 	{
 		readBuffer = "";
 	}
-
-	if (instance->curl)
-		curl_easy_cleanup(instance->curl);
-
-	curl_global_cleanup();
 
 	return readBuffer;
 }

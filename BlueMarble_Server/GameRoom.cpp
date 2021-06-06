@@ -2,6 +2,7 @@
 #include "GameRoom.h"
 #include "GameServer.h"
 #include <stdio.h>
+#include "HttpTransfer.h"
 
 GameRoom::GameRoom(vector<unsigned int> userSocketVector)
 {
@@ -926,6 +927,7 @@ void GameRoom::SendGameOverSign()
 		if (!bankruptcyVector[i])
 		{
 			gameServer->AppendPacketData(sendPacket, &packetLastIndex, i, sizeof(i));	// 우승한 유저 인덱스
+			HttpTransfer::GetInstance()->SetRanking(userVector[i], userMoneyVector[i]);
 			break;
 		}
 	}
@@ -1141,9 +1143,12 @@ void GameRoom::Bankruptcy(int index, bool isToll)
 		userMoneyVector[landOwner] += TotalDisposalPrice() + userMoneyVector[takeControlPlayer]; // 땅 주인에게 파산한 사람 돈 주기
 	}
 
-	gameServer->AppendPacketData(sendPacket, &packetLastIndex, landOwner, sizeof(landOwner));	// 땅 주인 번호
-	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[landOwner], sizeof(userMoneyVector[landOwner]));	// 파산 유저 전재산
-
+	if (landOwner != -1)
+	{
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex, landOwner, sizeof(landOwner));	// 땅 주인 번호
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[landOwner], sizeof(userMoneyVector[landOwner]));	// 파산 유저 전재산
+	}
+	
 	for (auto& socketIterator : userVector)
 	{
 		gameServer->PacektSendMethod(sendPacket, socketIterator);

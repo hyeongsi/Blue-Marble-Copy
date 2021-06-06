@@ -31,6 +31,7 @@ private:
 	int takeOverPrice = 0;
 	int landMarkPrice = 0;
 	int tax = 0;
+	int score = 0;
 
 	UiDialog();
 	~UiDialog();

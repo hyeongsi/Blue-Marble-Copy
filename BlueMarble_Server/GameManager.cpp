@@ -196,8 +196,8 @@ void GameManager::RollTheDice(GameRoom* room)
 	mt19937 gen(rd());		// random_device 를 통해 난수 생성 엔진을 초기화 한다.
 	uniform_int_distribution<int> dis(1, 6);		// 1 부터 6 까지 균등하게 나타나는 난수열을 생성하기 위해 균등 분포 정의.
 	
-	int	diceValue1 = 10; //dis(gen);
-	int	diceValue2 = 14; //dis(gen);
+	int	diceValue1 = dis(gen);
+	int	diceValue2 = dis(gen);
 
 	if (room->IsDesertIsland() && diceValue1 == diceValue2)
 	{
@@ -657,7 +657,7 @@ void GameManager::CheckGameOver(GameRoom* room)
 		}
 	}
 	
-	if (alivePlayerCount < 2)	// 게임 진행에 필요한 최소 인원, 2명보다 작으면 게임 종료 처리
+	if (alivePlayerCount < 2)	// 게임 진행에 필요한 최소 인원, 게임 종료 처리
 	{
 		room->SendGameOverSign();
 	}
