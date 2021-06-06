@@ -184,17 +184,22 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 		}
 	}
 
+	GameManager::GetInstance()->gameRoomVectorMutex.lock();
 	if (myRoom != nullptr)
 	{
-		for (int i = 0; i < (int)(*myRoom->GetPUserVector()).size(); i++)
+		if (myRoom->state != GameState::GAME_OVER)
 		{
-			if (myRoom->GetUserVector()[i] != clientSocket)
-				continue;
+			for (int i = 0; i < (int)(*myRoom->GetPUserVector()).size(); i++)
+			{
+				if (myRoom->GetUserVector()[i] != clientSocket)
+					continue;
 
-			myRoom->Bankruptcy(i);
-			break;
-		}	
+				myRoom->Bankruptcy(i);
+				break;
+			}
+		}
 	}
+	GameManager::GetInstance()->gameRoomVectorMutex.unlock();
 
 	clientSocketMutex.lock();
 	clientSocketList.remove(clientSocket);
@@ -227,9 +232,10 @@ int GameServer::GetReadySignMethod(GameRoom* myRoom, SOCKET& socket)
 	myRoom = GameManager::GetInstance()->GetRoom(roomIndex);	// 방 수신 후 
 	myRoom->connectPlayer++;
 
-	if (myRoom->connectPlayer >= MAX_PLAYER)
+	if (myRoom->connectPlayer == MAX_PLAYER)
 	{
 		_beginthreadex(NULL, 0, GameManager::GetInstance()->RoomLogicThread, myRoom, 0, NULL);	// recv thread 실행
+		myRoom->connectPlayer = 0;
 	}
 
 	return roomIndex;

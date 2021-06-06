@@ -54,6 +54,7 @@ GameRoom* GameManager::GetRoom(int index)
 
 void GameManager::DeleteGameRoom(GameRoom* room)
 {
+	gameRoomVectorMutex.lock();
 	for (auto iterator = roomVector.begin(); iterator != roomVector.end(); iterator++)
 	{
 		if ((*iterator) != room)
@@ -67,9 +68,9 @@ void GameManager::DeleteGameRoom(GameRoom* room)
 		roomVector.erase(iterator);
 		break;
 	}
-
+	
 	delete room;		// 방 없애기
-	room = nullptr;
+	gameRoomVectorMutex.unlock();
 	printf("%s\n", "delete Game Room");
 }
 
@@ -123,6 +124,10 @@ void GameManager::ArriveLandTileMethod(GameRoom* room)
 UINT WINAPI GameManager::RoomLogicThread(void* arg)
 {
 	instance->RoomLogicThreadMethod((GameRoom*)arg);
+	if (arg != nullptr)
+	{
+		instance->DeleteGameRoom((GameRoom*)arg);
+	}
 	return 0;
 }
 
@@ -171,12 +176,6 @@ void GameManager::RoomLogicThreadMethod(GameRoom* room)
 			room->SendFinishTurnSign();
 			break;
 		case GameState::GAME_OVER:
-			gameRoomVectorMutex.lock();
-			if (room != nullptr)
-			{
-				DeleteGameRoom(room);
-			}
-			gameRoomVectorMutex.unlock();
 			return;
 		default:
 			break;

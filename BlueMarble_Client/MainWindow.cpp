@@ -26,6 +26,7 @@ void MainWindow::InitMainMenu(HWND hWnd)
     instance->bitmapManager->LoadBitmapData(State::MAIN_MENU);  // main menu bitmap loading 
 
     CreateButton(hWnd);
+    ShowButton();
 }
 
 void MainWindow::ReInitMainMenu(HWND hWnd)
@@ -33,8 +34,8 @@ void MainWindow::ReInitMainMenu(HWND hWnd)
     if (isReset)
     {
         instance->renderManager->Init(hWnd);  // MainMenu <- -> Game Render
-        MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
         ShowButton();
+        MainSystem::GetInstance()->RegistUpdateCallbackFunction(MainMenuUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
         isReset = false;
     }
 }
@@ -59,7 +60,8 @@ void MainWindow::CreateButton(HWND hWnd)
 
     for (const auto& hwndIterator : *hwndInfo)
     {
-        instance->hwndWindow.emplace_back(CreateWindow(hwndIterator.type.c_str(), hwndIterator.text.c_str(), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        instance->hwndWindow.emplace_back(CreateWindow(hwndIterator.type.c_str(), 
+            hwndIterator.text.c_str(), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
             hwndIterator.point.x, hwndIterator.point.y,
             hwndIterator.size.cx, hwndIterator.size.cy,
             hWnd, (HMENU)hwndIterator.id, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL));

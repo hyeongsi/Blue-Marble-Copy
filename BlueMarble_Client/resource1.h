@@ -9,6 +9,7 @@
 #define IDD_BUY_LANDMARK                105
 #define IDI_BLUEMARBLECLIENT            106
 #define IDD_REVENUE                     106
+#define IDB_BITMAP1                     107
 #define IDI_SMALL                       108
 #define IDC_BLUEMARBLECLIENT            109
 #define IDC_CHECK1                      1003
@@ -27,7 +28,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        106
+#define _APS_NEXT_RESOURCE_VALUE        108
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1010
 #define _APS_NEXT_SYMED_VALUE           101
