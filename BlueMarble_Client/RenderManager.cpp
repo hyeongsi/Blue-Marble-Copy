@@ -195,6 +195,9 @@ void RenderManager::InitDrawBoardMap()
 
     for (int i = 0; i < (int)(*BitmapManager::GetInstance()->GetBitmap(State::GAME)).size(); i++)
     {
+        if (GameManager::GetInstance()->GetPlayerCount() <= i)
+            break;
+
         SetPlayerBitmapLocation(i, 0);
     }
 }
@@ -309,11 +312,18 @@ void RenderManager::DrawWindow(State state)
     {
         if (State::GAME == state)
         {
-            if ((count < MAX_PLAYER) && (GameManager::GetInstance()->GetPlayerCount() <= count))
-                continue;   // 플레이어 숫자에 따라 출력되는 캐릭터 수 제한
-
-            if((*GameManager::GetInstance()->GetBackruptcyVector())[count] == false)
+            if (count >= MAX_PLAYER)
+            {
                 DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);
+            }
+            else
+            {
+                if (GameManager::GetInstance()->GetPlayerCount() <= count)
+                    continue;   // 플레이어 숫자에 따라 출력되는 캐릭터 수 제한
+
+                if ((*GameManager::GetInstance()->GetBackruptcyVector())[count] == false)
+                    DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);
+            }
         }
         else
             DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);

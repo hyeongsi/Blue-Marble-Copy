@@ -1052,7 +1052,16 @@ void SocketTransfer::GetBankruptcySign(char* packet)
 	int accumDataSize = 1;
 
 	memcpy(&bankruptcySignPkt.whosTurn, &packet[accumDataSize], sizeof(bankruptcySignPkt.whosTurn));  // get whosTurn
+	accumDataSize += sizeof(bankruptcySignPkt.whosTurn);
+	memcpy(&bankruptcySignPkt.landOwner, &packet[accumDataSize], sizeof(bankruptcySignPkt.landOwner));  // get landOwner
+	if (bankruptcySignPkt.landOwner != -1)
+	{
+		accumDataSize += sizeof(bankruptcySignPkt.landOwner);
+		memcpy(&bankruptcySignPkt.landOwnerMoney, &packet[accumDataSize], sizeof(bankruptcySignPkt.landOwnerMoney));  // get landOwnerMoney
 
+		(*GameManager::GetInstance()->GetUserMoneyVector())[bankruptcySignPkt.landOwner] = bankruptcySignPkt.landOwnerMoney;	// 돈 갱신
+	}
+	
 	(*GameManager::GetInstance()->GetBackruptcyVector())[bankruptcySignPkt.whosTurn] = true;
 	
 	for (int i = 0; i < (int)GameManager::GetInstance()->GetBoardData().code.size(); i++)	// 건물 철거

@@ -818,7 +818,7 @@ void GameRoom::CheckPassNSellMessage()
 		}
 		else    // 판매금 + 소지금이 통행료보다 적을 경우
 		{
-			Bankruptcy(takeControlPlayer);	// 파산 처리
+			Bankruptcy(takeControlPlayer, true);	// 파산 처리
 			state = GameState::NEXT_TURN;
 		}
 	}
@@ -1126,9 +1126,30 @@ int GameRoom::FindNextLand(int selectValue, bool isLeft)
 	}
 }
 
-void GameRoom::Bankruptcy(int index)
+void GameRoom::Bankruptcy(int index, bool isToll)
 {
 	bankruptcyVector[index] = true;	// 파산 여부 변경
+
+	packetLastIndexMutex.lock();
+	gameServer->MakePacket(sendPacket, &packetLastIndex, BANKRUPTCY_SIGN);
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, index, sizeof(index));	// 파산 유저 번호
+
+	int landOwner = -1;
+	if (isToll)
+	{
+		landOwner = landBoardData.land[userPositionVector[takeControlPlayer]];
+		userMoneyVector[landOwner] += TotalDisposalPrice() + userMoneyVector[takeControlPlayer]; // 땅 주인에게 파산한 사람 돈 주기
+	}
+
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, landOwner, sizeof(landOwner));	// 땅 주인 번호
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[landOwner], sizeof(userMoneyVector[landOwner]));	// 파산 유저 전재산
+
+	for (auto& socketIterator : userVector)
+	{
+		gameServer->PacektSendMethod(sendPacket, socketIterator);
+		printf("%s %d\n", "send Bankruptcy Sign - ", socketIterator);
+	}
+
 	userMoneyVector[index] = 0;		// 돈 없애기
 
 	for (int i = 0; i < (int)board.code.size(); i++)
@@ -1144,16 +1165,6 @@ void GameRoom::Bankruptcy(int index)
 			if (landBoardData.olympic[i] == index)
 				landBoardData.olympic[i] = -1;
 		}
-	}
-
-	packetLastIndexMutex.lock();
-	// 해당 정보 보내서 파산 정보 동기화 시키기,
-	gameServer->MakePacket(sendPacket, &packetLastIndex, BANKRUPTCY_SIGN);
-	gameServer->AppendPacketData(sendPacket, &packetLastIndex, index, sizeof(index));	// 파산 유저 번호
-	for (auto& socketIterator : userVector)
-	{
-		gameServer->PacektSendMethod(sendPacket, socketIterator);
-		printf("%s %d\n", "send Bankruptcy Sign - ", socketIterator);
 	}
 
 	if (index == takeControlPlayer)	// 탈주한 인원 차례였던 경우,

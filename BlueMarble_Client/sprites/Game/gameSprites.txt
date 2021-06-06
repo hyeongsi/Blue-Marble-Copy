@@ -2,3 +2,7 @@ sprites/Game/p1.bmp 970 640
 sprites/Game/p2.bmp 1005 640
 sprites/Game/p3.bmp 970 675
 sprites/Game/p4.bmp 1005 675
+sprites/Game/p1.bmp 50 50
+sprites/Game/p2.bmp 1210 50
+sprites/Game/p3.bmp 50 600
+sprites/Game/p4.bmp 1210 600

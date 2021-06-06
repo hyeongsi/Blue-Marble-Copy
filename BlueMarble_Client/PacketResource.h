@@ -283,6 +283,8 @@ typedef struct BankruptcySignPacket	// BANKRUPTCY_SIGN
 {
 	char header;
 	int whosTurn;	// 누구 턴인지
+	int landOwner;	// 땅 주인
+	int landOwnerMoney; // 땅 주인 돈
 }bankruptcySignPacket;
 
 typedef struct GameOverSignPacket	// GAMEOVER_SIGN
