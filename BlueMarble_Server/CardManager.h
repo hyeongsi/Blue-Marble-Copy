@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Card.h"
 #include <vector>
 
@@ -17,6 +17,6 @@ public:
 	void LoadCardData();
 	std::vector<Card> GetCardDataVector();
 
-	Card DrawCard();	// Ä«µå »Ì±â
+	Card DrawCard();	// ì¹´ë“œ ë½‘ê¸°
 };
 

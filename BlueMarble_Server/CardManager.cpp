@@ -1,4 +1,4 @@
-#include "CardManager.h"
+ï»¿#include "CardManager.h"
 #include <fstream>
 #include <string>
 #include <random>
@@ -36,11 +36,11 @@ void CardManager::LoadCardData()
 	{
 		while (!readFile.eof())
 		{
-			readFile >> card.cardId;		// Ä«µå ID
-			readFile >> card.money;			// Áö±Ş,ÁöºÒ ±İ¾×
-			readFile >> card.movePosition;	// ÀÌµ¿ÇÒ °Å¸®
-			readFile >> card.moveIndex;		// ÀÌµ¿ÇÒ ÁÂÇ¥
-			readFile >> card.isPaySalary;	// ½ÃÀÛÁöÁ¡ Åë°ú ½Ã ¿ù±Ş Áö±Ş ¿©ºÎ
+			readFile >> card.cardId;		// ì¹´ë“œ ID
+			readFile >> card.money;			// ì§€ê¸‰,ì§€ë¶ˆ ê¸ˆì•¡
+			readFile >> card.movePosition;	// ì´ë™í•  ê±°ë¦¬
+			readFile >> card.moveIndex;		// ì´ë™í•  ì¢Œí‘œ
+			readFile >> card.isPaySalary;	// ì‹œì‘ì§€ì  í†µê³¼ ì‹œ ì›”ê¸‰ ì§€ê¸‰ ì—¬ë¶€
 
 			cardData.emplace_back(card);
 		}
@@ -57,8 +57,8 @@ std::vector<Card> CardManager::GetCardDataVector()
 Card CardManager::DrawCard()
 {
 	random_device rd;
-	mt19937 gen(rd());		// random_device ¸¦ ÅëÇØ ³­¼ö »ı¼º ¿£ÁøÀ» ÃÊ±âÈ­ ÇÑ´Ù.
-	uniform_int_distribution<int> dis(0, (int)cardData.size()-1);		// 0 ºÎÅÍ Ä«µå°³¼ö ±îÁö ±ÕµîÇÏ°Ô ³ªÅ¸³ª´Â ³­¼ö¿­À» »ı¼ºÇÏ±â À§ÇØ ±Õµî ºĞÆ÷ Á¤ÀÇ.
+	mt19937 gen(rd());		// random_device ë¥¼ í†µí•´ ë‚œìˆ˜ ìƒì„± ì—”ì§„ì„ ì´ˆê¸°í™” í•œë‹¤.
+	uniform_int_distribution<int> dis(0, (int)cardData.size()-1);		// 0 ë¶€í„° ì¹´ë“œê°œìˆ˜ ê¹Œì§€ ê· ë“±í•˜ê²Œ ë‚˜íƒ€ë‚˜ëŠ” ë‚œìˆ˜ì—´ì„ ìƒì„±í•˜ê¸° ìœ„í•´ ê· ë“± ë¶„í¬ ì •ì˜.
 
 	return cardData[dis(gen)];
 }

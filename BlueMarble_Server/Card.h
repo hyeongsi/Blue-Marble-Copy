@@ -1,30 +1,30 @@
-#pragma once
+ï»¿#pragma once
 #include <random>
 
 using namespace std;
 
 enum CardId
 {
-	PAY_HOSPITAL_BILLS = 0,	// º´¿øºñ ÁöÃâ	-50
-	WINNING_A_LOTTERY = 1,	// º¹±Ç ´çÃ·		+200
-	ESCAPE = 2,				// ¹«ÀÎµµ Å»Ãâ	
-	DESERT_ISLAND = 3,		// ¹«ÀÎµµ ÀÌµ¿	
-	TOURISM = 4,			// µ¶µµ·Î ÀÌµ¿	
-	SPEEDING_FINE = 5,		// °ú¼Ó ¹ú±Ý		-50
-	STUDY_ABOARD = 6,		// ÇØ¿Ü À¯ÇÐ		-100
-	PENSION_BENEFITS = 7,	// ¿¬±Ý ÇýÅÃ		+50
-	MOVE = 8,				// ÀÌ»ç			3Ä­ µÚ·Î
+	PAY_HOSPITAL_BILLS = 0,	// ë³‘ì›ë¹„ ì§€ì¶œ	-50
+	WINNING_A_LOTTERY = 1,	// ë³µê¶Œ ë‹¹ì²¨		+200
+	ESCAPE = 2,				// ë¬´ì¸ë„ íƒˆì¶œ	
+	DESERT_ISLAND = 3,		// ë¬´ì¸ë„ ì´ë™	
+	TOURISM = 4,			// ë…ë„ë¡œ ì´ë™	
+	SPEEDING_FINE = 5,		// ê³¼ì† ë²Œê¸ˆ		-50
+	STUDY_ABOARD = 6,		// í•´ì™¸ ìœ í•™		-100
+	PENSION_BENEFITS = 7,	// ì—°ê¸ˆ í˜œíƒ		+50
+	MOVE = 8,				// ì´ì‚¬			3ì¹¸ ë’¤ë¡œ
 };
 
 class GameRoom;
 class Card
 {
 public:
-	int cardId = -1;		// Ä«µå ID
-	int money = 0;			// Áö±Þ,ÁöºÒ ±Ý¾×
-	int movePosition = 0;	// ÀÌµ¿ÇÒ °Å¸®
-	int moveIndex = -1;		// ÀÌµ¿ÇÒ ÁÂÇ¥
-	bool isPaySalary = false;	// ½ÃÀÛÁöÁ¡ Åë°ú ½Ã ¿ù±Þ Áö±Þ ¿©ºÎ
+	int cardId = -1;		// ì¹´ë“œ ID
+	int money = 0;			// ì§€ê¸‰,ì§€ë¶ˆ ê¸ˆì•¡
+	int movePosition = 0;	// ì´ë™í•  ê±°ë¦¬
+	int moveIndex = -1;		// ì´ë™í•  ì¢Œí‘œ
+	bool isPaySalary = false;	// ì‹œìž‘ì§€ì  í†µê³¼ ì‹œ ì›”ê¸‰ ì§€ê¸‰ ì—¬ë¶€
 
 	int owner = -1;
 

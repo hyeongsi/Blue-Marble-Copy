@@ -1,10 +1,10 @@
-#include "Card.h"
+ï»¿#include "Card.h"
 #include "GameRoom.h"
 
 void Card::UseCard(GameRoom* room)
 {
 	room->state = GameState::WAIT;
-	owner = room->GetTakeControlPlayer();	// Ä«µå ¼ÒÀ¯ÀÚ µî·Ï
+	owner = room->GetTakeControlPlayer();	// ì¹´ë“œ ì†Œìœ ìž ë“±ë¡
 	room->preCardId = cardId;
 
 	printf("%s %d\n", "UseCard - ", cardId);
@@ -16,27 +16,27 @@ void Card::UseCard(GameRoom* room)
 		break;
 	}
 
-	(*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] += money;	// µ· Ãß°¡,°¨¼Ò
+	(*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] += money;	// ëˆ ì¶”ê°€,ê°ì†Œ
 
-	if (room->MoveUserPosition(movePosition))	// ½ÃÀÛÁ¡ Åë°ú ½Ã
+	if (room->MoveUserPosition(movePosition))	// ì‹œìž‘ì  í†µê³¼ ì‹œ
 	{
-		if (!isPaySalary) // ¿ù±Þ ÁöºÒ ÇÏ¸é ¾È µÉ °æ¿ì
-			(*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] -= SALARY; // ¿ù±Þ ¾Ð¼ö
+		if (!isPaySalary) // ì›”ê¸‰ ì§€ë¶ˆ í•˜ë©´ ì•ˆ ë  ê²½ìš°
+			(*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] -= SALARY; // ì›”ê¸‰ ì••ìˆ˜
 	}
 
-	if (moveIndex == -1)   // ÀÌµ¿ÇÒ ÁÂÇ¥°ªÀÌ ¾øÀ¸¸é
+	if (moveIndex == -1)   // ì´ë™í•  ì¢Œí‘œê°’ì´ ì—†ìœ¼ë©´
 	{
 		room->SendCardSign(*this);
 		return;
 	}
 	
-	// ¸ñÇ¥ ÁÂÇ¥ °¡ µÉ ¶§ ±îÁö ÀÌµ¿
+	// ëª©í‘œ ì¢Œí‘œ ê°€ ë  ë•Œ ê¹Œì§€ ì´ë™
 	while (room->GetUserPositionVector()[room->GetTakeControlPlayer()] != moveIndex)
 	{
-		if (room->MoveUserPosition(1))	// 1Ä­¾¿ ÀÌµ¿ÇÏ¸é¼­, ÁöÁ¤ ÁÂÇ¥ µµ´Þ ÇÏ¸é Å»Ãâ, ½ÃÀÛÁ¡ Åë°ú ½Ã
+		if (room->MoveUserPosition(1))	// 1ì¹¸ì”© ì´ë™í•˜ë©´ì„œ, ì§€ì • ì¢Œí‘œ ë„ë‹¬ í•˜ë©´ íƒˆì¶œ, ì‹œìž‘ì  í†µê³¼ ì‹œ
 		{
-			if (!isPaySalary) // ¿ù±Þ ÁöºÒ ÇÏ¸é ¾È µÉ °æ¿ì
-				(*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] -= SALARY; // ¿ù±Þ ¾Ð¼ö
+			if (!isPaySalary) // ì›”ê¸‰ ì§€ë¶ˆ í•˜ë©´ ì•ˆ ë  ê²½ìš°
+				(*room->GetPUserMoneyVector())[room->GetTakeControlPlayer()] -= SALARY; // ì›”ê¸‰ ì••ìˆ˜
 		}
 	}
 

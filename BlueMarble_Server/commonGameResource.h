@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 constexpr const int SALARY = 300;
 constexpr const int START_MONEY = 2000;
