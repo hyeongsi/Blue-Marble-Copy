@@ -47,6 +47,7 @@ void MatchMakingServer::StartRecvDataThread(SOCKET clientSocket)
 	}
 
 	cout << "lost connect : " << GetClientIp(clientAddress) << endl;
+	lostConnectCBF = AcceptSocket;
 }
 
 void MatchMakingServer::InitServer()
@@ -80,13 +81,18 @@ void MatchMakingServer::InitServer()
 
 void MatchMakingServer::AcceptSocket()
 {
+	instance->lostConnectCBF = nullptr;
+	while (!instance->matchQueue.empty())	// matchQueue clear
+	{
+		instance->matchQueue.pop();
+	}
 	int clientAddressSize = sizeof(instance->clientAddress);
 
-	clientSocket = accept(serverSocket, (SOCKADDR*)&clientAddress, &clientAddressSize);
-	cout << "Connect Ip : " << GetClientIp(clientAddress) << endl;
+	instance->clientSocket = accept(instance->serverSocket, (SOCKADDR*)&instance->clientAddress, &clientAddressSize);
+	cout << "Connect Ip : " << instance->GetClientIp(instance->clientAddress) << endl;
 	cout << "Working AcceptThread" << endl << endl;;
 
-	_beginthreadex(NULL, 0, RecvDataThread, &clientSocket, 0, NULL);	// recv thread 실행
+	_beginthreadex(NULL, 0, RecvDataThread, &instance->clientSocket, 0, NULL);	// recv thread 실행
 }
 
 void MatchMakingServer::PushUserId(char* packet)
@@ -120,6 +126,11 @@ void MatchMakingServer::StartServer()
 	
 	while (true)
 	{
+		if (lostConnectCBF != nullptr)
+		{
+			lostConnectCBF();	// AcceptSocket();    ->    서버와 연결이 끊겼을 경우, 다시 acceptSocket을 호출함,
+		}
+
 		if (MAX_MATCH_QUEUE_SIZE <= matchQueue.size())
 		{
 			MakePacket(SET_MATCHING_USER_PACKET);
