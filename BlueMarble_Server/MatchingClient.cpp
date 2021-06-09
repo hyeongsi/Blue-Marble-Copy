@@ -120,6 +120,14 @@ void MatchingClient::ConnectMathchServer()
 	}
 }
 
+void MatchingClient::LostConnectClient(unsigned int socket)
+{
+	int packetSize = 0;
+	MakePacket(POP_MATCHING_USER_PACKET, packetSize);
+	AppendPacketDataMethod(socket, sizeof(socket), packetSize);
+	SendMessageToMatchServer();
+}
+
 void MatchingClient::MakePacket(char header, int& packetLastIndex)
 {
 	if (NULL != header)

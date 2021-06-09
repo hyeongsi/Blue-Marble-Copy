@@ -7,6 +7,7 @@
 #include "MapManager.h"
 #include "GameManager.h"
 #include "CardManager.h"
+#include "MatchingClient.h"
 
 GameServer* GameServer::instance = nullptr;
 
@@ -183,6 +184,8 @@ void GameServer::StartRecvDataThread(SOCKET clientSocket)
 			}
 		}
 	}
+
+	MatchingClient::GetInstance()->LostConnectClient(clientSocket);
 
 	GameManager::GetInstance()->gameRoomVectorMutex.lock();
 	if (myRoom != nullptr)

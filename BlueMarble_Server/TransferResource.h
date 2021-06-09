@@ -59,6 +59,7 @@ enum MessageCode
 	END_GAME = 33,
 	GAMEOVER_SIGN = 90,
 	SET_MATCHING_USER_PACKET = 100,
+	POP_MATCHING_USER_PACKET = 101,
 };
 
 typedef struct BuyLandPacket

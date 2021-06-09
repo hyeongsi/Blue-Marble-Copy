@@ -39,6 +39,7 @@ public:
 	static void ReleaseInstance();
 
 	void ConnectMathchServer();
+	void LostConnectClient(unsigned int socket);
 
 	void MakePacket(char header, int& packetLastIndex);
 	void AppendPacketDataMethod(unsigned int data, unsigned int dataSize, int& packetLastIndex);
