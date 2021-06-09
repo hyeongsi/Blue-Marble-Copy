@@ -1,0 +1,1 @@
+sprites/MainMenu/mainBackground.bmp 480 90

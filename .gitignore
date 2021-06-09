@@ -2,21 +2,16 @@ BlueMarble_Client/*.vcxproj
 BlueMarble_Client/*.filters
 BlueMarble_Client/*.user
 
-#Debug, Release 폴더 안에 모든거 무시
 BlueMarble_Client/Debug
-BlueMarble_Client/Release
 
 BlueMarble_Server/*.vcxproj
 BlueMarble_Server/*.filters
 BlueMarble_Server/*.user
 
-#Debug, Release 폴더 안에 모든거 무시
 BlueMarble_Server/Debug
-BlueMarble_Server/Release
 
 BlueMarble_MatchMaking_Server/*.vcxproj
 BlueMarble_MatchMaking_Server/*.filters
 BlueMarble_MatchMaking_Server/*.user
 
 BlueMarble_MatchMaking_Server/Debug
-BlueMarble_MatchMaking_Server/Release
