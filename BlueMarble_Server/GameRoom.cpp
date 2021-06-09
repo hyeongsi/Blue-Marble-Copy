@@ -329,6 +329,10 @@ int GameRoom::MoveUserPosition(int diceValue)
 		userMoneyVector[takeControlPlayer] += SALARY;	// START 지점 통과, 30만원 지급
 		isPassStartTile = true;
 	}
+	else if (userPositionVector[takeControlPlayer] < 0)
+	{
+		userPositionVector[takeControlPlayer] += board.mapSize * DIRECTION;
+	}
 
 	return isPassStartTile;
 }
