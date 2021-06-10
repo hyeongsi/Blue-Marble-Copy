@@ -73,6 +73,7 @@ public:
 	long keyInputDelayTime = 0;
 	vector<int> selectLandIndex;
 	int totalSelectLandSellPrice = 0;
+	int whosTurn = -1;
 
 	static GameManager* GetInstance();
 	static void ReleaseInstance();

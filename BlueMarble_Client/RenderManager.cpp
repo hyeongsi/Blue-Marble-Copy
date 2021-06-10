@@ -277,10 +277,10 @@ void RenderManager::DrawBoardMap()
             SetTextColor(memDC, RGB(63, 72, 204));     // 파란색
             break;
         case 3:     // 3p
-            SetTextColor(memDC, RGB(34, 177, 16));     // 초록색
+            SetTextColor(memDC, RGB(255, 201, 14));     // 노란색
             break;
         case 4:     // 4p
-            SetTextColor(memDC, RGB(255, 201, 14));     // 노란색
+            SetTextColor(memDC, RGB(34, 177, 16));     // 초록색
             break;
         default:    // 소유주 없음
             SetTextColor(memDC, RGB(0, 0, 0));     // 검은색
@@ -307,28 +307,35 @@ void RenderManager::DrawWindow(State state)
     if (nullptr == windowBitmap)
         return;
 
-    int count = 0;
+    int count = -1;
     for (const auto&  bitmapIterator : *windowBitmap)
     {
+        count++;
+
         if (State::GAME == state)
         {
-            if (count >= MAX_PLAYER)
+            if (count >= MAX_PLAYER)   
             {
-                DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);
+                if(((count - FIRST_TURN_IMAGE_INDEX) == GameManager::GetInstance()->whosTurn) &&
+                    GameManager::GetInstance()->whosTurn != -1)
+                    DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
+
+                if (FIRST_TURN_IMAGE_INDEX <= count && LAST_TURN_IMAGE_INDEX >= count)
+                    continue;
+
+                DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
             }
-            else
+            else // 플레이어 출력 제어
             {
                 if (GameManager::GetInstance()->GetPlayerCount() <= count)
                     continue;   // 플레이어 숫자에 따라 출력되는 캐릭터 수 제한
-
+                    
                 if ((*GameManager::GetInstance()->GetBackruptcyVector())[count] == false)
                     DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);
             }
         }
         else
-            DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
-
-        count++;
+            DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);  
     }
 }
 

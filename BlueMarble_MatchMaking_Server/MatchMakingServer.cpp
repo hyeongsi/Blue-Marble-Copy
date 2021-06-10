@@ -26,23 +26,15 @@ void MatchMakingServer::StartRecvDataThread(SOCKET clientSocket)
 
 	while ((recv(clientSocket, cBuffer, MAX_PACKET_SIZE, 0)) != -1)
 	{
+		memcpy(&header, &cBuffer[0], sizeof(char));
+		cout << "recv " << (int)header << endl;
+
+		recvCBF = recvCallbackFuncMap[header];
+
 		if (nullptr != recvCBF)
 		{
 			recvCBF(cBuffer);
-		}
-		else
-		{
-			memcpy(&header, &cBuffer[0], sizeof(char));
-			cout << "recv " << (int)header << endl;
-
-			switch (header)
-			{
-			case SET_MATCHING_USER_PACKET:
-				PushUserId(cBuffer);
-				break;
-			default:
-				break;
-			}
+			recvCBF = nullptr;
 		}
 	}
 
@@ -52,6 +44,9 @@ void MatchMakingServer::StartRecvDataThread(SOCKET clientSocket)
 
 void MatchMakingServer::InitServer()
 {
+	recvCallbackFuncMap[SET_MATCHING_USER_PACKET] = PushUserId;
+	recvCallbackFuncMap[POP_MATCHING_USER_PACKET] = PopUserIndex;
+
 	if (0 != WSAStartup(MAKEWORD(2, 2), &wsaData))
 	{
 		cout << "WSAStartup Error" << endl;
@@ -81,11 +76,10 @@ void MatchMakingServer::InitServer()
 
 void MatchMakingServer::AcceptSocket()
 {
+	instance->recvCBF = nullptr;
 	instance->lostConnectCBF = nullptr;
-	while (!instance->matchQueue.empty())	// matchQueue clear
-	{
-		instance->matchQueue.pop();
-	}
+	
+	instance->matchQueue.clear();
 	int clientAddressSize = sizeof(instance->clientAddress);
 
 	instance->clientSocket = accept(instance->serverSocket, (SOCKADDR*)&instance->clientAddress, &clientAddressSize);
@@ -99,8 +93,24 @@ void MatchMakingServer::PushUserId(char* packet)
 {
 	unsigned int userId;
 
-	memcpy(&userId, &packet[sizeof(char)], sizeof(unsigned int));
-	matchQueue.push(userId);
+	memcpy(&userId, &packet[sizeof(char)], sizeof(userId));
+	instance->matchQueue.push_front(userId);
+}
+
+void MatchMakingServer::PopUserIndex(char* packet)
+{
+	unsigned int userId;
+
+	memcpy(&userId, &packet[sizeof(char)], sizeof(userId));
+
+	for (auto it = instance->matchQueue.begin(); it != instance->matchQueue.end(); it++)
+	{
+		if (userId != (*it))
+			continue;
+
+		instance->matchQueue.erase(it);
+		break;
+	}
 }
 
 MatchMakingServer* MatchMakingServer::GetInstance()
@@ -138,8 +148,8 @@ void MatchMakingServer::StartServer()
 
 			for (int i = 0; i < MAX_MATCH_QUEUE_SIZE; i++)
 			{
-				AppendPacketData(matchQueue.front(), sizeof(unsigned int));
-				matchQueue.pop();
+				AppendPacketData(matchQueue.back(), sizeof(unsigned int));
+				matchQueue.pop_back();
 			}
 
 			PacektSendMethod(clientSocket);

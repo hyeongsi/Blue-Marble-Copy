@@ -46,6 +46,7 @@ enum MessageCode
 	SELECT_MODE_BTN = 31,
 	BANKRUPTCY_SIGN = 32,
 	END_GAME = 33,
+	SYNC_TURN = 34,
 	GAMEOVER_SIGN = 90,
 };
 

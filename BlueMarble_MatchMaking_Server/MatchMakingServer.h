@@ -4,8 +4,8 @@
 #include <iostream>
 #include <process.h>
 #include <WS2tcpip.h>	// inet_ntop()
-#include <queue>
-#include <mutex>
+#include <deque>
+#include <map>
 
 #pragma comment(lib, "ws2_32")
 
@@ -21,6 +21,7 @@ typedef void(*CALLBACK_FUNC_LOST_CONNECT)();
 enum MessageCode
 {
 	SET_MATCHING_USER_PACKET = 100,
+	POP_MATCHING_USER_PACKET = 101,
 };
 
 class MatchMakingServer
@@ -28,8 +29,8 @@ class MatchMakingServer
 private:
 	static MatchMakingServer* instance;
 
-	queue<unsigned int> matchQueue;
-	mutex matchQueueMutex;
+	deque<unsigned int> matchQueue;
+	map<int, CALLBACK_FUNC_PACKET> recvCallbackFuncMap;
 
 	char sendPacket[MAX_PACKET_SIZE] = {};
 	unsigned int packetLastIndex = 0;
@@ -52,7 +53,8 @@ private:
 
 	void InitServer();
 	static void AcceptSocket();
-	void PushUserId(char * packet);
+	static void PushUserId(char * packet);
+	static void PopUserIndex(char* packet);
 public:
 	static MatchMakingServer* GetInstance();
 	static void ReleaseInstance();

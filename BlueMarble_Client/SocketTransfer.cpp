@@ -123,6 +123,9 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 			case BANKRUPTCY_SIGN:
 				GetBankruptcySignMethod(cBuffer);
 				break;
+			case SYNC_TURN:
+				memcpy(&GameManager::GetInstance()->whosTurn, &cBuffer[1], sizeof(int));  // get whosTurn
+				break;
 			case GAMEOVER_SIGN:
 				GetGameOverSignMethod(cBuffer);
 				TerminateRecvDataThread();
@@ -228,6 +231,7 @@ void SocketTransfer::GetRollDiceSign(char* packet)
 	GameManager::GetInstance()->SetGameMessage("주사위를 돌려주세요");
 	
 	GameWindow::GetInstance()->ShowButton(ROLL_DICE_BTN);
+	GameManager::GetInstance()->whosTurn = GameManager::GetInstance()->GetCharacterIndex()-1;
 }
 
 void SocketTransfer::GetRollDiceMethod(char* packet)

@@ -28,6 +28,12 @@ enum SelectMode
 	WORLD_TRABLE_MODE = 3,
 };
 
+enum TurnCheckImageIndex
+{
+	FIRST_TURN_IMAGE_INDEX = 12,
+	LAST_TURN_IMAGE_INDEX = 15,
+};
+
 class RenderManager
 {
 private:

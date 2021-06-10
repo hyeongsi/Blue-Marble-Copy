@@ -201,6 +201,16 @@ void GameRoom::SendRollDiceSignMethod(SOCKET& socket)
 	gameServer->PacektSendMethod(sendPacket, socket);
 	printf("%s %d\n", "send Roll Dice Msg - ", socket);
 
+	for (int i = 0; i < (int)userVector.size(); i++)
+	{
+		if (takeControlPlayer == i)
+			continue;
+
+		gameServer->MakePacket(sendPacket, &packetLastIndex, SYNC_TURN);
+		gameServer->AppendPacketData(sendPacket, &packetLastIndex, takeControlPlayer, sizeof(takeControlPlayer));	// 턴
+		gameServer->PacektSendMethod(sendPacket, userVector[i]);
+	}
+
 	state = GameState::WAIT;
 	packetLastIndexMutex.unlock();
 }
