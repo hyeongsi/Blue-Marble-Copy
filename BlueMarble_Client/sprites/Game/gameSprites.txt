@@ -14,3 +14,7 @@ sprites/Game/start.bmp 48 61
 sprites/Game/start.bmp 1184 61
 sprites/Game/start.bmp 48 604
 sprites/Game/start.bmp 1184 604
+sprites/Game/me.bmp 96 61
+sprites/Game/me.bmp 1136 61
+sprites/Game/me.bmp 96 604
+sprites/Game/me.bmp 1136 604

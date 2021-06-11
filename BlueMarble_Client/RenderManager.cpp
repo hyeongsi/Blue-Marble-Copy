@@ -324,7 +324,12 @@ void RenderManager::DrawWindow(State state)
                 if (FIRST_TURN_IMAGE_INDEX <= count && LAST_TURN_IMAGE_INDEX >= count)
                     continue;
 
-                DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
+                if ((FIRST_MY_TURN_IMAGE_INDEX <= count && LAST_MY_TURN_IMAGE_INDEX >= count) &&
+                    count - FIRST_MY_TURN_IMAGE_INDEX != GameManager::GetInstance()->GetCharacterIndex()-1)
+                    continue;
+
+                if(GameManager::GetInstance()->whosTurn != -1)
+                    DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
             }
             else // 플레이어 출력 제어
             {

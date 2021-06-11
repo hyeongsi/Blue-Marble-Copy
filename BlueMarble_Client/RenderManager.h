@@ -34,6 +34,12 @@ enum TurnCheckImageIndex
 	LAST_TURN_IMAGE_INDEX = 15,
 };
 
+enum MyturnImageIndex
+{
+	FIRST_MY_TURN_IMAGE_INDEX = 16,
+	LAST_MY_TURN_IMAGE_INDEX = 19,
+};
+
 class RenderManager
 {
 private:
