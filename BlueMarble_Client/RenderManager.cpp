@@ -54,6 +54,7 @@ void RenderManager::Init(HWND hWnd)
     hdc = GetDC(hWnd);
     memDC = CreateCompatibleDC(hdc);
     backMemDC = CreateCompatibleDC(hdc);
+    SetBkMode(memDC, TRANSPARENT);
 }
 
 void RenderManager::RenderInitSetting()
@@ -375,27 +376,14 @@ void RenderManager::DrawGameMessage(string message)
     {
         if ((*GameManager::GetInstance()->GetBackruptcyVector())[i] == true)
         {
-            if (GameManager::GetInstance()->GetCharacterIndex() == i + 1)
-            {
-                DrawText(memDC, "나 - 파산했습니다.", -1, &moneyRect[i], DT_NOCLIP | DT_CENTER);
-            }
-            else
-            {
-                DrawText(memDC, "파산했습니다.", -1, &moneyRect[i], DT_NOCLIP | DT_CENTER);
-            }
+            DrawText(memDC, "파산했습니다.", -1, &moneyRect[i], DT_NOCLIP | DT_LEFT);
         }
         else
         {
-            if (GameManager::GetInstance()->GetCharacterIndex() == i + 1)
-            {
-                DrawText(memDC, ("나 - " + to_string((*GameManager::GetInstance()->GetUserMoneyVector())[i])).c_str(), -1, &moneyRect[i], DT_NOCLIP | DT_CENTER);
-            }
-            else
-            {
-                DrawText(memDC, to_string((*GameManager::GetInstance()->GetUserMoneyVector())[i]).c_str(), -1, &moneyRect[i], DT_NOCLIP | DT_CENTER);
-            }
+            DrawText(memDC, ("돈 : " + to_string((*GameManager::GetInstance()->GetUserMoneyVector())[i])).c_str(), -1, &moneyRect[i], DT_NOCLIP | DT_LEFT);
         } 
     }
+
 }
 
 void RenderManager::DrawSelectMode()

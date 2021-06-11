@@ -9,6 +9,21 @@ GameWindow* GameWindow::instance = nullptr;
 GameWindow::GameWindow() {}
 GameWindow::~GameWindow() {}
 
+void GameWindow::WmSizeMethod(HWND hWnd)
+{
+    RECT g_clientRect{ 0,0, RenderManager::GetInstance()->GetClientSize()->cx, RenderManager::GetInstance()->GetClientSize()->cy }; // 클라이언트 크기
+    SIZE clientSize;
+
+    AdjustWindowRect(&g_clientRect, WS_OVERLAPPEDWINDOW, false);    // 메뉴창 크기 빼고 윈도우 크기 계산
+    clientSize.cx = g_clientRect.right - g_clientRect.left;
+    clientSize.cy = g_clientRect.bottom - g_clientRect.top;
+    SetWindowPos(hWnd,
+        GetNextWindow(hWnd, GW_HWNDPREV),
+        0, 0,
+        clientSize.cx, clientSize.cy,
+        SWP_NOMOVE);
+}
+
 void GameWindow::InitClass(HWND hWnd)
 {
     instance->g_hWnd = hWnd;
@@ -162,6 +177,9 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
                 }
             }
         }
+        break;
+    case WM_SIZE:
+        GetInstance()->WmSizeMethod(hWnd);
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);

@@ -19,6 +19,7 @@ private:
 	MainWindow();
 	~MainWindow();
 
+	void WmSizeMethod(HWND hWnd);
 	void InitMainMenu(HWND hWnd);
 	void ReInitMainMenu(HWND hWnd);
 	void ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd);	// 해상도 변경

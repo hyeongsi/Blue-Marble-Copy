@@ -57,8 +57,8 @@ private:
 
 	vector<RECT> rectVector;
 	RECT messageRect = { 550,350,750,450 };
-	RECT moneyRect[4] = { {30,10,90,70} , {1190,10,1250,70},
-		{30,640,90,710}, {1190,640,1250,710} };
+	RECT moneyRect[4] = { {60,15,90,70} , {1090,15,1250,70},
+		{60,680,90,710}, {1090,680,1250,710} };
 
 	int tileWidth = 0, tileHeight = 0;
 
@@ -77,6 +77,8 @@ public:
 
 	void MoveSelectPosition(bool isLeft);
 	void SetPlayerBitmapLocation(int playerIndex, int tileIndex);
+
+
 
 	void InitDrawBoardMap();
 	void DrawBoardMap();

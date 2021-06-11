@@ -283,7 +283,7 @@ typedef struct SelectInputKeyPacket	// SEND_SELECT_MODE_INPUT_KEY
 typedef struct BankruptcySignPacket	// BANKRUPTCY_SIGN
 {
 	char header;
-	int whosTurn;	// 누구 턴인지
+	int whosTurn = -1;	// 누구 턴인지
 	int landOwner;	// 땅 주인
 	int landOwnerMoney; // 땅 주인 돈
 }bankruptcySignPacket;

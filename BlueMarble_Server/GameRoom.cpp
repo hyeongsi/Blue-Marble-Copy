@@ -1157,9 +1157,9 @@ void GameRoom::Bankruptcy(int index, bool isToll)
 		userMoneyVector[landOwner] += TotalDisposalPrice() + userMoneyVector[takeControlPlayer]; // 땅 주인에게 파산한 사람 돈 주기
 	}
 
+	gameServer->AppendPacketData(sendPacket, &packetLastIndex, landOwner, sizeof(landOwner));	// 땅 주인 번호
 	if (landOwner != -1)
 	{
-		gameServer->AppendPacketData(sendPacket, &packetLastIndex, landOwner, sizeof(landOwner));	// 땅 주인 번호
 		gameServer->AppendPacketData(sendPacket, &packetLastIndex, userMoneyVector[landOwner], sizeof(userMoneyVector[landOwner]));	// 파산 유저 전재산
 	}
 	

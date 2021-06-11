@@ -40,6 +40,21 @@ void MainWindow::ReInitMainMenu(HWND hWnd)
     }
 }
 
+void MainWindow::WmSizeMethod(HWND hWnd)
+{
+    RECT g_clientRect{ 0,0, RenderManager::GetInstance()->GetClientSize()->cx, RenderManager::GetInstance()->GetClientSize()->cy }; // 클라이언트 크기
+    SIZE clientSize;
+
+    AdjustWindowRect(&g_clientRect, WS_OVERLAPPEDWINDOW, false);    // 메뉴창 크기 빼고 윈도우 크기 계산
+    clientSize.cx = g_clientRect.right - g_clientRect.left;
+    clientSize.cy = g_clientRect.bottom - g_clientRect.top;
+    SetWindowPos(hWnd,
+        GetNextWindow(hWnd, GW_HWNDPREV),
+        0, 0,
+        clientSize.cx, clientSize.cy,
+        SWP_NOMOVE);
+}
+
 void MainWindow::ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd)
 {
     RECT g_clientRect{ 0,0, width, height }; // 클라이언트 크기
@@ -175,6 +190,9 @@ LRESULT MainWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
             GetRankingDataMethod();
             break;
         }
+        break;
+    case WM_SIZE:
+        GetInstance()->WmSizeMethod(hWnd);
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
