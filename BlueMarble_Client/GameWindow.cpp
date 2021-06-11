@@ -44,7 +44,10 @@ void GameWindow::ReInitGame(HWND hWnd)
         MainSystem::GetInstance()->RegistUpdateCallbackFunction(GameUpdate);    // main menu update callback regist // MainMenu <- -> Game Render
         HideButton(ROLL_DICE_BTN);
         HideButton(SELECT_UI_BTN);
+        if(!GameManager::GetInstance()->GetPlayerCount())
+            ShowButton(EXIT_UI_BTN);
         isReset = false;
+        GameManager::GetInstance()->SetGameState(GameState::MATCHING);
     }
 }
 
@@ -86,6 +89,9 @@ void GameWindow::ShowButton(int kind)
         ShowWindow(hwndWindow[SELECT_MODE_OK_BTN_NUMBER], SW_SHOW);           // 버튼 출력
         ShowWindow(hwndWindow[SELECT_MODE_CANCEL_BTN_NUMBER], SW_SHOW);       // 버튼 출력
         break;
+    case EXIT_UI_BTN:
+        ShowWindow(hwndWindow[EXIT_MATCH_BTN_NUMBER], SW_SHOW);       // 버튼 출력
+        break;
     }
 }
 
@@ -99,6 +105,9 @@ void GameWindow::HideButton(int kind)
     case SELECT_UI_BTN:
         ShowWindow(hwndWindow[SELECT_MODE_OK_BTN_NUMBER], SW_HIDE);          // 버튼 출력
         ShowWindow(hwndWindow[SELECT_MODE_CANCEL_BTN_NUMBER], SW_HIDE);      // 버튼 출력
+        break;
+    case EXIT_UI_BTN:
+        ShowWindow(hwndWindow[EXIT_MATCH_BTN_NUMBER], SW_HIDE);              // 버튼 출력
         break;
     }
 }
@@ -174,6 +183,9 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
                    case IDC_SELECT_CANCEL:
                        SendSelectBtnMsgMethod(false);
                        break;
+                   case IDC_EXIT_MATCHING:
+                       SocketTransfer::GetInstance()->TerminateRecvDataThread();
+                       break;
                 }
             }
         }
@@ -193,21 +205,29 @@ void GameWindow::GameUpdate()
     RenderManager::GetInstance()->DrawBoardMap();
     RenderManager::GetInstance()->DrawWindow(State::GAME);  // 이미지 출력
 
-    if (GameManager::GetInstance()->GetIsMyDiceTurn() || GameManager::GetInstance()->GetGameState() == GameState::ROLL_DICE)
+    switch (GameManager::GetInstance()->GetGameState())
     {
-        RenderManager::GetInstance()->DrawHwnd(instance->hwndWindow[ROLL_DICE_BTN_NUMBER],
-            (*BitmapManager::GetInstance()->GetHwnd(State::GAME))[ROLL_DICE_BTN_NUMBER].point,
-            (*BitmapManager::GetInstance()->GetHwnd(State::GAME))[ROLL_DICE_BTN_NUMBER].size);
-    }
-
-    if (GameManager::GetInstance()->GetGameState() == GameState::SELECT_MODE)
-    {
+    case GameState::ROLL_DICE:
+        if (GameManager::GetInstance()->GetIsMyDiceTurn())
+        {
+            RenderManager::GetInstance()->DrawHwnd(instance->hwndWindow[ROLL_DICE_BTN_NUMBER],
+                (*BitmapManager::GetInstance()->GetHwnd(State::GAME))[ROLL_DICE_BTN_NUMBER].point,
+                (*BitmapManager::GetInstance()->GetHwnd(State::GAME))[ROLL_DICE_BTN_NUMBER].size);
+        }
+        break;
+    case GameState::SELECT_MODE:
         for (int i = SELECT_MODE_OK_BTN_NUMBER; i <= SELECT_MODE_CANCEL_BTN_NUMBER; i++)
         {
             RenderManager::GetInstance()->DrawHwnd(instance->hwndWindow[i],
                 (*BitmapManager::GetInstance()->GetHwnd(State::GAME))[i].point,
                 (*BitmapManager::GetInstance()->GetHwnd(State::GAME))[i].size);
         }
+        break;
+    case GameState::MATCHING:
+        RenderManager::GetInstance()->DrawHwnd(instance->hwndWindow[EXIT_MATCH_BTN_NUMBER],
+            (*BitmapManager::GetInstance()->GetHwnd(State::GAME))[EXIT_MATCH_BTN_NUMBER].point,
+            (*BitmapManager::GetInstance()->GetHwnd(State::GAME))[EXIT_MATCH_BTN_NUMBER].size);
+        break;
     }
 
     RenderManager::GetInstance()->DrawGameMessage(GameManager::GetInstance()->GetGameMessage());

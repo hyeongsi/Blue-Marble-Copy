@@ -34,6 +34,7 @@ enum class GameState
 	BUY_LAND = 2,
 	SELL_LAND = 3,
 	SELECT_MODE = 4,
+	MATCHING = 5,
 };
 
 enum InputKey

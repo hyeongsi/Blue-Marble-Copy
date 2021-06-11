@@ -5,6 +5,7 @@ enum ButtonHWndKind
 {
 	ROLL_DICE_BTN = 0,
 	SELECT_UI_BTN = 1,
+	EXIT_UI_BTN = 2,
 };
 
 class RenderManager;

@@ -176,6 +176,8 @@ void SocketTransfer::GetMapDataMethod2(char* packet)
 
 void SocketTransfer::GetMapData2(char* packet)
 {
+	GameManager::GetInstance()->SetGameState(GameState::WAIT);
+
 	mapPacket2 _mapPacket2;
 	char str[100];
 	unsigned int stackMemorySize = 0;
@@ -200,6 +202,9 @@ void SocketTransfer::GetMapData2(char* packet)
 
 void SocketTransfer::GetReadyMethod(char* packet)
 {
+	GameManager::GetInstance()->SetGameState(GameState::WAIT);
+	GameWindow::GetInstance()->HideButton(EXIT_UI_BTN);
+
 	readyPacket rPacket;
 	memcpy(&rPacket.header, &packet[0], sizeof(char));					// get ready sign
 	memcpy(&rPacket.number, &packet[1], sizeof(int));					// get number
