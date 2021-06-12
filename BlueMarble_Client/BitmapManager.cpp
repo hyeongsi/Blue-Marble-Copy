@@ -137,6 +137,60 @@ void BitmapManager::LoadBitmapData(State state)
 	readFile.close();
 }
 
+void BitmapManager::LoadButtonBitmapData(State state)
+{
+	const char* mainMenuFilePath = "sprites/MainMenu/mainMenuButtonSprites.txt";
+	const char* gameFilePath = "sprites/Game/gameButtonSprites.txt";
+
+	ifstream readFile;
+	string bitmapPath;
+	BitmapInfo bitmapInfo;
+
+	switch (state)
+	{
+	case State::MAIN_MENU:
+		if (0 != mainMenuButtonBitmap.size())
+			return;
+
+		readFile.open(mainMenuFilePath);
+		break;
+	case State::RANK_MENU:
+		return;
+	case State::GAME:
+		if (0 != gameButtonBitmap.size())
+			return;
+
+		readFile.open(gameFilePath);
+		break;
+	default:
+		return;
+	}
+
+	if (readFile.is_open())
+	{
+		while (!readFile.eof())
+		{
+			readFile >> bitmapPath;
+			bitmapInfo.bitmap = (HBITMAP)LoadImageA(NULL, bitmapPath.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+
+			switch (state)
+			{
+			case State::MAIN_MENU:
+				mainMenuButtonBitmap.emplace_back(bitmapInfo);
+				break;
+			case State::RANK_MENU:
+				readFile.close();
+				return;
+			case State::GAME:
+				gameButtonBitmap.emplace_back(bitmapInfo);
+				break;
+			}
+		}
+	}
+
+	readFile.close();
+}
+
 vector<HwndInfo>* BitmapManager::GetHwnd(State state)
 {
 	switch (state)
@@ -162,6 +216,21 @@ vector<BitmapInfo>* BitmapManager::GetBitmap(State state)
 		return nullptr;
 	case State::GAME:
 		return &gameBitmap;
+	default:
+		return nullptr;
+	}
+}
+
+vector<BitmapInfo>* BitmapManager::GetButtonBitmap(State state)
+{
+	switch (state)
+	{
+	case State::MAIN_MENU:
+		return &mainMenuButtonBitmap;
+	case State::RANK_MENU:
+		return nullptr;
+	case State::GAME:
+		return &gameButtonBitmap;
 	default:
 		return nullptr;
 	}

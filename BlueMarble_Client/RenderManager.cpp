@@ -335,13 +335,13 @@ void RenderManager::DrawWindow(State state)
             {
                 if (GameManager::GetInstance()->GetPlayerCount() <= count)
                     continue;   // 플레이어 숫자에 따라 출력되는 캐릭터 수 제한
-                    
+
                 if ((*GameManager::GetInstance()->GetBackruptcyVector())[count] == false)
                     DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);
             }
         }
         else
-            DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);  
+            DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);  
     }
 }
 

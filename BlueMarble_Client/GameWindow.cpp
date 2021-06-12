@@ -32,6 +32,7 @@ void GameWindow::InitClass(HWND hWnd)
 
     BitmapManager::GetInstance()->LoadHwndData(State::GAME);
     BitmapManager::GetInstance()->LoadBitmapData(State::GAME);  // game bitmap loading
+    BitmapManager::GetInstance()->LoadButtonBitmapData(State::GAME);
 
     instance->CreateButton(hWnd);
 }
@@ -71,10 +72,16 @@ void GameWindow::CreateButton(HWND hWnd)
 
     for (const auto& hwndIterator : *hwndInfo)
     {
-        instance->hwndWindow.emplace_back(CreateWindow(hwndIterator.type.c_str(), hwndIterator.text.c_str(), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        instance->hwndWindow.emplace_back(CreateWindow(hwndIterator.type.c_str(),
+            hwndIterator.text.c_str(), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_BITMAP,
             hwndIterator.point.x, hwndIterator.point.y,
             hwndIterator.size.cx, hwndIterator.size.cy,
             hWnd, (HMENU)hwndIterator.id, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL));
+    }
+
+    for (int i = 0; i < (int)(*BitmapManager::GetInstance()->GetButtonBitmap(State::GAME)).size(); i++)
+    {
+        SendMessage(instance->hwndWindow[i], BM_SETIMAGE, 0, (LPARAM)(*BitmapManager::GetInstance()->GetButtonBitmap(State::GAME))[i].bitmap);
     }
 }
 

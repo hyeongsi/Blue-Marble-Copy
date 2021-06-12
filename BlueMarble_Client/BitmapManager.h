@@ -39,9 +39,11 @@ class BitmapManager
 private:
 	static BitmapManager* instance;
 	std::vector<BitmapInfo> mainMenuBitmap;
+	std::vector<BitmapInfo> mainMenuButtonBitmap;
 	std::vector<HwndInfo> mainMenuHwnd;
 
 	std::vector<BitmapInfo> gameBitmap;
+	std::vector<BitmapInfo> gameButtonBitmap;
 	std::vector<HwndInfo> gameHwnd;
 
 	BitmapManager();
@@ -52,9 +54,11 @@ public:
 
 	void LoadHwndData(State state);
 	void LoadBitmapData(State state);
+	void LoadButtonBitmapData(State state);
 
 	vector<HwndInfo>* GetHwnd(State state);
 	vector<BitmapInfo>* GetBitmap(State state);
+	vector<BitmapInfo>* GetButtonBitmap(State state);
 };
 
 enum MainMenuBitmap

@@ -24,6 +24,7 @@ void MainWindow::InitMainMenu(HWND hWnd)
 
     instance->bitmapManager->LoadHwndData(State::MAIN_MENU);
     instance->bitmapManager->LoadBitmapData(State::MAIN_MENU);  // main menu bitmap loading 
+    instance->bitmapManager->LoadButtonBitmapData(State::MAIN_MENU);
 
     CreateButton(hWnd);
     ShowButton();
@@ -76,10 +77,15 @@ void MainWindow::CreateButton(HWND hWnd)
     for (const auto& hwndIterator : *hwndInfo)
     {
         instance->hwndWindow.emplace_back(CreateWindow(hwndIterator.type.c_str(), 
-            hwndIterator.text.c_str(), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+            hwndIterator.text.c_str(), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON | BS_BITMAP,
             hwndIterator.point.x, hwndIterator.point.y,
             hwndIterator.size.cx, hwndIterator.size.cy,
             hWnd, (HMENU)hwndIterator.id, (HINSTANCE)GetWindowLong(hWnd, GWL_HINSTANCE), NULL));
+    }
+
+    for (int i = 0; i < (int)(*instance->bitmapManager->GetButtonBitmap(State::MAIN_MENU)).size(); i++)
+    {
+        SendMessage(instance->hwndWindow[i], BM_SETIMAGE, 0, (LPARAM)(*instance->bitmapManager->GetButtonBitmap(State::MAIN_MENU))[i].bitmap);
     }
 }
 
