@@ -1,0 +1,1 @@
+sprites/Game/loadingBar.bmp 590 300 4 4 100 100

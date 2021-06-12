@@ -85,13 +85,13 @@ public:
 	void MoveSelectPosition(bool isLeft);
 	void SetPlayerBitmapLocation(int playerIndex, int tileIndex);
 
-
-
 	void InitDrawBoardMap();
+	void DrawAnimation(State state, const int index, const int rate);
 	void DrawBoardMap();
 	void DrawWindow(State state);
 	void DrawHwnd(const HWND dHwnd, const POINT printPoint, const SIZE hwndSize);
 	void DrawBitmap(const HBITMAP bitmap, const POINT printPoint, bool isTransparentBlt = false);
+	void DrawAnimationBitmap(const HBITMAP bitmap, const POINT printPoint, const SIZE printSize, int row, int col, int& count, bool isTransparentBlt = false);
 	void DrawGameMessage(string message);
 	void DrawSelectMode(); // selectMode라면 맵 선택 테두리 그리기
 	void Render();

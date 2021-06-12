@@ -33,6 +33,7 @@ void GameWindow::InitClass(HWND hWnd)
     BitmapManager::GetInstance()->LoadHwndData(State::GAME);
     BitmapManager::GetInstance()->LoadBitmapData(State::GAME);  // game bitmap loading
     BitmapManager::GetInstance()->LoadButtonBitmapData(State::GAME);
+    BitmapManager::GetInstance()->LoadAnimationBitmapData(State::GAME);
 
     instance->CreateButton(hWnd);
 }
@@ -49,6 +50,8 @@ void GameWindow::ReInitGame(HWND hWnd)
             ShowButton(EXIT_UI_BTN);
         isReset = false;
         GameManager::GetInstance()->SetGameState(GameState::MATCHING);
+
+        _beginthreadex(NULL, 0, DrawLoadingAnimationThread, NULL, 0, NULL);
     }
 }
 
@@ -83,6 +86,12 @@ void GameWindow::CreateButton(HWND hWnd)
     {
         SendMessage(instance->hwndWindow[i], BM_SETIMAGE, 0, (LPARAM)(*BitmapManager::GetInstance()->GetButtonBitmap(State::GAME))[i].bitmap);
     }
+}
+
+UINT WINAPI GameWindow::DrawLoadingAnimationThread(void* arg)
+{
+    RenderManager::GetInstance()->DrawAnimation(State::GAME, 0, 300);
+    return 0;
 }
 
 void GameWindow::ShowButton(int kind)

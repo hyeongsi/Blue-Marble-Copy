@@ -25,6 +25,8 @@ private:
 	void ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd);
 	void CreateButton(HWND hWnd);
 
+	static UINT WINAPI DrawLoadingAnimationThread(void* arg);
+
 	static void SendDiceTriggerMsgMethod();
 	void SendDiceTriggerMsg();
 

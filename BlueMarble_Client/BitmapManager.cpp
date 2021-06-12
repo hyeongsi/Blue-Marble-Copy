@@ -191,6 +191,76 @@ void BitmapManager::LoadButtonBitmapData(State state)
 	readFile.close();
 }
 
+void BitmapManager::LoadAnimationBitmapData(State state)
+{
+	//const char* mainMenuFilePath = "sprites/MainMenu/mainMenuButtonSprites.txt";
+	const char* gameFilePath = "sprites/Game/gameAnimation.txt";
+
+	ifstream readFile;
+	string bitmapPath;
+	int xPos, yPos, row, col, width, height;
+	AnimationBitmapInfo animationBitmapInfo;
+
+	switch (state)
+	{
+	case State::MAIN_MENU:
+		/*if (0 != gameAnimationBitmap.size())
+			return;
+
+		readFile.open(mainMenuFilePath);
+		break;*/
+		return;
+	case State::RANK_MENU:
+		return;
+	case State::GAME:
+		if (0 != gameAnimationBitmap.size())
+			return;
+
+		readFile.open(gameFilePath);
+		break;
+	default:
+		return;
+	}
+
+	if (readFile.is_open())
+	{
+		while (!readFile.eof())
+		{
+			readFile >> bitmapPath;
+			animationBitmapInfo.bitmap = (HBITMAP)LoadImageA(NULL, bitmapPath.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+			readFile >> xPos;
+			readFile >> yPos;
+			readFile >> col;
+			readFile >> row;
+			readFile >> width;
+			readFile >> height;
+
+			animationBitmapInfo.point = POINT(xPos, yPos);
+			animationBitmapInfo.col = col;
+			animationBitmapInfo.row = row;
+			animationBitmapInfo.size.cx = width;
+			animationBitmapInfo.size.cy = height;
+
+			switch (state)
+			{
+			case State::MAIN_MENU:
+				/*mainMenuButtonBitmap.emplace_back(bitmapInfo);
+				break;*/
+				readFile.close();
+				return;
+			case State::RANK_MENU:
+				readFile.close();
+				return;
+			case State::GAME:
+				gameAnimationBitmap.emplace_back(animationBitmapInfo);
+				break;
+			}
+		}
+	}
+
+	readFile.close();
+}
+
 vector<HwndInfo>* BitmapManager::GetHwnd(State state)
 {
 	switch (state)
@@ -231,6 +301,21 @@ vector<BitmapInfo>* BitmapManager::GetButtonBitmap(State state)
 		return nullptr;
 	case State::GAME:
 		return &gameButtonBitmap;
+	default:
+		return nullptr;
+	}
+}
+
+vector<AnimationBitmapInfo>* BitmapManager::GetAnimationBitmap(State state)
+{
+	switch (state)
+	{
+	case State::MAIN_MENU:
+		return nullptr;
+	case State::RANK_MENU:
+		return nullptr;
+	case State::GAME:
+		return &gameAnimationBitmap;
 	default:
 		return nullptr;
 	}

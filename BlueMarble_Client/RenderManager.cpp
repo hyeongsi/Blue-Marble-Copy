@@ -1,6 +1,7 @@
 ﻿#include "RenderManager.h"
 #include "BitmapManager.h"
 #include <string>
+#include <time.h>
 
 RenderManager* RenderManager::instance = nullptr;
 
@@ -203,6 +204,29 @@ void RenderManager::InitDrawBoardMap()
     }
 }
 
+void RenderManager::DrawAnimation(State state, const int index, const int rate)
+{
+    int count = 0;
+    clock_t endClock = clock();
+    bool loop = true;
+
+    vector<AnimationBitmapInfo> animationBitmapInfo = *BitmapManager::GetInstance()->GetAnimationBitmap(state);
+    if (0 > index && (int)animationBitmapInfo.size() <= index)
+        return;
+
+    while (loop)
+    {
+        DrawAnimationBitmap(animationBitmapInfo[index].bitmap, animationBitmapInfo[index].point,
+            animationBitmapInfo[index].size, animationBitmapInfo[index].row, animationBitmapInfo[index].col,
+            count);
+        if ((clock() - endClock) >= rate)
+        {
+            endClock = clock();
+            count++;
+        }
+    }
+}
+
 void RenderManager::DrawBoardMap()
 {
     boardData board = GameManager::GetInstance()->GetBoardData();
@@ -368,6 +392,49 @@ void RenderManager::DrawBitmap(const HBITMAP bitmap, const POINT printPoint, boo
     {
         BitBlt(memDC, printPoint.x, printPoint.y, bitmapSize.bmWidth, bitmapSize.bmHeight, backMemDC, 0, 0, SRCCOPY);
     } 
+}
+
+void RenderManager::DrawAnimationBitmap(const HBITMAP bitmap, const POINT printPoint, const SIZE printSize, int row, int col, int& count, bool isTransparentBlt)
+{
+    BITMAP bitmapSize{};
+    SelectObject(backMemDC, bitmap);
+    GetObject(bitmap, sizeof(bitmapSize), &bitmapSize);
+
+    POINT bitmapSlicePOINT = {0,0};
+
+    if (row == 0)
+    {
+        if(col <= count)
+            count = 0;
+
+        bitmapSlicePOINT.y = (count * printSize.cy);
+    }
+    else if (col == 0)
+    {
+        if (row <= count)
+        {
+            count = 0;
+        }
+
+        bitmapSlicePOINT.x = (count * printSize.cx);
+    }else  
+    {
+        if ((row * col) <= count)
+            count = 0;
+
+        bitmapSlicePOINT.x = (count % row) * printSize.cx;
+        bitmapSlicePOINT.y = (count % col) * printSize.cy;
+    }
+
+    if (isTransparentBlt)
+    {
+        TransparentBlt(hdc, printPoint.x, printPoint.y,
+            bitmapSize.bmWidth, bitmapSize.bmHeight, backMemDC, bitmapSlicePOINT.x, bitmapSlicePOINT.y, printSize.cx, printSize.cy, RGB(215, 123, 186));
+    }
+    else
+    {
+        BitBlt(hdc, printPoint.x, printPoint.y, printSize.cx, printSize.cy, backMemDC, bitmapSlicePOINT.x, bitmapSlicePOINT.y, SRCCOPY);
+    }
 }
 
 void RenderManager::DrawGameMessage(string message)
