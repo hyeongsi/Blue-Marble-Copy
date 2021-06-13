@@ -93,25 +93,94 @@ void RenderManager::MoveSelectPosition(bool isLeft)
     }
 }
 
-void RenderManager::SetPlayerBitmapLocation(int playerIndex, int tileIndex)
+void RenderManager::SetPlayerBitmapLocation(int playerIndex, int tileIndex, const bool isInit)
 {
     POINT printPoint;
+    int count = 0;
+    const int printSpace = 35;
+    int addValue = 0;
 
-    if (playerIndex % 2 == 0)
+    for (int i = 0; i < (int)(*GameManager::GetInstance()->GetUserPositionVector()).size(); i++)
     {
-        printPoint.x = 0;
-        printPoint.y = (35 * (playerIndex / 2));
+        if ((*GameManager::GetInstance()->GetBackruptcyVector())[i] == true)
+            continue;
+
+        if (tileIndex == (*GameManager::GetInstance()->GetUserPositionVector())[i])
+            count++;
     }
-    else
+
+    if (isInit)
+        count = (playerIndex + 1);
+
+    switch (tileIndex / GameManager::GetInstance()->GetBoardData().mapSize)
     {
-        printPoint.x = 35;
-        printPoint.y = (35 * (playerIndex / 2));
+    case 0: // 
+        if ((count - 1) % 2 == 0)
+        {}
+        else
+        {
+            addValue = printSpace;
+        }
+
+        printPoint.x = addValue;
+        printPoint.y = (printSpace * ((count - 1) / 2));
+        break;
+    case 1:
+        if ((count - 1) % 2 == 0)
+        {
+            if ((count) == 1)
+                count = 3;
+            else
+                count = 1;     
+        }
+        else
+        {
+            if ((count) == 2)
+                count = 4;
+            else
+                count = 2;
+
+            addValue = printSpace;
+        }
+
+        printPoint.x = (printSpace * ((count - 1) / 2)); 
+        printPoint.y = addValue;
+        break;
+    case 2:
+        if ((count - 1) % 2 == 0)
+        {
+            if ((count) == 1)
+                count = 3;
+            else
+                count = 1;
+        }
+        else
+        {
+            if ((count) == 2)
+                count = 4;
+            else
+                count = 2;
+
+            addValue = printSpace;
+        }
+        printPoint.x = addValue;
+        printPoint.y = (printSpace * ((count - 1) / 2));
+        break;
+    case 3:
+        if ((count - 1) % 2 == 0) 
+        {
+            addValue = printSpace;
+        }
+        else
+        {}
+        printPoint.x = (printSpace * ((count - 1) / 2));
+        printPoint.y = addValue;
+        break;
     }
 
     printPoint.x += playerBitmapPointVector[tileIndex].x;
     printPoint.y += playerBitmapPointVector[tileIndex].y;
 
-    
     (*BitmapManager::GetInstance()->GetBitmap(State::GAME))[playerIndex].point = printPoint;
 }
 
@@ -200,7 +269,7 @@ void RenderManager::InitDrawBoardMap()
         if (GameManager::GetInstance()->GetPlayerCount() <= i)
             break;
 
-        SetPlayerBitmapLocation(i, 0);
+        SetPlayerBitmapLocation(i, 0, true);
     }
 }
 

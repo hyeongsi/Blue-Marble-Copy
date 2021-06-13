@@ -83,7 +83,7 @@ public:
 	void RenderInitSetting();
 
 	void MoveSelectPosition(bool isLeft);
-	void SetPlayerBitmapLocation(int playerIndex, int tileIndex);
+	void SetPlayerBitmapLocation(int playerIndex, int tileIndex, const bool isInit = false);
 
 	void InitDrawBoardMap();
 	void DrawAnimation(State state, const int index, const int rate);

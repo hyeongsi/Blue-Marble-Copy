@@ -41,7 +41,7 @@ void Card::UseCard(GameRoom* room)
 	}
 
 	if (room->GetMapData().code[room->GetUserPositionVector()[room->GetTakeControlPlayer()]] == DESERT_ISLAND_TILE)
-		room->DesertIslandMethod();
+		room->DesertIslandMethod(true);
 
 	room->SendCardSign(*this);
 }

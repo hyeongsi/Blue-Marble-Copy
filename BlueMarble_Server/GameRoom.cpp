@@ -215,7 +215,7 @@ void GameRoom::SendRollDiceSignMethod(SOCKET& socket)
 	packetLastIndexMutex.unlock();
 }
 
-void GameRoom::DesertIslandMethod()
+void GameRoom::DesertIslandMethod(const bool isCard)
 {
 	if (!isDesertIsland[takeControlPlayer])	// 처음 무인도 진입 시
 	{
@@ -240,7 +240,8 @@ void GameRoom::DesertIslandMethod()
 		}
 	}
 
-	state = GameState::NEXT_TURN;
+	if(!isCard)
+		state = GameState::NEXT_TURN;
 }
 
 void GameRoom::WorldTrableMethod()

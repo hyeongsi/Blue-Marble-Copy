@@ -106,7 +106,7 @@ public:
 	void SendMapDataMethod(SOCKET& socekt);	// 맵 정보 전송 함수
 	void SendRollDiceSignMethod(SOCKET& socket);	// 주사위 신호 전송 함수
 
-	void DesertIslandMethod();	// 감옥 처리
+	void DesertIslandMethod(const bool isCard = false);	// 감옥 처리
 
 	void WorldTrableMethod();	// 세계여행 처리
 	void WorldTrableSignSyncMethod();
