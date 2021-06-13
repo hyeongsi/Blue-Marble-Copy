@@ -128,14 +128,14 @@ void SocketTransfer::RecvDataMethod(SOCKET clientSocket)
 				break;
 			case GAMEOVER_SIGN:
 				GetGameOverSignMethod(cBuffer);
-				TerminateRecvDataThread();
-				return;
+				closesocket(clientSocket);
+				break;
 			default:
 				break;
 			}
 		}
 	}
-
+	
 	TerminateRecvDataThread();
 }
 
@@ -202,6 +202,11 @@ void SocketTransfer::GetMapData2(char* packet)
 
 void SocketTransfer::GetReadyMethod(char* packet)
 {
+	if (GameWindow::GetInstance()->loadingThread != NULL)
+	{
+		TerminateThread(GameWindow::GetInstance()->loadingThread, 0);
+		CloseHandle(GameWindow::GetInstance()->loadingThread);
+	}
 	GameManager::GetInstance()->SetGameState(GameState::WAIT);
 	GameWindow::GetInstance()->HideButton(EXIT_UI_BTN);
 
@@ -1180,7 +1185,7 @@ void SocketTransfer::StartRecvDataThread()
 {
 	if (nullptr != recvThreadHandle)
 	{
-		TerminateRecvDataThread();
+		closesocket(clientSocket);
 	}
 
 	recvThreadHandle = (HANDLE)_beginthreadex(NULL, 0, GetInstance()->RecvDataThread, nullptr, 0, NULL);   // recv thread start
@@ -1188,7 +1193,6 @@ void SocketTransfer::StartRecvDataThread()
 
 void SocketTransfer::TerminateRecvDataThread()
 {
-	closesocket(clientSocket);
 	WSACleanup();
 
 	recvThreadMutex.lock();
@@ -1197,8 +1201,14 @@ void SocketTransfer::TerminateRecvDataThread()
 
 	MainWindow::GetInstance()->isReset = true;
 
-	ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::GAME), SW_HIDE);
-	ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU), SW_SHOW);
+	MainSystem::GetInstance()->windowStateMutex.lock();
+	if (MainSystem::GetInstance()->windowState == WindowState::GAME_WINDOW)
+	{
+		ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::GAME), SW_HIDE);
+		ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU), SW_SHOW);
+		MainSystem::GetInstance()->windowState = WindowState::MAIN_WINDOW;
+	}
+	MainSystem::GetInstance()->windowStateMutex.unlock();
 }
 
 void SocketTransfer::MakePacket(char header)
@@ -1295,4 +1305,9 @@ void SocketTransfer::GetSelectBtnMsg(bool isOK)
 	MakePacket(SELECT_MODE_BTN);
 	AppendPacketData(isOK, sizeof(isOK));	// 확인, 취소 유무
 	SendMessageToGameServer();
+}
+
+SOCKET* SocketTransfer::GetClientSocket()
+{
+	return &clientSocket;
 }

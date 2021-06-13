@@ -1,8 +1,15 @@
 ﻿#pragma once
 #include <Windows.h>
 #include "commonResource.h"
+#include <mutex>
 
 constexpr const ULONGLONG FPS = 60;
+
+enum class WindowState
+{
+	MAIN_WINDOW = 0,
+	GAME_WINDOW = 1,
+};
 
 class MainSystem
 {
@@ -22,6 +29,9 @@ private:
 	MainSystem();
 	~MainSystem();
 public:
+	WindowState windowState = WindowState::MAIN_WINDOW;
+	std::mutex windowStateMutex;
+
 	static MainSystem* GetInstance();
 	static void ReleaseInstance();
 

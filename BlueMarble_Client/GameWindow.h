@@ -35,6 +35,7 @@ private:
 public:
 	static bool isReset;
 	HWND g_hWnd = nullptr;
+	HANDLE loadingThread = NULL;
 
 	static GameWindow* GetInstance();
 	static void ReleaseInstance();

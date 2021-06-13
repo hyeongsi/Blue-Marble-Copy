@@ -50,8 +50,7 @@ void GameWindow::ReInitGame(HWND hWnd)
             ShowButton(EXIT_UI_BTN);
         isReset = false;
         GameManager::GetInstance()->SetGameState(GameState::MATCHING);
-
-        _beginthreadex(NULL, 0, DrawLoadingAnimationThread, NULL, 0, NULL);
+        loadingThread = (HANDLE)_beginthreadex(NULL, 0, DrawLoadingAnimationThread, NULL, 0, NULL);
     }
 }
 
@@ -90,7 +89,7 @@ void GameWindow::CreateButton(HWND hWnd)
 
 UINT WINAPI GameWindow::DrawLoadingAnimationThread(void* arg)
 {
-    RenderManager::GetInstance()->DrawAnimation(State::GAME, 0, 300);
+    RenderManager::GetInstance()->DrawAnimation(State::GAME, 0, 100);
     return 0;
 }
 
@@ -200,7 +199,12 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
                        SendSelectBtnMsgMethod(false);
                        break;
                    case IDC_EXIT_MATCHING:
-                       SocketTransfer::GetInstance()->TerminateRecvDataThread();
+                       if (GetInstance()->loadingThread != NULL)
+                       {
+                           TerminateThread(GetInstance()->loadingThread, 0);
+                           CloseHandle(GetInstance()->loadingThread);
+                       }
+                       closesocket(*SocketTransfer::GetInstance()->GetClientSocket());
                        break;
                 }
             }

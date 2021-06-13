@@ -135,6 +135,8 @@ public:
 	void SendRollDiceSign();
 	void SendSelectModeInput(int inputKey);
 	void GetSelectBtnMsg(bool isOK);
+
+	SOCKET* GetClientSocket();
 };
 
 template<class T>

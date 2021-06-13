@@ -208,13 +208,12 @@ void RenderManager::DrawAnimation(State state, const int index, const int rate)
 {
     int count = 0;
     clock_t endClock = clock();
-    bool loop = true;
 
     vector<AnimationBitmapInfo> animationBitmapInfo = *BitmapManager::GetInstance()->GetAnimationBitmap(state);
     if (0 > index && (int)animationBitmapInfo.size() <= index)
         return;
 
-    while (loop)
+    while (true)
     {
         DrawAnimationBitmap(animationBitmapInfo[index].bitmap, animationBitmapInfo[index].point,
             animationBitmapInfo[index].size, animationBitmapInfo[index].row, animationBitmapInfo[index].col,
@@ -423,7 +422,7 @@ void RenderManager::DrawAnimationBitmap(const HBITMAP bitmap, const POINT printP
             count = 0;
 
         bitmapSlicePOINT.x = (count % row) * printSize.cx;
-        bitmapSlicePOINT.y = (count % col) * printSize.cy;
+        bitmapSlicePOINT.y = (count / col) * printSize.cy;
     }
 
     if (isTransparentBlt)

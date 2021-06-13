@@ -125,6 +125,10 @@ UINT WINAPI MainWindow::StartGame(void* arg)
         GameWindow::GetInstance()->isReset = true;
         ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::MAIN_MENU), SW_HIDE);
         ShowWindow(MainSystem::GetInstance()->GetWindowHwnd(State::GAME), SW_SHOW);
+
+        MainSystem::GetInstance()->windowStateMutex.lock();
+        MainSystem::GetInstance()->windowState = WindowState::GAME_WINDOW;
+        MainSystem::GetInstance()->windowStateMutex.unlock();
     }
     isRunStartThread = false;
 

@@ -1,1 +1,1 @@
-sprites/Game/loadingBar.bmp 590 300 4 4 100 100
+sprites/Game/loadingBar.bmp 600 150 4 4 100 100
