@@ -81,6 +81,11 @@ void RenderManager::RenderInitSetting()
     FillRect(memDC, &windowRect, (HBRUSH)GetStockObject(WHITE_BRUSH));      // 바탕 흰색으로 초기화
 }
 
+vector<AnimationInfo>* RenderManager::GetGameAnimationInfoVector()
+{
+    return &gameAnimationInfoVector;
+}
+
 void RenderManager::MoveSelectPosition(bool isLeft)
 {
     if (isLeft)
@@ -285,25 +290,42 @@ void RenderManager::InitDrawBoardMap()
     }
 }
 
-void RenderManager::DrawAnimation(State state, const int index, const int rate)
+void RenderManager::DrawGameAnimation()
 {
-    int count = 0;
-    clock_t endClock = clock();
+    if ((int)gameAnimationInfoVector.size() == 0)
+        return;
 
+    bool stop = false;
+
+    if(GameManager::GetInstance()->GetGameState() == GameState::MATCHING)
+        DrawAnimation(State::GAME, LOADING_UI, 200, stop);
+    else if (GameManager::GetInstance()->GetGameState() != GameState::MATCHING &&
+        GameManager::GetInstance()->diceInfoValue.isrun)
+    {
+        GameManager::GetInstance()->diceMutex.lock();
+        if (gameAnimationInfoVector[ROLL_DICE_UI1].count >= GameManager::GetInstance()->diceInfoValue.saveDice1Count + 3)
+            stop = true;
+
+        DrawAnimation(State::GAME, ROLL_DICE_UI1, 200, stop);
+        DrawAnimation(State::GAME, ROLL_DICE_UI2, 200, stop);
+        GameManager::GetInstance()->diceMutex.unlock();
+    }
+}
+
+void RenderManager::DrawAnimation(State state, const int index, const int rate, bool stop)
+{
     vector<AnimationBitmapInfo> animationBitmapInfo = *BitmapManager::GetInstance()->GetAnimationBitmap(state);
     if (0 > index && (int)animationBitmapInfo.size() <= index)
         return;
 
-    while (true)
+    DrawAnimationBitmap(animationBitmapInfo[index].bitmap, animationBitmapInfo[index].point,
+        animationBitmapInfo[index].size, animationBitmapInfo[index].row, animationBitmapInfo[index].col,
+        gameAnimationInfoVector[index].count, true);
+    if ((clock() - gameAnimationInfoVector[index].endClock) >= rate)
     {
-        DrawAnimationBitmap(animationBitmapInfo[index].bitmap, animationBitmapInfo[index].point,
-            animationBitmapInfo[index].size, animationBitmapInfo[index].row, animationBitmapInfo[index].col,
-            count);
-        if ((clock() - endClock) >= rate)
-        {
-            endClock = clock();
-            count++;
-        }
+        gameAnimationInfoVector[index].endClock = clock();
+        if(!stop)
+            gameAnimationInfoVector[index].count++;
     }
 }
 
@@ -523,31 +545,6 @@ void RenderManager::DrawWindow(State state)
                 DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
                 break;
             }
-
-            //if (count >= MAX_PLAYER)   
-            //{
-            //    if(((count - FIRST_TURN_IMAGE_INDEX) == GameManager::GetInstance()->whosTurn) &&
-            //        GameManager::GetInstance()->whosTurn != -1)
-            //        DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
-
-            //    if (FIRST_TURN_IMAGE_INDEX <= count && LAST_TURN_IMAGE_INDEX >= count)
-            //        continue;
-
-            //    if ((FIRST_MY_TURN_IMAGE_INDEX <= count && LAST_MY_TURN_IMAGE_INDEX >= count) &&
-            //        count - FIRST_MY_TURN_IMAGE_INDEX != GameManager::GetInstance()->GetCharacterIndex()-1)
-            //        continue;
-
-            //    if(GameManager::GetInstance()->whosTurn != -1)
-            //        DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
-            //}
-            //else // 플레이어 출력 제어
-            //{
-            //    if (GameManager::GetInstance()->GetPlayerCount() <= count)
-            //        continue;   // 플레이어 숫자에 따라 출력되는 캐릭터 수 제한
-
-            //    if ((*GameManager::GetInstance()->GetBackruptcyVector())[count] == false)
-            //        DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);
-            //}
         }
         else
             DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);  
@@ -608,17 +605,17 @@ void RenderManager::DrawAnimationBitmap(const HBITMAP bitmap, const POINT printP
             count = 0;
 
         bitmapSlicePOINT.x = (count % row) * printSize.cx;
-        bitmapSlicePOINT.y = (count / col) * printSize.cy;
+        bitmapSlicePOINT.y = (count / row) * printSize.cy;
     }
 
     if (isTransparentBlt)
     {
-        TransparentBlt(hdc, printPoint.x, printPoint.y,
-            bitmapSize.bmWidth, bitmapSize.bmHeight, backMemDC, bitmapSlicePOINT.x, bitmapSlicePOINT.y, printSize.cx, printSize.cy, RGB(215, 123, 186));
+        TransparentBlt(memDC, printPoint.x, printPoint.y,
+            printSize.cx, printSize.cy, backMemDC, bitmapSlicePOINT.x, bitmapSlicePOINT.y, printSize.cx, printSize.cy,RGB(255, 255, 255));
     }
     else
     {
-        BitBlt(hdc, printPoint.x, printPoint.y, printSize.cx, printSize.cy, backMemDC, bitmapSlicePOINT.x, bitmapSlicePOINT.y, SRCCOPY);
+        BitBlt(memDC, printPoint.x, printPoint.y, printSize.cx, printSize.cy, backMemDC, bitmapSlicePOINT.x, bitmapSlicePOINT.y, SRCCOPY);
     }
 }
 

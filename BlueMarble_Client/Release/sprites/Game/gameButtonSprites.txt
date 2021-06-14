@@ -1,0 +1,4 @@
+sprites/Game/dice.bmp
+sprites/Game/ok.bmp
+sprites/Game/cancel.bmp
+sprites/Game/exit.bmp

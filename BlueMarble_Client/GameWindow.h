@@ -25,8 +25,6 @@ private:
 	void ResizeWindow(const LONG width, const LONG height, const POINT printPoint, HWND hWnd);
 	void CreateButton(HWND hWnd);
 
-	static UINT WINAPI DrawLoadingAnimationThread(void* arg);
-
 	static void SendDiceTriggerMsgMethod();
 	void SendDiceTriggerMsg();
 
@@ -35,7 +33,6 @@ private:
 public:
 	static bool isReset;
 	HWND g_hWnd = nullptr;
-	HANDLE loadingThread = NULL;
 
 	static GameWindow* GetInstance();
 	static void ReleaseInstance();

@@ -1,0 +1,2 @@
+sprites/MainMenu/start.bmp
+sprites/MainMenu/ranking.bmp

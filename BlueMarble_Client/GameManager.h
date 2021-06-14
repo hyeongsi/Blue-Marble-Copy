@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <time.h>
+#include <mutex>
 
 using namespace std;
 
@@ -57,6 +58,15 @@ enum InputKey
 	INPUT_RIGHT = 3,
 };
 
+typedef struct DiceInfo
+{
+	bool isrun = false;
+	int saveDice1Count = 0;
+	int saveDice2Count = 0;
+	int dice1 = 0;
+	int dice2 = 0;
+} diceInfo;
+
 class GameManager
 {
 private:
@@ -87,6 +97,8 @@ public:
 	vector<int> selectLandIndex;
 	int totalSelectLandSellPrice = 0;
 	int whosTurn = -1;
+	diceInfo diceInfoValue;
+	std::mutex diceMutex;
 
 	static GameManager* GetInstance();
 	static void ReleaseInstance();

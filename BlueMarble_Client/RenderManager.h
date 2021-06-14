@@ -29,6 +29,12 @@ enum SelectMode
 	WORLD_TRABLE_MODE = 3,
 };
 
+typedef struct AnimationInfo
+{
+	int count = 0;
+	clock_t endClock = 0;
+} animationInfo;
+
 class RenderManager
 {
 private:
@@ -56,6 +62,7 @@ private:
 
 	POINT PRINT_PLAYER_PIVOT_POINT[4];	// 캐릭터 출력 중심 좌표
 	vector<POINT> playerBitmapPointVector;	// 캐릭터 타일 별 좌표
+	vector<AnimationInfo> gameAnimationInfoVector;
 
 	vector<RECT> rectVector;
 	RECT messageRect = { 550,350,750,450 };
@@ -69,6 +76,7 @@ private:
 public:
 	int isSelectMapMode = IDLE_MODE;
 	int selectPosition = -1;
+	int diceAnimCount = 0;
 
 	static RenderManager* GetInstance();
 	static void ReleaseInstance();
@@ -77,15 +85,18 @@ public:
 	void Init(HWND hWnd);
 	void RenderInitSetting();
 
+	vector<AnimationInfo>* GetGameAnimationInfoVector();
+
 	void MoveSelectPosition(bool isLeft);
 	void SetPlayerBitmapLocation(int playerIndex, int tileIndex, const bool isInit = false);
 
 	void InitDrawBoardMap();
-	void DrawAnimation(State state, const int index, const int rate);
+	void DrawAnimation(State state, const int index, const int rate, bool stop);
 	void DrawBoardMap();
 	void DrawWindow(State state);
 	void DrawHwnd(const HWND dHwnd, const POINT printPoint, const SIZE hwndSize);
 	void DrawBitmap(const HBITMAP bitmap, const POINT printPoint, bool isTransparentBlt = false);
+	void DrawGameAnimation();
 	void DrawAnimationBitmap(const HBITMAP bitmap, const POINT printPoint, const SIZE printSize, int row, int col, int& count, bool isTransparentBlt = false);
 	void DrawGameMessage(string message);
 	void DrawSelectMode(); // selectMode라면 맵 선택 테두리 그리기

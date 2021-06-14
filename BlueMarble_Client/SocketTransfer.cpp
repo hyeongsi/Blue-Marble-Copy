@@ -8,6 +8,7 @@
 #include "UiDialog.h"
 #include "resource1.h"
 #include "MainWindow.h"
+#include "RenderManager.h"
 
 SocketTransfer* SocketTransfer::instance = nullptr;
 
@@ -202,11 +203,6 @@ void SocketTransfer::GetMapData2(char* packet)
 
 void SocketTransfer::GetReadyMethod(char* packet)
 {
-	if (GameWindow::GetInstance()->loadingThread != NULL)
-	{
-		TerminateThread(GameWindow::GetInstance()->loadingThread, 0);
-		CloseHandle(GameWindow::GetInstance()->loadingThread);
-	}
 	GameManager::GetInstance()->SetGameState(GameState::WAIT);
 	GameWindow::GetInstance()->HideButton(EXIT_UI_BTN);
 
@@ -252,6 +248,8 @@ void SocketTransfer::GetRollDiceMethod(char* packet)
 
 void SocketTransfer::GetRollDice(char* packet)
 {
+	const int countValue = 4;
+
 	diceRollPacket dPacket;
 	int accumDataSize = 1;
 
@@ -264,6 +262,15 @@ void SocketTransfer::GetRollDice(char* packet)
 	memcpy(&dPacket.plusMoney, &packet[accumDataSize], sizeof(dPacket.plusMoney));		// get plusMoney
 	accumDataSize += sizeof(dPacket.plusMoney);
 	memcpy(&dPacket.isDesertIsland, &packet[accumDataSize], sizeof(dPacket.isDesertIsland));		// get isDesertIsland
+
+	GameManager::GetInstance()->diceMutex.lock();
+	GameManager::GetInstance()->diceInfoValue.isrun = true;
+	GameManager::GetInstance()->diceInfoValue.dice1 = dPacket.diceValue1;
+	GameManager::GetInstance()->diceInfoValue.dice2 = dPacket.diceValue2;
+
+	GameManager::GetInstance()->diceInfoValue.saveDice1Count = (*RenderManager::GetInstance()->GetGameAnimationInfoVector())[1].count = (dPacket.diceValue1 - 1) * countValue;
+	GameManager::GetInstance()->diceInfoValue.saveDice2Count = (*RenderManager::GetInstance()->GetGameAnimationInfoVector())[2].count = (dPacket.diceValue2 - 1) * countValue;
+	GameManager::GetInstance()->diceMutex.unlock();
 
 	if (dPacket.diceValue1 == dPacket.diceValue2)
 	{

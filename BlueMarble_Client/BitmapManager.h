@@ -115,3 +115,10 @@ enum GameBitmap
 	PLAYER4_ME_UI = 29,
 	BLACKBOARD_UI = 30,
 };
+
+enum GameAnimationBitmap
+{
+	LOADING_UI = 0,
+	ROLL_DICE_UI1 = 1,
+	ROLL_DICE_UI2 = 2,
+};

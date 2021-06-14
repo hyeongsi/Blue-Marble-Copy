@@ -34,7 +34,12 @@ void GameWindow::InitClass(HWND hWnd)
     BitmapManager::GetInstance()->LoadBitmapData(State::GAME);  // game bitmap loading
     BitmapManager::GetInstance()->LoadButtonBitmapData(State::GAME);
     BitmapManager::GetInstance()->LoadAnimationBitmapData(State::GAME);
-
+   
+    for (int i = 0; i < (int)(*BitmapManager::GetInstance()->GetAnimationBitmap(State::GAME)).size(); i++)
+    {
+        RenderManager::GetInstance()->GetGameAnimationInfoVector()->emplace_back(animationInfo());
+    }
+    
     instance->CreateButton(hWnd);
 }
 
@@ -50,7 +55,6 @@ void GameWindow::ReInitGame(HWND hWnd)
             ShowButton(EXIT_UI_BTN);
         isReset = false;
         GameManager::GetInstance()->SetGameState(GameState::MATCHING);
-        //loadingThread = (HANDLE)_beginthreadex(NULL, 0, DrawLoadingAnimationThread, NULL, 0, NULL);
     }
 }
 
@@ -85,12 +89,6 @@ void GameWindow::CreateButton(HWND hWnd)
     {
         SendMessage(instance->hwndWindow[i], BM_SETIMAGE, 0, (LPARAM)(*BitmapManager::GetInstance()->GetButtonBitmap(State::GAME))[i].bitmap);
     }
-}
-
-UINT WINAPI GameWindow::DrawLoadingAnimationThread(void* arg)
-{
-    RenderManager::GetInstance()->DrawAnimation(State::GAME, 0, 100);
-    return 0;
 }
 
 void GameWindow::ShowButton(int kind)
@@ -199,11 +197,6 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
                        SendSelectBtnMsgMethod(false);
                        break;
                    case IDC_EXIT_MATCHING:
-                       if (GetInstance()->loadingThread != NULL)
-                       {
-                           TerminateThread(GetInstance()->loadingThread, 0);
-                           CloseHandle(GetInstance()->loadingThread);
-                       }
                        closesocket(*SocketTransfer::GetInstance()->GetClientSocket());
                        break;
                 }
@@ -224,6 +217,8 @@ void GameWindow::GameUpdate()
     RenderManager::GetInstance()->RenderInitSetting();
     RenderManager::GetInstance()->DrawWindow(State::GAME);  // 이미지 출력
     RenderManager::GetInstance()->DrawBoardMap();
+
+    RenderManager::GetInstance()->DrawGameAnimation();
 
     switch (GameManager::GetInstance()->GetGameState())
     {
