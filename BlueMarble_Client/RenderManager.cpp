@@ -13,6 +13,11 @@ RenderManager* RenderManager::GetInstance()
 	if (nullptr == instance)
 	{
 		instance = new RenderManager();
+        instance->redColorHbrush = CreateSolidBrush(COLORREF(0xBD9173));
+        instance->yellowColorHbrush = CreateSolidBrush(COLORREF(0xFDFFD7));
+        instance->blueColorHbrush = CreateSolidBrush(COLORREF(0xD2EFFF));
+        instance->greenColorHbrush = CreateSolidBrush(COLORREF(0xD7FFDB));
+        instance->purpleColorHbrush = CreateSolidBrush(COLORREF(0xF9D7FF));
         instance->redColorHpen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
         instance->greenColorHpen = CreatePen(PS_SOLID, 9, RGB(0, 255, 0));
 	}
@@ -22,6 +27,11 @@ RenderManager* RenderManager::GetInstance()
 
 void RenderManager::ReleaseInstance()
 {
+    DeleteObject(instance->redColorHbrush);
+    DeleteObject(instance->yellowColorHbrush);
+    DeleteObject(instance->blueColorHbrush);
+    DeleteObject(instance->greenColorHbrush);
+    DeleteObject(instance->purpleColorHbrush);
     DeleteObject(instance->redColorHpen);
     DeleteObject(instance->greenColorHpen);
 	delete instance;
@@ -181,7 +191,9 @@ void RenderManager::SetPlayerBitmapLocation(int playerIndex, int tileIndex, cons
     printPoint.x += playerBitmapPointVector[tileIndex].x;
     printPoint.y += playerBitmapPointVector[tileIndex].y;
 
-    (*BitmapManager::GetInstance()->GetBitmap(State::GAME))[playerIndex].point = printPoint;
+    int playerBitmapindex = PLAYER1_PIECE + playerIndex;
+
+    (*BitmapManager::GetInstance()->GetBitmap(State::GAME))[playerBitmapindex].point = printPoint;
 }
 
 void RenderManager::InitDrawBoardMap()
@@ -190,8 +202,8 @@ void RenderManager::InitDrawBoardMap()
     int boardSize = GameManager::GetInstance()->GetBoardData().mapSize;
     RECT rect;
 
-    tileWidth = (RIGHT_BOTTOM_PRINT_POINT.x - LEFT_TOP_PRINT_POINT.x) / (boardSize + 1);
-    tileHeight = (RIGHT_BOTTOM_PRINT_POINT.y - LEFT_TOP_PRINT_POINT.y) / (boardSize + 1);
+    tileWidth = (RIGHT_BOTTOM_PRINT_POINT.x - LEFT_TOP_PRINT_POINT.x) / (boardSize+1);
+    tileHeight = (RIGHT_BOTTOM_PRINT_POINT.y - LEFT_TOP_PRINT_POINT.y) / (boardSize+1);
 
     for (int i = 0; i < boardSize; i++)   // 하단가로
     {
@@ -304,27 +316,82 @@ void RenderManager::DrawBoardMap()
     Rectangle(memDC, LEFT_TOP_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y, RIGHT_BOTTOM_PRINT_POINT.x, RIGHT_BOTTOM_PRINT_POINT.y);
     Rectangle(memDC, LEFT_TOP_PRINT_POINT.x + tileWidth, LEFT_TOP_PRINT_POINT.y + tileHeight, RIGHT_BOTTOM_PRINT_POINT.x - tileWidth, RIGHT_BOTTOM_PRINT_POINT.y - tileHeight);
 
+    int count = -1;
     for (int i = 0; i < (int)board.mapSize; i++)   // 하단가로
     {
-        MoveToEx(memDC, RIGHT_BOTTOM_PRINT_POINT.x - (tileWidth * (i + 1)), RIGHT_BOTTOM_PRINT_POINT.y - tileHeight, NULL);
-        LineTo(memDC, RIGHT_BOTTOM_PRINT_POINT.x - (tileWidth * (i + 1)), RIGHT_BOTTOM_PRINT_POINT.y);
+        count++;
+
+        if (board.code[count] == LAND_TILE)
+        {
+            oldHBrush = (HBRUSH)SelectObject(memDC, redColorHbrush);
+            Rectangle(memDC, RIGHT_BOTTOM_PRINT_POINT.x - (tileWidth * i), RIGHT_BOTTOM_PRINT_POINT.y, RIGHT_BOTTOM_PRINT_POINT.x - (tileWidth * (i+1)), RIGHT_BOTTOM_PRINT_POINT.y - tileHeight);
+            SelectObject(memDC, oldHBrush);
+        }
+        else if (board.code[count] == TOUR_TILE)
+        {
+            oldHBrush = (HBRUSH)SelectObject(memDC, purpleColorHbrush);
+            Rectangle(memDC, RIGHT_BOTTOM_PRINT_POINT.x - (tileWidth * i), RIGHT_BOTTOM_PRINT_POINT.y, RIGHT_BOTTOM_PRINT_POINT.x - (tileWidth * (i + 1)), RIGHT_BOTTOM_PRINT_POINT.y - tileHeight);
+            SelectObject(memDC, oldHBrush);
+        }
     }
     for (int i = 0; i < (int)board.mapSize; i++)   // 좌측세로
     {
-        MoveToEx(memDC, LEFT_TOP_PRINT_POINT.x, RIGHT_BOTTOM_PRINT_POINT.y - (tileHeight * (i + 1)), NULL);
-        LineTo(memDC, LEFT_TOP_PRINT_POINT.x + tileWidth, RIGHT_BOTTOM_PRINT_POINT.y - (tileHeight * (i + 1)));
+        count++;
+        if (board.code[count] == LAND_TILE)
+        {
+            oldHBrush = (HBRUSH)SelectObject(memDC, yellowColorHbrush);
+            Rectangle(memDC, LEFT_TOP_PRINT_POINT.x + tileWidth, RIGHT_BOTTOM_PRINT_POINT.y - (tileHeight * i), LEFT_TOP_PRINT_POINT.x, RIGHT_BOTTOM_PRINT_POINT.y - (tileHeight * (i + 1)));
+            SelectObject(memDC, oldHBrush);
+        }
+        else if (board.code[count] == TOUR_TILE)
+        {
+            oldHBrush = (HBRUSH)SelectObject(memDC, purpleColorHbrush);
+            Rectangle(memDC, LEFT_TOP_PRINT_POINT.x + tileWidth, RIGHT_BOTTOM_PRINT_POINT.y - (tileHeight * i), LEFT_TOP_PRINT_POINT.x, RIGHT_BOTTOM_PRINT_POINT.y - (tileHeight * (i + 1)));
+            SelectObject(memDC, oldHBrush);
+        }
     }
     for (int i = 0; i < (int)board.mapSize; i++)   // 상단가로
     {
-        MoveToEx(memDC, LEFT_TOP_PRINT_POINT.x + (tileWidth * (i+1)), LEFT_TOP_PRINT_POINT.y, NULL);
-        LineTo(memDC, LEFT_TOP_PRINT_POINT.x + (tileWidth * (i+1)), LEFT_TOP_PRINT_POINT.y + tileHeight);
+        count++;
+        if (board.code[count] == LAND_TILE)
+        {
+            oldHBrush = (HBRUSH)SelectObject(memDC, blueColorHbrush);
+            Rectangle(memDC, LEFT_TOP_PRINT_POINT.x + (tileWidth * i), LEFT_TOP_PRINT_POINT.y, LEFT_TOP_PRINT_POINT.x + (tileWidth * (i + 1)), LEFT_TOP_PRINT_POINT.y + tileHeight);
+            SelectObject(memDC, oldHBrush);
+        }
+        else if (board.code[count] == TOUR_TILE)
+        {
+            oldHBrush = (HBRUSH)SelectObject(memDC, purpleColorHbrush);
+            Rectangle(memDC, LEFT_TOP_PRINT_POINT.x + (tileWidth * i), LEFT_TOP_PRINT_POINT.y, LEFT_TOP_PRINT_POINT.x + (tileWidth * (i + 1)), LEFT_TOP_PRINT_POINT.y + tileHeight);
+            SelectObject(memDC, oldHBrush);
+        } 
     }
     for (int i = 0; i < (int)board.mapSize; i++)  // 우측세로
     {
-        MoveToEx(memDC, RIGHT_BOTTOM_PRINT_POINT.x - tileWidth, LEFT_TOP_PRINT_POINT.y + (tileHeight * (i+1)), NULL);
-        LineTo(memDC, RIGHT_BOTTOM_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y + (tileHeight * (i+1)));
+        count++;
+        if (board.code[count] == LAND_TILE)
+        {
+            oldHBrush = (HBRUSH)SelectObject(memDC, greenColorHbrush);
+            Rectangle(memDC, RIGHT_BOTTOM_PRINT_POINT.x - tileWidth, LEFT_TOP_PRINT_POINT.y + (tileHeight * i), RIGHT_BOTTOM_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y + (tileHeight * (i + 1)));
+            SelectObject(memDC, oldHBrush);
+        }
+        else if (board.code[count] == TOUR_TILE)
+        {
+            oldHBrush = (HBRUSH)SelectObject(memDC, purpleColorHbrush);
+            Rectangle(memDC, RIGHT_BOTTOM_PRINT_POINT.x - tileWidth, LEFT_TOP_PRINT_POINT.y + (tileHeight * i), RIGHT_BOTTOM_PRINT_POINT.x, LEFT_TOP_PRINT_POINT.y + (tileHeight * (i + 1)));
+            SelectObject(memDC, oldHBrush);
+        }
     }
     
+    vector<BitmapInfo>* windowBitmap = BitmapManager::GetInstance()->GetBitmap(State::GAME);    // 타일 이미지 출력
+    
+    for (int i = START_TILE_BACKGROUND; i < PLAYER1_PIECE; i++)
+    {
+        DrawBitmap((*windowBitmap)[i].bitmap, (*windowBitmap)[i].point);    // 타일 이미지
+    }
+
+    DrawBitmap((*windowBitmap)[BLACKBOARD_UI].bitmap, (*windowBitmap)[BLACKBOARD_UI].point);    // 중앙 칠판 이미지
+
     DrawSelectMode();   // 토지 선택창 출력
 
     // 건물 출력
@@ -400,37 +467,87 @@ void RenderManager::DrawWindow(State state)
     if (nullptr == windowBitmap)
         return;
 
-    int count = -1;
+    int count = 0;
     for (const auto&  bitmapIterator : *windowBitmap)
     {
         count++;
 
         if (State::GAME == state)
         {
-            if (count >= MAX_PLAYER)   
+            if((count-1) == GAME_WINDOW_BACKGROUND)
+                DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
+            if (GameManager::GetInstance()->GetGameState() == GameState::MATCHING)
+                return;
+
+            switch (count-1)
             {
-                if(((count - FIRST_TURN_IMAGE_INDEX) == GameManager::GetInstance()->whosTurn) &&
+            case START_TILE_BACKGROUND:
+            case DESERT_ISLAND_TILE_BACKGROUND:
+            case OLYMPIC_TILE_BACKGROUND:
+            case AIRPLAIN_TILE_BACKGROUND:
+            case REVENUE_TILE_BACKGROUND:
+            case CARD1_TILE_BACKGROUND:
+            case CARD2_TILE_BACKGROUND:
+            case CARD3_TILE_BACKGROUND:
+            case CARD4_TILE_BACKGROUND:
+                break;
+            case PLAYER1_PIECE:
+            case PLAYER2_PIECE:
+            case PLAYER3_PIECE:
+            case PLAYER4_PIECE:
+                if ((int)(*GameManager::GetInstance()->GetBackruptcyVector()).size() == 0)
+                    return;
+                if ((*GameManager::GetInstance()->GetBackruptcyVector())[count - PLAYER2_PIECE] == false)
+                    DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);
+                break;
+            case PLAYER1_TURN_UI:
+            case PLAYER2_TURN_UI:
+            case PLAYER3_TURN_UI:
+            case PLAYER4_TURN_UI:
+                if((count - PLAYER2_TURN_UI) == GameManager::GetInstance()->whosTurn &&
                     GameManager::GetInstance()->whosTurn != -1)
                     DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
-
-                if (FIRST_TURN_IMAGE_INDEX <= count && LAST_TURN_IMAGE_INDEX >= count)
-                    continue;
-
-                if ((FIRST_MY_TURN_IMAGE_INDEX <= count && LAST_MY_TURN_IMAGE_INDEX >= count) &&
-                    count - FIRST_MY_TURN_IMAGE_INDEX != GameManager::GetInstance()->GetCharacterIndex()-1)
-                    continue;
-
-                if(GameManager::GetInstance()->whosTurn != -1)
+                break;
+            case PLAYER1_ME_UI:
+            case PLAYER2_ME_UI:
+            case PLAYER3_ME_UI:
+            case PLAYER4_ME_UI:
+                if (count - PLAYER2_ME_UI != GameManager::GetInstance()->GetCharacterIndex() - 1)
+                    break;
+                else
                     DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
+                break;
+            case BLACKBOARD_UI:
+                break;
+            default:
+                DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
+                break;
             }
-            else // 플레이어 출력 제어
-            {
-                if (GameManager::GetInstance()->GetPlayerCount() <= count)
-                    continue;   // 플레이어 숫자에 따라 출력되는 캐릭터 수 제한
 
-                if ((*GameManager::GetInstance()->GetBackruptcyVector())[count] == false)
-                    DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);
-            }
+            //if (count >= MAX_PLAYER)   
+            //{
+            //    if(((count - FIRST_TURN_IMAGE_INDEX) == GameManager::GetInstance()->whosTurn) &&
+            //        GameManager::GetInstance()->whosTurn != -1)
+            //        DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
+
+            //    if (FIRST_TURN_IMAGE_INDEX <= count && LAST_TURN_IMAGE_INDEX >= count)
+            //        continue;
+
+            //    if ((FIRST_MY_TURN_IMAGE_INDEX <= count && LAST_MY_TURN_IMAGE_INDEX >= count) &&
+            //        count - FIRST_MY_TURN_IMAGE_INDEX != GameManager::GetInstance()->GetCharacterIndex()-1)
+            //        continue;
+
+            //    if(GameManager::GetInstance()->whosTurn != -1)
+            //        DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point);
+            //}
+            //else // 플레이어 출력 제어
+            //{
+            //    if (GameManager::GetInstance()->GetPlayerCount() <= count)
+            //        continue;   // 플레이어 숫자에 따라 출력되는 캐릭터 수 제한
+
+            //    if ((*GameManager::GetInstance()->GetBackruptcyVector())[count] == false)
+            //        DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);
+            //}
         }
         else
             DrawBitmap(bitmapIterator.bitmap, bitmapIterator.point, true);  

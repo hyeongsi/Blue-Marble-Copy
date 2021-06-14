@@ -50,7 +50,7 @@ void GameWindow::ReInitGame(HWND hWnd)
             ShowButton(EXIT_UI_BTN);
         isReset = false;
         GameManager::GetInstance()->SetGameState(GameState::MATCHING);
-        loadingThread = (HANDLE)_beginthreadex(NULL, 0, DrawLoadingAnimationThread, NULL, 0, NULL);
+        //loadingThread = (HANDLE)_beginthreadex(NULL, 0, DrawLoadingAnimationThread, NULL, 0, NULL);
     }
 }
 
@@ -222,8 +222,8 @@ LRESULT GameWindow::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 void GameWindow::GameUpdate()
 {
     RenderManager::GetInstance()->RenderInitSetting();
-    RenderManager::GetInstance()->DrawBoardMap();
     RenderManager::GetInstance()->DrawWindow(State::GAME);  // 이미지 출력
+    RenderManager::GetInstance()->DrawBoardMap();
 
     switch (GameManager::GetInstance()->GetGameState())
     {

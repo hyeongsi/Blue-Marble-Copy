@@ -29,18 +29,6 @@ enum SelectMode
 	WORLD_TRABLE_MODE = 3,
 };
 
-enum TurnCheckImageIndex
-{
-	FIRST_TURN_IMAGE_INDEX = 12,
-	LAST_TURN_IMAGE_INDEX = 15,
-};
-
-enum MyturnImageIndex
-{
-	FIRST_MY_TURN_IMAGE_INDEX = 16,
-	LAST_MY_TURN_IMAGE_INDEX = 19,
-};
-
 class RenderManager
 {
 private:
@@ -51,13 +39,20 @@ private:
 	HDC backMemDC{ nullptr };
 	HBITMAP oldCreateBitmap = nullptr;
 
+	HBRUSH redColorHbrush = nullptr;
+	HBRUSH yellowColorHbrush = nullptr;
+	HBRUSH blueColorHbrush = nullptr;
+	HBRUSH greenColorHbrush = nullptr;
+	HBRUSH purpleColorHbrush = nullptr;
+	HBRUSH oldHBrush = nullptr;
+
 	HPEN redColorHpen = nullptr;
 	HPEN greenColorHpen = nullptr;
 	HPEN oldHpen = nullptr;
 
 	SIZE ClientSize = { 1280,720 };
-	const POINT LEFT_TOP_PRINT_POINT = { 240,60 };
-	const POINT RIGHT_BOTTOM_PRINT_POINT = { 1040,640 };
+	const POINT LEFT_TOP_PRINT_POINT = { 235,80 };
+	const POINT RIGHT_BOTTOM_PRINT_POINT = { 1045,620 };
 
 	POINT PRINT_PLAYER_PIVOT_POINT[4];	// 캐릭터 출력 중심 좌표
 	vector<POINT> playerBitmapPointVector;	// 캐릭터 타일 별 좌표

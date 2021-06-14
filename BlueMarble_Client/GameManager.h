@@ -27,6 +27,18 @@ typedef struct BuildData
 	map<int, int> olympic;
 } buildData;
 
+enum TileCode
+{
+	START_TILE = 0,
+	LAND_TILE = 1,			// 지역
+	TOUR_TILE = 2,			// 휴양지
+	CARD_TILE = 3,			// 카드
+	DESERT_ISLAND_TILE = 4,	// 무인도
+	OLYMPIC_TILE = 5,		// 올림픽
+	WORLD_TRABLE_TILE = 6,	// 세계여행
+	REVENUE_TILE = 7,		// 국세청
+};
+
 enum class GameState
 {
 	WAIT = 0,
