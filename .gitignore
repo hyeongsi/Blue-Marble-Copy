@@ -1,17 +1,33 @@
-BlueMarble_Client/*.vcxproj
-BlueMarble_Client/*.filters
-BlueMarble_Client/*.user
+### C++ ###
+# Prerequisites
+*.d
 
-BlueMarble_Client/Debug
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
 
-BlueMarble_Server/*.vcxproj
-BlueMarble_Server/*.filters
-BlueMarble_Server/*.user
+# Precompiled Headers
+*.gch
+*.pch
 
-BlueMarble_Server/Debug
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
 
-BlueMarble_MatchMaking_Server/*.vcxproj
-BlueMarble_MatchMaking_Server/*.filters
-BlueMarble_MatchMaking_Server/*.user
+# Fortran module files
+*.mod
+*.smod
 
-BlueMarble_MatchMaking_Server/Debug
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
